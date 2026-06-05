@@ -1,0 +1,15 @@
+{
+    "name": "gabriel/sistema_farmovet",
+    "autoload": {
+        "psr-4": {
+            "Gabriel\\SistemaFarmovet\\": "app/"
+        }
+    },
+    "authors": [
+        {
+            "name": "GabrielCoronel18",
+            "email": "gjcoronel18@gmail.com"
+        }
+    ],
+    "require": {}
+}
