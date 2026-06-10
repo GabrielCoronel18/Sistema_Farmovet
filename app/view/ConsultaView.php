@@ -22,12 +22,11 @@
             
             <div class="d-flex flex-column w-100 mb-auto">
                 
-                <a href="?url=Dashboard" class="nav-link-custom active">    <!--Elimina el "active" en la clase de esta etiqueta 
-                                                                             y colocalo en la clase "nav-link-custom" del modulo que vas diseñar -->
-                    <div><i class="bi bi-grid-1x2-fill me-2"></i> Inicio</div> 
+                <a href="?url=Dashboard" class="nav-link-custom ">
+                    <div><i class="bi bi-grid-1x2-fill me-2"></i> Inicio</div>
                 </a>
                 
-                <a href="#menuConsultas" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
+                <a href="#menuConsultas" data-bs-toggle="collapse" class="nav-link-custom active" aria-expanded="false">
                     <div><i class="bi bi-file-earmark-medical me-2"></i> Consultas</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
                 </a>
@@ -85,9 +84,8 @@
             
             <header class="d-flex justify-content-between align-items-center mb-5">
                 <div>
-                    <h2 class="fw-bold text-purple mb-0">Inicio</h2>        <!-- coloca el nombre  del modulo que vas a diseñar dentro del h2 
-                                                                              -->
-                    <p class="text-muted">Resumen general de Farmovet</p>
+                    <h2 class="fw-bold text-purple mb-0">Consultas</h2>
+                    <p class="text-muted">Gestion de Consultas</p>
                 </div>
 
                 <div class="dropdown">
@@ -105,65 +103,38 @@
                     </ul>
                 </div>
             </header>
+              <div>
+                
+              </div>
+              <table class="table table-striped ">
+                 
+              <thead >
+                     <th class="table-purple">id</th>
+                     <th class="table-purple">motivo</th>
+                     <th class="table-purple">3</th>
+                     <th class="table-purple">4</th>
+                     <th class="table-purple">5</th>
+                 </thead>
+                 <tbody>
+                    <tr class="table-light">
+                         <td class="table-light">...</td>
+                          <td class="table-light">...</td>
+                           <td class="table-light">...</td>
+                            <td class="table-light">...</td>
+                             <td class="table-light">...</td>
 
-            <div class="row g-4">
-                <div class="col-md-3">
-                    <div class="card p-3 stats-card bg-white">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box bg-purple-light me-3">
-                                <i class="bi bi-file-earmark-medical fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0">Consultas</h6>
-                                <h4 class="mb-0 fw-bold text-purple">12</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3">
-                    <div class="card p-3 stats-card bg-white">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box bg-purple-dark me-3">
-                                <i class="bi bi-people fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0">Clientes</h6>
-                                <h4 class="mb-0 fw-bold text-purple">45</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3">
-                    <div class="card p-3 stats-card bg-white">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box bg-purple-light me-3">
-                               <i class="fa-solid fa-paw fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0">Mascotas</h6>
-                                <h4 class="mb-0 fw-bold text-purple">8</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3">
-                    <div class="card p-3 stats-card bg-white">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box bg-purple-dark me-3">
-                                <i class="bi bi-shield-plus fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0">Planes Sanitarios</h6>
-                                <h4 class="mb-0 fw-bold text-purple">10</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    </tr>
+                    <tr class="table-light">
+                         <td class="table-light">...</td>
+                         <td class="table-light">...</td>
+                          <td class="table-light">...</td>
+                           <td class="table-light">...</td>
+                            <td class="table-light">...</td>
 
+                    </tr>
+                  
+                 </tbody>
+             </table>
         </main>
     </div>
 

@@ -4,7 +4,6 @@ body {
             overflow-x: hidden;
         }
 
-        /* Panel Lateral (Sidebar) */
         .sidebar {
             background: linear-gradient(180deg, #5b2c6f 0%, #8e44ad 100%);
             min-height: 100vh;
@@ -87,16 +86,18 @@ body {
             border: 2px solid rgba(255, 255, 255, 0.5);
         }
 
-        /* Contenido Principal */
+       
         .main-content {
             flex-grow: 1;
             padding: 2rem;
+            min-width: 0;
         }
-
+       
         .text-purple {
             color: #5b2c6f !important;
         }
 
+        
         
         .profile-dropdown-btn {
             background-color: #ffffff;
@@ -133,6 +134,25 @@ body {
             align-items: center;
             justify-content: center;
             border-radius: 10px;
+        }
+
+          .table-purple{
+            background-color:#8e44ad !important; 
+            color: rgb(253, 249, 249) !important;
+             
+        }
+        
+        .td-large{
+            text-wrap:initial;
+           min-width: 250px; 
+           max-width: 250px;
+        }
+        .modal-header{
+            background-color:#8e44ad !important;
+            
+        }
+        .modal-title{
+             color:rgb(253, 249, 249) !important;
         }
 
         .bg-purple-light { background-color: rgba(142, 68, 173, 0.15); color: #8e44ad; }
