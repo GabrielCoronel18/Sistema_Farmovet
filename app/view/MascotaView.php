@@ -49,11 +49,11 @@
                     <div><i class="bi bi-shield-plus me-2"></i> Planes Sanitarios</div>
                 </a>
 
-                <a href="#menuCatalogos" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
-                    <div><i class="bi bi-book me-2"></i> Catálogos</div>
+                <a href="#menuConfiguracion" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
+                    <div><i class="bi bi-gear-fill me-2"></i></i> Configuracion</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
                 </a>
-                <div class="collapse" id="menuCatalogos">
+                <div class="collapse" id="menuConfiguracion">
                     <div class="submenu">
                         <a href="?url=Razas" class="nav-link-sub">Razas</a>
                         <a href="?url=Especies" class="nav-link-sub">Especies</a>
@@ -64,11 +64,11 @@
                     </div>
                 </div>
 
-                <a href="#menuAdmin" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
-                    <div><i class="bi bi-gear-fill me-2"></i> Administración</div>
+              <a href="#menuSeguridad" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
+                    <div><i class="bi bi-shield-lock-fill me-2"></i> Seguridad</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
                 </a>
-                <div class="collapse" id="menuAdmin">
+                <div class="collapse" id="menuSeguridad">
                     <div class="submenu">
                         <a href="?url=Usuario" class="nav-link-sub">Usuarios</a>
                         <a href="?url=Rol" class="nav-link-sub">Roles</a>
@@ -105,9 +105,9 @@
             </header>
               <div class=" d-flex justify-content-end mb-3">
                     <div class="me-3">
-                    
                     <input type="text" class="form-control" placeholder="Filtrar" name="filtrar">   
-                    </div>               
+                    </div>     
+                              
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ModalAgregar"> <i class="bi bi-plus"></i> Agregar Mascota</button>
 
               </div>
