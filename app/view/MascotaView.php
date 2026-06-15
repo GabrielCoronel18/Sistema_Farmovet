@@ -112,6 +112,7 @@
 
               </div>
               <div class="table-responsive shadow-sm rounded">
+              
               <table class="table table-striped align-middle text-nowrap ">
                  
               <thead >
@@ -128,35 +129,12 @@
                      <th class="table-purple">Acciones</th>
 
                  </thead>
-                 <tbody>
+                 <tbody id="resultados">
                     <tr class="table-light">
-                        <td class="table-light">1</td>
-                        <td class="table-light">Logan</td>
-                        <td class="table-light">4 años</td>
-                        <td class="table-light">Masculino</td>
-                        <td class="table-light">Si</td>
-                        <td class="table-light td-large">Procedece de ...</td>
-                        <td class="table-light">12/02/2022</td>
-                        <td class="table-light">Pastor Aleman</td>
-                        <td class="table-light">Juan Perez</td>
-                        <td class="table-light"> <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#AntecedentesModal"> Mostrar Antecedentes</button></td>
-                        <td class="table-light"><button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Editar</button> <button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
+                        
                              
                     </tr>
-                    <tr class="table-light">
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-
-                    </tr>
+                
                   
                  </tbody>
              </table>
@@ -175,11 +153,18 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <form method="post" class="ajaxForm">
          <input type="hidden" id="id_mascota" name="id_mascota">
 
-          <div class="row g-3"> <div class="col-md-6">
+          <div class="row g-3"> 
+            <div class="col-md-6">
               <label for="nombreMascota" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="nombreMascota" name="nombre" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="nombreMascota" class="form-label">Edad</label>
+              <input type="number" class="form-control" id="edadMascota" name="edad" required>
             </div>
             
             <div class="col-md-6">
@@ -213,9 +198,14 @@
               </select>
             </div>
 
+             <div class="col-md-6">
+              <label for="nombreMascota" class="form-label">Pelaje</label>
+              <input type="text" class="form-control" id="pelajeMascota" name="pelaje" required>
+            </div>
+
             <div class="col-md-6">
               <label for="clienteMascota" class="form-label">Cliente</label>
-              <select class="form-select" id="clienteMascota" name="id_cliente" required>
+              <select class="form-select" id="clienteMascota" name="cedula_cliente" required>
                 <option value="" selected disabled>Seleccione un cliente</option>
                 <option value="1">Juan Perez</option>
               </select>
@@ -230,7 +220,8 @@
         </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success btn-agregar">Guardar</button>
+        <button type="submit" class="btn btn-success btn-agregar">Guardar</button>
+        </form>
       </div>
     </div>
   </div>

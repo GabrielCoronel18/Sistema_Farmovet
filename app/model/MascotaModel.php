@@ -1,7 +1,6 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
-use PDOStatement;
 
 class Mascota extends ConexionBD{
      private int $id;
