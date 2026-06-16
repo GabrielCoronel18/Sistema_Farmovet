@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Farmovet - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 
@@ -108,7 +107,7 @@
                     <input type="text" class="form-control" placeholder="Filtrar" name="filtrar">   
                     </div>     
                               
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ModalAgregar"> <i class="bi bi-plus"></i> Agregar Mascota</button>
+                    <button type="button" class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#ModalAgregar"> <i class="bi bi-plus"></i> Agregar Mascota</button>
 
               </div>
               <div class="table-responsive shadow-sm rounded">
@@ -147,72 +146,73 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header ">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Agregar Mascota</h1>
+        <h1 class="modal-title fs-5" id="TituloModalMascotas"></h1>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+     
+      <form method="post" class="MascotasForm">
       <div class="modal-body">
         
-         <form method="post" class="ajaxForm">
          <input type="hidden" id="id_mascota" name="id_mascota">
 
           <div class="row g-3"> 
             <div class="col-md-6">
-              <label for="nombreMascota" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombreMascota" name="nombre" required>
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" required>
             </div>
 
             <div class="col-md-6">
-              <label for="nombreMascota" class="form-label">Edad</label>
-              <input type="number" class="form-control" id="edadMascota" name="edad" required>
+              <label for="edad" class="form-label">Edad</label>
+              <input type="number" class="form-control" id="edad" name="edad" required>
             </div>
             
             <div class="col-md-6">
               <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
-              <input type="date" class="form-control" id="fechaNacimiento" name="fecha_nacimiento" required>
+              <input type="date" class="form-control" id="fch_nacimiento" name="fch_nacimiento" required>
             </div>
 
             <div class="col-md-6">
-              <label for="sexoMascota" class="form-label">Sexo</label>
-              <select class="form-select" id="sexoMascota" name="sexo" required>
+              <label for="sexo" class="form-label">Sexo</label>
+              <select class="form-select" id="sexo" name="sexo" required>
                 <option value="" selected disabled>Seleccione...</option>
-                <option value="M">Masculino</option>
-                <option value="F">Femenino</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
               </select>
             </div>
 
             <div class="col-md-6">
-              <label for="chipMascota" class="form-label">Chip</label>
-              <select class="form-select" id="chipMascota" name="chip" required>
+              <label for="chip" class="form-label">Chip</label>
+              <select class="form-select" id="chip" name="chip" required>
                 <option value="" selected disabled>Seleccione...</option>
-                <option value="Si">Sí</option>
+                <option value="Si">Si</option>
                 <option value="No">No</option>
               </select>
             </div>
 
             <div class="col-md-6">
-              <label for="razaMascota" class="form-label">Raza</label>
-              <select class="form-select" id="razaMascota" name="id_raza" required>
+              <label for="raza" class="form-label">Raza</label>
+              <select class="form-select" id="id_raza" name="id_raza" required>
                 <option value="" selected disabled>Seleccione una raza</option>
                 <option value="1">Pastor Alemán</option> 
               </select>
             </div>
 
              <div class="col-md-6">
-              <label for="nombreMascota" class="form-label">Pelaje</label>
-              <input type="text" class="form-control" id="pelajeMascota" name="pelaje" required>
+              <label for="pelaje class="form-label">Pelaje</label>
+              <input type="text" class="form-control" id="pelaje" name="pelaje" required>
             </div>
 
             <div class="col-md-6">
-              <label for="clienteMascota" class="form-label">Cliente</label>
-              <select class="form-select" id="clienteMascota" name="cedula_cliente" required>
+              <label for="cedula_cliente" class="form-label">Cliente</label>
+              <select class="form-select" id="cedula_cliente" name="cedula_cliente" required>
                 <option value="" selected disabled>Seleccione un cliente</option>
-                <option value="1">Juan Perez</option>
+                <option value="12313122">Jaime</option>
               </select>
             </div>
 
             <div class="col-12">
-              <label for="procedenciaMascota" class="form-label">Procedencia</label>
-              <textarea class="form-control" id="procedenciaMascota" name="procedencia" rows="2" placeholder=""></textarea>
+              <label for="procedencia" class="form-label">Procedencia</label>
+              <textarea class="form-control" id="procedencia" name="procedencia" rows="2" placeholder=""></textarea>
             </div>
 
           </div>
@@ -220,9 +220,9 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="submit" class="btn btn-success btn-agregar">Guardar</button>
+      </div>
       </form>
 
-      </div>
     </div>
   </div>
 </div>
@@ -432,7 +432,7 @@
 </div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     

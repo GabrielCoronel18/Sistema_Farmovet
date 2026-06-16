@@ -1,7 +1,10 @@
 
 
-let formularios = document.querySelectorAll(".ajaxForm");
+let formularioMascotas = document.querySelector(".MascotasForm");
 let resultadosTabla = document.getElementById("resultados");
+
+let TituloModal = document.getElementById("TituloModalMascotas");
+let btnAgregar = document.getElementById("btnAgregar");
 
 
 function obtenerDatos(){
@@ -34,8 +37,8 @@ fetch(window.location,{method:"post", body: datos})
             <td class="table-light">${mascota.cedula_cliente} - ${mascota.nombre_cliente}</td>
             <td class="table-light"> <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#AntecedentesModal"> Mostrar Antecedentes</button></td>
             <td class="table-light">
-            <button class="btn btn-sm btn-success btn-editar" value="${id = mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Editar</button> 
-            <button class="btn btn-sm btn-danger btn-eliminar" value="${id = mascota.id_mascota}">Eliminar</button>
+            <button class="btn btn-sm btn-success btn-editar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Editar</button> 
+            <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota}">Eliminar</button>
             </td>
         </tr>`;
       });
@@ -50,6 +53,93 @@ fetch(window.location,{method:"post", body: datos})
 
 obtenerDatos();
 
+
+
+btnAgregar.addEventListener("click", function(e){
+     
+     formularioMascotas.reset();
+
+     TituloModal.innerText ="Agregar Nueva Mascota";
+     document.getElementById("id_mascota").value = "";
+
+});
+
+
+resultadosTabla.addEventListener("click", function(e) {
+  
+    if (e.target.classList.contains("btn-editar")) {
+       
+        e.preventDefault(); 
+        TituloModal.innerText = "Editar Mascota "
+        let id = e.target.value;
+        let datos = new FormData();
+
+        datos.append("obtenerMascota", true);
+        datos.append("id", id);
+
+        fetch(window.location, {method:"post", body: datos})
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            
+            let result = resultado.resultado;
+
+              if(resultado.status === "success"){
+                  document.getElementById("id_mascota").value = result.id_mascota;
+                  document.getElementById("nombre").value = result.nombre;
+                  document.getElementById("edad").value = result.edad;
+                  document.getElementById("sexo").value = result.sexo;
+                  document.getElementById("fch_nacimiento").value = result.fch_nacimiento;
+                  document.getElementById("chip").value = result.chip;
+                  document.getElementById("id_raza").value = result.id_raza;
+                  document.getElementById("pelaje").value = result.pelaje;
+                  document.getElementById("cedula_cliente").value = result.cedula_cliente;
+                  document.getElementById("procedencia").value = result.procedencia;
+
+              }
+              else if(resultado.status === "error"){
+                  Swal.fire({title: "Error", text: "Error al eliminar el registro", icon: "error"})
+                             
+              }
+        })
+    }
+});
+
+formularioMascotas.addEventListener("submit", function(e){
+      
+       e.preventDefault();
+       let datos = new FormData(formularioMascotas);
+       let id =  document.getElementById("id_mascota").value;
+
+       if(id === ""){
+        datos.append("agregar", true);
+       }
+       
+       else{
+        datos.append("actualizar", true);
+        datos.append("id", id);
+       }
+
+       fetch(window.location,{method:"post", body: datos})
+       .then(respuesta => respuesta.json())
+        .then(resultado => {
+             
+             if(resultado.status === "success"){
+                 
+                id === "" ? alertAgregar("success") : alertActualizar("success");
+                 
+                 let ModalAgregar = bootstrap.Modal.getInstance(document.getElementById("ModalAgregar"));
+                 ModalAgregar.hide();
+
+                 obtenerDatos();
+
+             }
+            else if(resultado.status === "error"){
+                id === "" ? alertAgregar("error") : alertActualizar("error");
+            }
+ 
+        })
+
+})
 
 resultadosTabla.addEventListener("click", function(e) {
   

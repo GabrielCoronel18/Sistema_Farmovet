@@ -7,7 +7,7 @@ class MascotaModel extends ConexionBD{
      private string $nombre;
      private int $edad;
      private string $sexo;
-     private bool $chip;
+     private string $chip;
      private string $procedencia;
      private string $fecha_nacimiento;
      private int $raza;
@@ -16,7 +16,7 @@ class MascotaModel extends ConexionBD{
 
      
      
-     public function agregarMascota(string $nombre, int $edad,string $sexo,bool $chip,string $procedencia,string $fecha_nacimiento,int $raza,string $pelaje, string $cliente ){
+     public function agregarMascota(string $nombre, int $edad,string $sexo,string $chip,string $procedencia,string $fecha_nacimiento,int $raza,string $pelaje, string $cliente ){
           $this->nombre = $nombre;
           $this->edad = $edad;
           $this->sexo = $sexo;
@@ -116,7 +116,7 @@ class MascotaModel extends ConexionBD{
      }
 
 
-    public function actualizarMascota(int $id, string $nombre, int $edad,string $sexo,bool $chip,string $procedencia,string $fecha_nacimiento,int $raza,string $pelaje, string $cliente ){
+    public function actualizarMascota(int $id, string $nombre, int $edad,string $sexo,string $chip,string $procedencia,string $fecha_nacimiento,int $raza,string $pelaje, string $cliente ){
           
           
           $this->id = $id;
@@ -135,11 +135,12 @@ class MascotaModel extends ConexionBD{
                     SET nombre = :nombre,
                         edad = :edad,    
                         sexo = :sexo,
+                        chip = :chip,
                         procedencia = :procedencia,  
                         fch_nacimiento = :fecha_nacimiento,  
                         id_raza = :raza,
                         pelaje = :pelaje,  
-                        cedula_cliente = :cliente,      
+                        cedula_cliente = :cliente      
                     WHERE id_mascota = :id";     
             
             $query = $conex->prepare($sql);
