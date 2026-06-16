@@ -2,7 +2,7 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 
-class Mascota extends ConexionBD{
+class MascotaModel extends ConexionBD{
      private int $id;
      private string $nombre;
      private int $edad;
@@ -68,7 +68,7 @@ class Mascota extends ConexionBD{
 
      }
      
-     public function obtenerMascotaPorId(int $id,){
+     public function obtenerMascotaPorId(int $id){
              
             $this->id = $id;
 
@@ -140,10 +140,10 @@ class Mascota extends ConexionBD{
                         id_raza = :raza,
                         pelaje = :pelaje,  
                         cedula_cliente = :cliente,      
-                    WHERE id = :id";     
+                    WHERE id_mascota = :id";     
             
             $query = $conex->prepare($sql);
-                    $query->bindParam(":id", $this->$id);
+                    $query->bindParam(":id", $this->id);
                     $query->bindParam(":nombre",$this->nombre);
                     $query->bindParam(":edad",$this->edad);
                     $query->bindParam(":sexo",$this->sexo);
@@ -160,11 +160,12 @@ class Mascota extends ConexionBD{
     
 
     public function eliminarMascota(int $id){
-               
+           
+             $this->id = $id;
             $conex = $this->getConexion();
-            $sql = "UPDATE mascota SET estado = 0 WHERE id = :id";     
+            $sql = "UPDATE mascota SET estado = 0 WHERE id_mascota = :id";     
             $query = $conex->prepare($sql);
-            $query->bindParam(":id", $id);
+            $query->bindParam(":id", $this->id);
 
             return $query->execute();
      }

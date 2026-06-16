@@ -1,8 +1,8 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
-use Gabriel\SistemaFarmovet\model\Mascota;
+use Gabriel\SistemaFarmovet\model\MascotaModel;
 
-$mascotaModel = new Mascota;
+$mascotaModel = new MascotaModel();
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
@@ -97,5 +97,5 @@ $mascotaModel = new Mascota;
       exit;
     }
 
-require_once "app/view/MascotaView.php"
+require_once "app/view/MascotaView.php";
 ?>

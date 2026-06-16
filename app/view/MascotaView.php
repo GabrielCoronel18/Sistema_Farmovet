@@ -124,16 +124,14 @@
                      <th class="table-purple">Procedencia</th>
                      <th class="table-purple">Fecha-Nacimiento</th>
                      <th class="table-purple">Raza</th>
+                     <th class="table-purple">Pelaje</th>
                      <th class="table-purple">Cliente</th>
                      <th class="table-purple">Antecedentes</th>
                      <th class="table-purple">Acciones</th>
 
                  </thead>
                  <tbody id="resultados">
-                    <tr class="table-light">
-                        
-                             
-                    </tr>
+               
                 
                   
                  </tbody>
@@ -153,7 +151,8 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="post" class="ajaxForm">
+        
+         <form method="post" class="ajaxForm">
          <input type="hidden" id="id_mascota" name="id_mascota">
 
           <div class="row g-3"> 
@@ -221,7 +220,8 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="submit" class="btn btn-success btn-agregar">Guardar</button>
-        </form>
+      </form>
+
       </div>
     </div>
   </div>
@@ -436,7 +436,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <script src="public/js/Dashboard.js"></script>
+    <script src="public/js/alerts.js"></script>
+
+    <script src="public/js/Mascotas.js"></script>
     
 </body>
 </html>
