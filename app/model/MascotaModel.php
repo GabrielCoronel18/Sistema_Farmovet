@@ -89,7 +89,7 @@ class MascotaModel extends ConexionBD{
             $offset = $limite - $limitacion;
             $busqueda = $param . "%";
             $conex = $this->getConexion();
-            $sql = "SELECT mascota.*, cliente.nombre AS cliente_nombre, raza.nombre_raza FROM mascota 
+            $sql = "SELECT mascota.*, cliente.nombre AS nombre_cliente, raza.nombre_raza FROM mascota 
                     INNER JOIN cliente ON mascota.cedula_cliente = cliente.cedula_cliente
                     INNER JOIN raza ON mascota.id_raza = raza.id_raza  
                     WHERE mascota.estado = 1 

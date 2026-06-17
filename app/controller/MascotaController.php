@@ -1,14 +1,24 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\MascotaModel;
+use Gabriel\SistemaFarmovet\model\Alrg_MascotaModel;
 
 $mascotaModel = new MascotaModel();
+$AlergiaMascotaModel = new Alrg_MascotaModel();
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
         $limitacion = $_POST["limite"] ?? 5;
-
-        $resultados = $mascotaModel->obtenerMascotas($pagina,$limitacion);
+        
+        
+        if(isset($_POST["parametro"])){
+          
+        $param = $_POST["parametro"];
+          $resultados = $mascotaModel->filtrarMascota($param,$pagina,$limitacion);
+        }
+        else{
+          $resultados = $mascotaModel->obtenerMascotas($pagina,$limitacion);
+        }
 
         if($resultados){
            echo json_encode(["status"=>"success","resultados" => $resultados]);
@@ -18,7 +28,7 @@ $mascotaModel = new MascotaModel();
         }
       exit;
     }
-    
+  
     if(isset($_POST["agregar"])){
         $nombre = $_POST["nombre"] ?? "";
         $edad = $_POST["edad"]  ?? 0;
@@ -92,6 +102,26 @@ $mascotaModel = new MascotaModel();
             }
             else{
             echo json_encode(["status"=>"error"]);
+            }
+
+      exit;
+    }
+
+
+    /// alergia_Mascota
+
+    if(isset($_POST["obtenerAlergiaMascota"]) && isset($_POST["id"])){
+        
+        $id = $_POST["id"];
+
+        $resultado = $AlergiaMascotaModel->obtenerAlergiasAsociadas($id);
+
+
+            if($resultado){
+            echo json_encode(["status"=>"success","resultado" => $resultado]);
+            }
+            else{
+            echo json_encode(["status"=>"error","resultado" => []]);
             }
 
       exit;

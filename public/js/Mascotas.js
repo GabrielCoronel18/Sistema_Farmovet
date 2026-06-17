@@ -1,17 +1,21 @@
 
 
 let formularioMascotas = document.querySelector(".MascotasForm");
-let resultadosTabla = document.getElementById("resultados");
-
+let TablaMascotas = document.getElementById("TablaMascotas");
 let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
+let filtrar= document.getElementById("filtrar");
 
+let TablaAlergias = document.getElementById("TablaAlergias");
 
-function obtenerDatos(){
+function obtenerDatos(param = null){
 
 let datos = new FormData;
 datos.append("obtener",true);
 
+if(param != null){
+    datos.append("parametro", param);
+}
 
 fetch(window.location,{method:"post", body: datos})
 .then(resultados => resultados.json())
@@ -19,10 +23,10 @@ fetch(window.location,{method:"post", body: datos})
     
     if (result.status === "success") {
         
-        resultadosTabla.innerHTML = "";
+        TablaMascotas.innerHTML = "";
         
         result.resultados.forEach(function(mascota){
-        resultadosTabla.innerHTML += 
+        TablaMascotas.innerHTML += 
 
         `<tr>
             <td class="table-light">${mascota.id_mascota}</td>
@@ -35,7 +39,7 @@ fetch(window.location,{method:"post", body: datos})
             <td class="table-light">${mascota.nombre_raza}</td>
             <td class="table-light">${mascota.pelaje}</td>
             <td class="table-light">${mascota.cedula_cliente} - ${mascota.nombre_cliente}</td>
-            <td class="table-light"> <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#AntecedentesModal"> Mostrar Antecedentes</button></td>
+            <td class="table-light"> <button type="button" class="btn btn-sm btn-success btn-antecedentes" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#AntecedentesModal"> Mostrar Antecedentes</button></td>
             <td class="table-light">
             <button class="btn btn-sm btn-success btn-editar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Editar</button> 
             <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota}">Eliminar</button>
@@ -45,7 +49,7 @@ fetch(window.location,{method:"post", body: datos})
     }
     else if(result.status === "error"){
 
-         resultadosTabla.innerHTML = "<tr> <td colspan='12'> Error al obtener los registros<td></tr>"
+         TablaMascotas.innerHTML = "<tr> <td colspan='12'> Error al obtener los registros<td></tr>"
     }
 });
 
@@ -65,7 +69,7 @@ btnAgregar.addEventListener("click", function(e){
 });
 
 
-resultadosTabla.addEventListener("click", function(e) {
+TablaMascotas.addEventListener("click", function(e) {
   
     if (e.target.classList.contains("btn-editar")) {
        
@@ -97,7 +101,7 @@ resultadosTabla.addEventListener("click", function(e) {
 
               }
               else if(resultado.status === "error"){
-                  Swal.fire({title: "Error", text: "Error al eliminar el registro", icon: "error"})
+                  Swal.fire({title: "Error", text: "Error al obtener el registro", icon: "error"})
                              
               }
         })
@@ -141,17 +145,56 @@ formularioMascotas.addEventListener("submit", function(e){
 
 })
 
-resultadosTabla.addEventListener("click", function(e) {
+
+filtrar.addEventListener("input", function(){
+      param = this.value;
+      obtenerDatos(param);
+});
+
+
+
+TablaMascotas.addEventListener("click", function(e) {
   
-    if (e.target.classList.contains("btn-eliminar")) {
+    if (e.target.classList.contains("btn-antecedentes")) {
         e.preventDefault(); 
         
         let id = e.target.value;
         let datos = new FormData();
-        datos.append("eliminar", true);
+        datos.append("obtenerAlergiaMascota", true);
         datos.append("id", id);
-
-        alertEliminar("post", datos, obtenerDatos);
+        obtenerAntecedentes(datos);
     }
 });
+
+
+
+function obtenerAntecedentes(datos){
+
+fetch(window.location,{method:"post", body: datos})
+.then(resultados => resultados.json())
+.then(result => {
+    
+    if (result.status === "success") {
+        
+        TablaAlergias.innerHTML = "";
+        
+        result.resultado.forEach(function(alergia){
+        TablaAlergias.innerHTML += 
+
+        `<tr>
+            <td class="table-light">${alergia.nombre_alergia}</td>
+            <td class="table-light">${alergia.fecha_deteccion}</td>
+            <td class="table-light">
+               <button class="btn btn-sm btn-danger btn-eliminar" value="${alergia.id_alergia}">Eliminar</button>
+            </td>
+        </tr>`;
+      });
+    }
+    else if(result.status === "error"){
+
+         TablaAlergias.innerHTML = "<tr> <td colspan='12'> Error al obtener los registros<td></tr>"
+    }
+});
+
+}
 

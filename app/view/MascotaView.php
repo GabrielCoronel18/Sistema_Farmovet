@@ -104,7 +104,7 @@
             </header>
               <div class=" d-flex justify-content-end mb-3">
                     <div class="me-3">
-                    <input type="text" class="form-control" placeholder="Filtrar" name="filtrar">   
+                    <input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar">   
                     </div>     
                               
                     <button type="button" class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#ModalAgregar"> <i class="bi bi-plus"></i> Agregar Mascota</button>
@@ -129,7 +129,7 @@
                      <th class="table-purple">Acciones</th>
 
                  </thead>
-                 <tbody id="resultados">
+                 <tbody id="TablaMascotas">
                
                 
                   
@@ -290,14 +290,9 @@
                      <th class="table-purple">Acciones</th>
 
                  </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">Penicilina</td>
-                        <td class="table-light">25/04/2025</td>
-                        <td class="table-light"><button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
-                    </tr>
-                    
+                 <tbody id="TablaAlergias">
+                   
+            
                  </tbody>
              </table>
             </div>

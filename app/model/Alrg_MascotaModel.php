@@ -2,7 +2,7 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 
-class AlergiaMascota extends ConexionBD {
+class Alrg_MascotaModel extends ConexionBD {
       private int $id;
       private int $alergia;
       private int $mascota;
@@ -28,11 +28,15 @@ class AlergiaMascota extends ConexionBD {
       }
 
 
-      public function obtenerAlergiasAsociadas(){
-        
-        $conex = $this->getConexion();
-         $sql = "SELECT * FROM alergia_mascota";
+      public function obtenerAlergiasAsociadas($id){
+         $this->id = $id;
+         $conex = $this->getConexion();
+         $sql = "SELECT alergia_mascota.*, alergia.nombre_alergia FROM alergia_mascota 
+                 INNER JOIN alergia ON alergia_mascota.id_alergia = alergia.id_alergia 
+                 WHERE id_mascota = :id";
+         
          $query = $conex->prepare($sql);
+         $query->bindParam(":id", $this->id);
 
          $query->execute();
              
