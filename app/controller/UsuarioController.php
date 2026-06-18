@@ -69,7 +69,7 @@ if (isset($_POST['agregar'])) {
 if (isset($_POST['actualizar'])) {
     $cedulaOriginal = $_POST['cedula_original'] ?? '';
     if (empty($cedulaOriginal)) {
-        echo json_encode(["status" => "error", "mensaje" => "Cédula original no proporcionada."]);
+        echo json_encode(["status" => "error", "mensaje" => "No se encontro la cedula original"]);
         exit;
     }
 
