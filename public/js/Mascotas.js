@@ -6,7 +6,6 @@ let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar= document.getElementById("filtrar");
 
-let TablaAlergias = document.getElementById("TablaAlergias");
 
 function obtenerDatos(param = null){
 
@@ -144,7 +143,18 @@ formularioMascotas.addEventListener("submit", function(e){
         })
 
 })
-
+TablaMascotas.addEventListener("click", function(e) {
+  
+    if (e.target.classList.contains("btn-eliminar")) {
+        e.preventDefault(); 
+        
+        let id = e.target.value;
+        let datos = new FormData();
+        datos.append("eliminar", true);
+        datos.append("id", id);
+        alertEliminar("post",datos,obtenerDatos);
+    }
+});
 
 filtrar.addEventListener("input", function(){
       param = this.value;
@@ -152,49 +162,4 @@ filtrar.addEventListener("input", function(){
 });
 
 
-
-TablaMascotas.addEventListener("click", function(e) {
-  
-    if (e.target.classList.contains("btn-antecedentes")) {
-        e.preventDefault(); 
-        
-        let id = e.target.value;
-        let datos = new FormData();
-        datos.append("obtenerAlergiaMascota", true);
-        datos.append("id", id);
-        obtenerAntecedentes(datos);
-    }
-});
-
-
-
-function obtenerAntecedentes(datos){
-
-fetch(window.location,{method:"post", body: datos})
-.then(resultados => resultados.json())
-.then(result => {
-    
-    if (result.status === "success") {
-        
-        TablaAlergias.innerHTML = "";
-        
-        result.resultado.forEach(function(alergia){
-        TablaAlergias.innerHTML += 
-
-        `<tr>
-            <td class="table-light">${alergia.nombre_alergia}</td>
-            <td class="table-light">${alergia.fecha_deteccion}</td>
-            <td class="table-light">
-               <button class="btn btn-sm btn-danger btn-eliminar" value="${alergia.id_alergia}">Eliminar</button>
-            </td>
-        </tr>`;
-      });
-    }
-    else if(result.status === "error"){
-
-         TablaAlergias.innerHTML = "<tr> <td colspan='12'> Error al obtener los registros<td></tr>"
-    }
-});
-
-}
 

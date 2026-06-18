@@ -258,11 +258,12 @@
             <div class="collapse" id="collapseAlergia">
                     <div class="card card-body">
                        <div class="container-form">
-                        <div class="row align-items-end">
+                        <form method="post" id="AlergiasForm">
+                       <div class="row align-items-end">
                             <div class="col-4">
                              
                             <label for="alergias">Alergia:</label>
-                              <select class="form-select" name="alergias" aria-label="Default select example">
+                              <select class="form-select" name="alergias" id="alergias" aria-label="Default select example">
                                 <option selected>Seleccione la alergia</option>
                                 <option value="1">Penicilina</option>
 
@@ -270,10 +271,11 @@
                             </div>
                             <div class="col-4">
                                   <label for="fecha-deteccion" class="form-label">Fecha de Deteccion:</label>
-                                  <input type="date" class="form-control" name="fecha-deteccion">
+                                  <input type="date" class="form-control" name="fecha-deteccion" id="fecha-deteccion">
                             </div>
                              <div class="col-3">
-                                  <button class="btn btn-success btn-agregar" >Agregar</button> 
+                                  <button type="submit" class="btn btn-success btn-agregar" >Agregar</button> 
+                                  </form>
                             </div>
                             
                         </div>
@@ -306,20 +308,22 @@
             <div class="collapse" id="collapseCirugia">
                     <div class="card card-body">
                        <div class="container-form">
+                        <form method="post" id="CirugiasForm">
                         <div class="row align-items-end">
                             <div class="col-4">
-                                <label for="fecha-deteccion" class="form-label">Cirugia:</label>
+                                <label for="cirugia" class="form-label">Cirugia:</label>
                                 <input type="textarea" class="form-control" name="cirugia">
                             </div>
                             <div class="col-4">
-                                  <label for="fecha-deteccion" class="form-label">Fecha:</label>
-                                  <input type="date" class="form-control" name="fecha-cirugia">
+                                  <label for="fecha-cirugia" class="form-label">Fecha:</label>
+                                  <input type="date" class="form-control" name="fecha_cirugia">
                             </div>
                              <div class="col-3">
-                                  <button class="btn btn-success btn-agregar" >Agregar</button> 
+                                  <button type="submit" class="btn btn-success btn-agregar" >Agregar</button> 
                             </div>
                             
-                        </div>
+                          </div>
+                        </form>
                         </div>
              
                     </div>
@@ -333,13 +337,8 @@
                      <th class="table-purple">Acciones</th>
 
                  </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">Cirugia ...</td>
-                        <td class="table-light">22/07/2025</td>
-                        <td class="table-light"><button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
-                    </tr>
+                 <tbody id="TablaCirugias">
+                    
                     
                  </tbody>
              </table>
@@ -354,6 +353,7 @@
             <div class="collapse" id="collapseEnfermedades">
                     <div class="card card-body">
                        <div class="container-form">
+                        <form method="post" id="EnfermedadesForm">
                         <div class="row align-items-end">
                             
                            <div class="col-3">
@@ -367,23 +367,24 @@
 
                             <div class="col-3">
                                   <label for="fecha-deteccion" class="form-label">Fecha de Deteccion:</label>
-                                  <input type="date" class="form-control" name="fecha-deteccion">
+                                  <input type="date" class="form-control" name="fecha_deteccion">
                             </div>
                             <div class="col-3">  
                             <label for="estado-enfermedad">Estado:</label>
-                              <select class="form-select" name="estado-enfermedad" aria-label="Default select example">
+                              <select class="form-select" name="estado_enfermedad" aria-label="Default select example">
                                 <option selected>Seleccione la enfermededad</option>
                              
-                                <option value="1">Leve</option>
-                                <option value="1">Grave</option>
-                                <option value="1">Muy Grave</option>
+                                <option value="Leve">Leve</option>
+                                <option value="Grave">Grave</option>
+                                <option value="Muy Grave">Muy Grave</option>
                                 </select>
                             </div>
                              <div class="col-3">
-                                  <button class="btn btn-success btn-agregar" >Agregar</button> 
+                                  <button type="submit" class="btn btn-success btn-agregar" >Agregar</button> 
                             </div>
                             
                         </div>
+                        </form>
                         </div>
              
                     </div>
@@ -400,14 +401,8 @@
                      <th class="table-purple">Acciones</th>
 
                  </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">Enfermedad ...</td>
-                        <td class="table-light">23/09/2024</td>
-                        <td class="table-light">Leve</td>
-                        <td class="table-light"><button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
-                    </tr>
+                 <tbody id="TablaEnfermedades">
+                    
                     
                  </tbody>
              </table>
@@ -434,6 +429,8 @@
     <script src="public/js/alerts.js"></script>
 
     <script src="public/js/Mascotas.js"></script>
+
+    <script src="public/js/Antecedentes.js"></script>
     
 </body>
 </html>
