@@ -1,130 +1,72 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
-
 use Gabriel\SistemaFarmovet\model\RolModel;
 
-class RolController
-{
-    private RolModel $rolModel;
+$rolModel = new RolModel();
 
-    public function __construct()
-    {
-        $this->rolModel = new RolModel();
+if (isset($_POST['obtener'])) {
+    $pagina = (int)($_POST['pagina'] ?? 1);
+    $limite = 10;
+    $busqueda = $_POST['parametro'] ?? '';
+
+    if ($busqueda !== '') {
+        $roles = $rolModel->filtrarRoles($busqueda, $pagina, $limite);
+    } else {
+        $roles = $rolModel->obtenerRoles($pagina, $limite);
     }
 
-    public function index()
-    {
-        $pagina = (int)($_GET['pagina'] ?? 1);
-        $limite = 10;
-        $busqueda = $_GET['buscar'] ?? '';
-
-        if ($busqueda) {
-            $roles = $this->rolModel->filtrarRoles($busqueda, $pagina, $limite);
-        } else {
-            $roles = $this->rolModel->obtenerRoles($pagina, $limite);
-        }
-
-        $data = [
-            'roles'    => $roles,
-            'pagina'   => $pagina,
-            'busqueda' => $busqueda,
-        ];
-        extract($data);
-        require_once __DIR__ . '/../view/RolView.php';
-    }
-
-    public function crear()
-    {
-        $accion = 'crear';
-        $rol = null;
-        require_once __DIR__ . '/../view/NuevoRolView.php';
-    }
-
-    public function guardar()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ?url=Rol');
-            exit;
-        }
-
-        $nombre = trim($_POST['nombre'] ?? '');
-        if (empty($nombre)) {
-            header('Location: ?url=Rol&accion=crear&error=1');
-            exit;
-        }
-
-        $exito = $this->rolModel->agregarRol($nombre);
-        if ($exito) {
-            header('Location: ?url=Rol&mensaje=creado');
-        } else {
-            header('Location: ?url=Rol&accion=crear&error=bd');
-        }
-        exit;
-    }
-
-    public function editar()
-    {
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id <= 0) {
-            header('Location: ?url=Rol');
-            exit;
-        }
-
-        $rol = $this->rolModel->obtenerRolPorId($id);
-        if (!$rol) {
-            header('Location: ?url=Rol');
-            exit;
-        }
-
-        $accion = 'editar';
-        require_once __DIR__ . '/../view/NuevoRolView.php';
-    }
-
-    public function actualizar()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ?url=Rol');
-            exit;
-        }
-
-        $id = (int)($_POST['id'] ?? 0);
-        if ($id <= 0) {
-            header('Location: ?url=Rol');
-            exit;
-        }
-
-        $nombre = trim($_POST['nombre'] ?? '');
-        if (empty($nombre)) {
-            header('Location: ?url=Rol&accion=editar&id=' . $id . '&error=1');
-            exit;
-        }
-
-        $exito = $this->rolModel->actualizarRol($id, $nombre);
-        if ($exito) {
-            header('Location: ?url=Rol&mensaje=actualizado');
-        } else {
-            header('Location: ?url=Rol&accion=editar&id=' . $id . '&error=bd');
-        }
-        exit;
-    }
-
-    public function eliminar()
-    {
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id > 0) {
-            $this->rolModel->eliminarRol($id);
-        }
-        header('Location: ?url=Rol&mensaje=eliminado');
-        exit;
-    }
+    echo json_encode([
+        "status" => "success",
+        "resultados" => $roles,
+        "pagina" => $pagina
+    ]);
+    exit;
 }
 
-// Auto-ejecución para el FrontController
+if (isset($_POST['obtenerRol']) && isset($_POST['id'])) {
+    $id = (int)$_POST['id'];
+    $rol = $rolModel->obtenerRolPorId($id);
+    if ($rol) {
+        echo json_encode(["status" => "success", "resultado" => $rol]);
+    } else {
+        echo json_encode(["status" => "error", "resultado" => null]);
+    }
+    exit;
+}
+
+if (isset($_POST['agregar'])) {
+    $nombre = trim($_POST['nombre'] ?? '');
+    if (empty($nombre)) {
+        echo json_encode(["status" => "error", "mensaje" => "El nombre es obligatorio."]);
+        exit;
+    }
+    $exito = $rolModel->agregarRol($nombre);
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
+}
+
+if (isset($_POST['actualizar'])) {
+    $id = (int)($_POST['id'] ?? 0);
+    $nombre = trim($_POST['nombre'] ?? '');
+    if ($id <= 0 || empty($nombre)) {
+        echo json_encode(["status" => "error", "mensaje" => "Complete los campos."]);
+        exit;
+    }
+    $exito = $rolModel->actualizarRol($id, $nombre);
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
+}
+
+if (isset($_POST['eliminar']) && isset($_POST['id'])) {
+    $id = (int)$_POST['id'];
+    $exito = $rolModel->eliminarRol($id);
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
+}
+
 $accion = $_GET['accion'] ?? 'index';
-$controlador = new RolController();
-if (method_exists($controlador, $accion)) {
-    $controlador->$accion();
+if ($accion === 'crear' || $accion === 'editar') {
+    require_once __DIR__ . '/../view/NuevoRolView.php';
 } else {
-    http_response_code(404);
-    echo "Error";
+    require_once __DIR__ . '/../view/RolView.php';
 }

@@ -1,163 +1,115 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
-
 use Gabriel\SistemaFarmovet\model\UsuarioModel;
 use Gabriel\SistemaFarmovet\model\RolModel;
 
-class UsuarioController
-{
-    private UsuarioModel $usuarioModel;
+$usuarioModel = new UsuarioModel();
+$rolModel = new RolModel();
 
-    public function __construct()
-    {
-        $this->usuarioModel = new UsuarioModel();
+if (isset($_POST['obtener'])) {
+    $pagina = (int)($_POST['pagina'] ?? 1);
+    $limite = 5;
+    $busqueda = $_POST['parametro'] ?? '';
+
+    if ($busqueda !== '') {
+        $usuarios = $usuarioModel->filtrarUsuarios($busqueda, $pagina, $limite);
+    } else {
+        $usuarios = $usuarioModel->obtenerUsuarios($pagina, $limite);
     }
 
-    public function index()
-    {
-        $pagina = (int)($_GET['pagina'] ?? 1);
-        $limite = 5;
-        $busqueda = $_GET['buscar'] ?? '';
+    echo json_encode([
+        "status" => "success",
+        "resultados" => $usuarios,
+        "pagina" => $pagina
+    ]);
+    exit;
+}
 
-        if ($busqueda) {
-            $usuarios = $this->usuarioModel->filtrarUsuarios($busqueda, $pagina, $limite);
-        } else {
-            $usuarios = $this->usuarioModel->obtenerUsuarios($pagina, $limite);
-        }
-
-        $data = [
-            'usuarios' => $usuarios,
-            'pagina'   => $pagina,
-            'busqueda' => $busqueda,
-        ];
-        extract($data);
-        require_once __DIR__ . '/../view/UsuarioView.php';
+if (isset($_POST['obtenerUsuario']) && isset($_POST['cedula'])) {
+    $cedula = $_POST['cedula'];
+    $usuario = $usuarioModel->obtenerUsuarioPorCedula($cedula);
+    if ($usuario) {
+        echo json_encode(["status" => "success", "resultado" => $usuario]);
+    } else {
+        echo json_encode(["status" => "error", "resultado" => null]);
     }
+    exit;
+}
 
-    public function crear()
-    {
-        $accion = 'crear';
-        $usuario = null;
-        $rolModel = new RolModel();
-        $roles = $rolModel->obtenerRoles(1, 100);
-        require_once __DIR__ . '/../view/NuevoUsuarioView.php';
-    }
+if (isset($_POST['obtenerRoles'])) {
+    $roles = $rolModel->obtenerRoles(1, 100);
+    echo json_encode(["status" => "success", "resultados" => $roles]);
+    exit;
+}
 
-    public function guardar()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ?url=Usuario');
-            exit;
-        }
+if (isset($_POST['agregar'])) {
+    $cedula = $_POST['cedula'] ?? '';
+    $nombre = $_POST['nombre'] ?? '';
+    $apellido = $_POST['apellido'] ?? '';
+    $telefono = $_POST['telefono'] ?? '';
+    $correo = $_POST['correo'] ?? '';
+    $contraseña = $_POST['contraseña'] ?? '';
+    $rol = (int)($_POST['rol'] ?? 0);
 
-        $cedula = $_POST['cedula'] ?? '';
-        $nombre = $_POST['nombre'] ?? '';
-        $apellido = $_POST['apellido'] ?? '';
-        $telefono = $_POST['telefono'] ?? '';
-        $correo = $_POST['correo'] ?? '';
-        $contraseña = $_POST['contraseña'] ?? '';
-        $rol = (int)($_POST['rol'] ?? 0);
-
-        if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || empty($contraseña) || $rol <= 0) {
-            header('Location: ?url=Usuario&accion=crear&error=1');
-            exit;
-        }
-
-        if ($this->usuarioModel->existeCedula($cedula)) {
-            header('Location: ?url=Usuario&accion=crear&error=duplicado&cedula=' . urlencode($cedula));
-            exit;
-        }
-
-        $exito = $this->usuarioModel->agregarUsuario($cedula, $nombre, $apellido, $telefono, $correo, $contraseña, $rol);
-        if ($exito) {
-            header('Location: ?url=Usuario&mensaje=creado');
-        } else {
-            header('Location: ?url=Usuario&accion=crear&error=bd');
-        }
+    if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || empty($contraseña) || $rol <= 0) {
+        echo json_encode(["status" => "error", "mensaje" => "Complete todos los campos obligatorios."]);
         exit;
     }
 
-    public function editar()
-    {
-        $cedula = $_GET['cedula'] ?? '';
-        if (empty($cedula)) {
-            header('Location: ?url=Usuario');
-            exit;
-        }
-
-        $usuario = $this->usuarioModel->obtenerUsuarioPorCedula($cedula);
-        if (!$usuario) {
-            header('Location: ?url=Usuario');
-            exit;
-        }
-
-        $accion = 'editar';
-        $rolModel = new RolModel();
-        $roles = $rolModel->obtenerRoles(1, 100);
-        require_once __DIR__ . '/../view/NuevoUsuarioView.php';
-    }
-
-    public function actualizar()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ?url=Usuario');
-            exit;
-        }
-
-        $cedulaOriginal = $_POST['cedula_original'] ?? '';
-        if (empty($cedulaOriginal)) {
-            header('Location: ?url=Usuario');
-            exit;
-        }
-
-        $cedula = $_POST['cedula'] ?? '';
-        $nombre = $_POST['nombre'] ?? '';
-        $apellido = $_POST['apellido'] ?? '';
-        $telefono = $_POST['telefono'] ?? '';
-        $correo = $_POST['correo'] ?? '';
-        $rol = (int)($_POST['rol'] ?? 0);
-        $contraseña = $_POST['contraseña'] ?? '';
-
-        if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || $rol <= 0) {
-            header('Location: ?url=Usuario&accion=editar&cedula=' . urlencode($cedulaOriginal) . '&error=1');
-            exit;
-        }
-
-        $exito = $this->usuarioModel->actualizarUsuario(
-            $cedulaOriginal,
-            $cedula,
-            $nombre,
-            $apellido,
-            $telefono,
-            $correo,
-            $contraseña ?: null,
-            $rol
-        );
-
-        if ($exito) {
-            header('Location: ?url=Usuario&mensaje=actualizado');
-        } else {
-            header('Location: ?url=Usuario&accion=editar&cedula=' . urlencode($cedulaOriginal) . '&error=bd');
-        }
+    if ($usuarioModel->existeCedula($cedula)) {
+        echo json_encode(["status" => "error", "mensaje" => "La cédula ya está registrada."]);
         exit;
     }
 
-    public function eliminar()
-    {
-        $cedula = $_GET['cedula'] ?? '';
-        if (!empty($cedula)) {
-            $this->usuarioModel->eliminarUsuario($cedula);
-        }
-        header('Location: ?url=Usuario&mensaje=eliminado');
+    $exito = $usuarioModel->agregarUsuario($cedula, $nombre, $apellido, $telefono, $correo, $contraseña, $rol);
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
+}
+
+if (isset($_POST['actualizar'])) {
+    $cedulaOriginal = $_POST['cedula_original'] ?? '';
+    if (empty($cedulaOriginal)) {
+        echo json_encode(["status" => "error", "mensaje" => "Cédula original no proporcionada."]);
         exit;
     }
+
+    $cedula = $_POST['cedula'] ?? '';
+    $nombre = $_POST['nombre'] ?? '';
+    $apellido = $_POST['apellido'] ?? '';
+    $telefono = $_POST['telefono'] ?? '';
+    $correo = $_POST['correo'] ?? '';
+    $rol = (int)($_POST['rol'] ?? 0);
+    $contraseña = $_POST['contraseña'] ?? '';
+
+    if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || $rol <= 0) {
+        echo json_encode(["status" => "error", "mensaje" => "Complete todos los campos obligatorios."]);
+        exit;
+    }
+
+    $exito = $usuarioModel->actualizarUsuario(
+        $cedulaOriginal,
+        $cedula,
+        $nombre,
+        $apellido,
+        $telefono,
+        $correo,
+        $contraseña ?: null,
+        $rol
+    );
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
+}
+
+if (isset($_POST['eliminar']) && isset($_POST['cedula'])) {
+    $cedula = $_POST['cedula'];
+    $exito = $usuarioModel->eliminarUsuario($cedula);
+    echo json_encode(["status" => $exito ? "success" : "error"]);
+    exit;
 }
 
 $accion = $_GET['accion'] ?? 'index';
-$controlador = new UsuarioController();
-if (method_exists($controlador, $accion)) {
-    $controlador->$accion();
+if ($accion === 'crear' || $accion === 'editar') {
+    require_once __DIR__ . '/../view/NuevoUsuarioView.php';
 } else {
-    http_response_code(404);
-    echo "Error";
+    require_once __DIR__ . '/../view/UsuarioView.php';
 }

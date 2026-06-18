@@ -87,25 +87,10 @@
             </div>
         </header>
 
-        <?php if (isset($_GET['mensaje'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php
-                    switch ($_GET['mensaje']) {
-                        case 'creado': echo '¡Usuario creado correctamente!'; break;
-                        case 'actualizado': echo '¡Usuario actualizado correctamente!'; break;
-                        case 'eliminado': echo '¡Usuario eliminado correctamente!'; break;
-                        default: echo 'Operación realizada';
-                    }
-                ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
         <div class="d-flex justify-content-end mb-3">
             <div class="me-3">
-                <form method="get" class="d-flex">
-                    <input type="hidden" name="url" value="Usuario">
-                    <input type="text" name="buscar" class="form-control" placeholder="Filtrar usuarios..." value="<?= htmlspecialchars($busqueda ?? '') ?>">
+                <form id="form-buscar" class="d-flex">
+                    <input type="text" id="input-buscar" class="form-control" placeholder="Filtrar usuarios...">
                     <button type="submit" class="btn btn-outline-secondary ms-2"><i class="bi bi-search"></i></button>
                 </form>
             </div>
@@ -125,47 +110,117 @@
                         <th class="table-purple">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php if (!empty($usuarios)): ?>
-                        <?php foreach ($usuarios as $u): ?>
-                            <tr class="table-light">
-                                <td><?= htmlspecialchars($u['cedula_usuario']) ?></td>
-                                <td><?= htmlspecialchars($u['nombre']) ?></td>
-                                <td><?= htmlspecialchars($u['apellido']) ?></td>
-                                <td><?= htmlspecialchars($u['telefono']) ?></td>
-                                <td><?= htmlspecialchars($u['correo']) ?></td>
-                                <td><?= htmlspecialchars($u['nombre_rol']) ?></td>
-                                <td>
-                                    <a href="?url=Usuario&accion=editar&cedula=<?= urlencode($u['cedula_usuario']) ?>" class="btn btn-sm btn-success">Editar</a>
-                                    <a href="?url=Usuario&accion=eliminar&cedula=<?= urlencode($u['cedula_usuario']) ?>" class="btn btn-sm btn-danger btn-eliminar">Eliminar</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="7" class="text-center">No hay usuarios registrados.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
+                <tbody id="tabla-usuarios"></tbody>
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-3">
+        <div id="paginacion" class="d-flex justify-content-between align-items-center mt-3">
             <div>
-                <?php if (isset($pagina) && $pagina > 1): ?>
-                    <a href="?url=Usuario&pagina=<?= $pagina - 1 ?>&buscar=<?= urlencode($busqueda ?? '') ?>" class="btn btn-outline-secondary btn-sm">Anterior</a>
-                <?php endif; ?>
-                <?php if (isset($pagina) && !empty($usuarios) && count($usuarios) === 5): ?>
-                    <a href="?url=Usuario&pagina=<?= $pagina + 1 ?>&buscar=<?= urlencode($busqueda ?? '') ?>" class="btn btn-outline-secondary btn-sm">Siguiente</a>
-                <?php endif; ?>
+                <button id="btn-anterior" class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+                <button id="btn-siguiente" class="btn btn-outline-secondary btn-sm">Siguiente</button>
             </div>
-            <span class="text-muted">Página <?= $pagina ?? 1 ?></span>
+            <span id="info-pagina" class="text-muted">Página 1</span>
         </div>
     </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="public/js/Dashboard.js"></script>
+<script>
+    let paginaActual = 1;
+    const limite = 5;
+
+    function cargarUsuarios(pagina, busqueda = '') {
+        const formData = new FormData();
+        formData.append('obtener', '1');
+        formData.append('pagina', pagina);
+        formData.append('limite', limite);
+        if (busqueda) formData.append('parametro', busqueda);
+
+        fetch('?url=Usuario', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('tabla-usuarios');
+            tbody.innerHTML = '';
+            if (data.resultados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados.</td></tr>';
+            } else {
+                data.resultados.forEach(u => {
+                    const fila = `
+                        <tr class="table-light">
+                            <td>${u.cedula_usuario}</td>
+                            <td>${u.nombre}</td>
+                            <td>${u.apellido}</td>
+                            <td>${u.telefono}</td>
+                            <td>${u.correo}</td>
+                            <td>${u.nombre_rol}</td>
+                            <td>
+                                <a href="?url=Usuario&accion=editar&cedula=${encodeURIComponent(u.cedula_usuario)}" class="btn btn-sm btn-success">Editar</a>
+                                <button class="btn btn-sm btn-danger btn-eliminar" data-cedula="${u.cedula_usuario}">Eliminar</button>
+                            </td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', fila);
+                });
+            }
+            document.getElementById('btn-anterior').disabled = (pagina <= 1);
+            document.getElementById('btn-siguiente').disabled = (data.resultados.length < limite);
+            document.getElementById('info-pagina').textContent = `Página ${pagina}`;
+            paginaActual = pagina;
+        });
+    }
+
+    document.getElementById('form-buscar').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const busqueda = document.getElementById('input-buscar').value;
+        cargarUsuarios(1, busqueda);
+    });
+
+    document.getElementById('btn-anterior').addEventListener('click', function() {
+        if (paginaActual > 1) {
+            cargarUsuarios(paginaActual - 1, document.getElementById('input-buscar').value);
+        }
+    });
+
+    document.getElementById('btn-siguiente').addEventListener('click', function() {
+        cargarUsuarios(paginaActual + 1, document.getElementById('input-buscar').value);
+    });
+
+    document.querySelector('#tabla-usuarios').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-eliminar')) {
+            const cedula = e.target.getAttribute('data-cedula');
+            Swal.fire({
+                title: "Confirmar Eliminación",
+                text: "Esta acción no se puede revertir",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#18994a",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Confirmar",
+                cancelButtonText: "Cancelar",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('eliminar', '1');
+                    formData.append('cedula', cedula);
+                    fetch('?url=Usuario', { method: 'POST', body: formData })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                Swal.fire('Eliminado', '', 'success');
+                                cargarUsuarios(paginaActual, document.getElementById('input-buscar').value);
+                            } else {
+                                Swal.fire('Error', 'No se pudo eliminar', 'error');
+                            }
+                        });
+                }
+            });
+        }
+    });
+
+    cargarUsuarios(1);
+</script>
 </body>
 </html>
