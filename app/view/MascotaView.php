@@ -424,7 +424,7 @@
 
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="public/js/sweetalert2.min.js"></script>
     
     <script src="public/js/alerts.js"></script>
 

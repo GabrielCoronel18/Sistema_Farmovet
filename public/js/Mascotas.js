@@ -40,7 +40,7 @@ fetch(window.location,{method:"post", body: datos})
             <td class="table-light">${mascota.cedula_cliente} - ${mascota.nombre_cliente}</td>
             <td class="table-light"> <button type="button" class="btn btn-sm btn-success btn-antecedentes" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#AntecedentesModal"> Mostrar Antecedentes</button></td>
             <td class="table-light">
-            <button class="btn btn-sm btn-success btn-editar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Editar</button> 
+            <button class="btn btn-sm btn-success btn-actualizar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button> 
             <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota}">Eliminar</button>
             </td>
         </tr>`;
@@ -70,10 +70,10 @@ btnAgregar.addEventListener("click", function(e){
 
 TablaMascotas.addEventListener("click", function(e) {
   
-    if (e.target.classList.contains("btn-editar")) {
+    if (e.target.classList.contains("btn-actualizar")) {
        
         e.preventDefault(); 
-        TituloModal.innerText = "Editar Mascota "
+        TituloModal.innerText = "actualizar Mascota "
         let id = e.target.value;
         let datos = new FormData();
 
