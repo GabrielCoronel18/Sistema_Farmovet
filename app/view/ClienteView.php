@@ -47,15 +47,15 @@
             
             <article>
                 <table class="table">
-                    <thead>
+                    <thead >
                         <tr>
-                            <th>Cedula</th>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>telefono</th>
-                            <th>correo</th>
-                            <th>direccion</th>
-                            <th>Acciones</th>
+                            <th class="table-purple">Cedula</th>
+                            <th class="table-purple">Nombre</th>
+                            <th class="table-purple">Apellido</th>
+                            <th class="table-purple">telefono</th>
+                            <th class="table-purple">correo</th>
+                            <th class="table-purple">direccion</th>
+                            <th class="table-purple">Acciones</th>
                         </tr>
                         <tbody>
                             <?php foreach ($datos as $cliente) {
