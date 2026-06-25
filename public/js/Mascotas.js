@@ -73,7 +73,7 @@ TablaMascotas.addEventListener("click", function(e) {
     if (e.target.classList.contains("btn-actualizar")) {
        
         e.preventDefault(); 
-        TituloModal.innerText = "actualizar Mascota "
+        TituloModal.innerText = "Actualizar Mascota "
         let id = e.target.value;
         let datos = new FormData();
 
