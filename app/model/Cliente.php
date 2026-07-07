@@ -20,12 +20,49 @@ class Cliente extends ConexionBD {
         return $stmt->execute();
     }
 
-    public function listar() {
-        $sql = "SELECT * FROM cliente where estado = 1";
-        $stmt = $this->getConexion()->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+public function filtrarMascota($param, int $pagina, int $limitacion){
+            $limite = $pagina * $limitacion;
+            $offset = $limite - $limitacion;
+            $busqueda = $param . "%";
+            $conex = $this->getConexion();
+            $sql = "SELECT * FROM cliente
+                    WHERE estado = 1 
+                            AND cedula_cliente LIKE :param
+                            OR nombre LIKE :param
+                            OR apellido LIKE :param
+                            OR correo LIKE :param
+                            OR telefono LIKE :param
+                            OR direccion LIKE :param
+                            LIMIT :limitacion OFFSET :offset";
+                
+            $query = $conex->prepare($sql);
+                     $query->bindParam(":param",$busqueda);
+                     $query->bindParam(":limitacion",$limitacion,\PDO::PARAM_INT);
+                     $query->bindParam(":offset",$offset,\PDO::PARAM_INT);
+
+            $query->execute();
+             
+            return $query->fetchAll();
+
+     }
+
+    public function obtenercliente(int $pagina, int $limitacion){
+             
+            $limite = $pagina * $limitacion;
+            $offset = $limite - $limitacion;
+
+            $conex = $this->getConexion();
+            $sql = "SELECT * FROM cliente  
+                    WHERE estado = 1 LIMIT :limitacion OFFSET :offset ";
+            
+            $query = $conex->prepare($sql);
+                     $query->bindParam(":limitacion",$limitacion,\PDO::PARAM_INT);
+                      $query->bindParam(":offset",$offset,\PDO::PARAM_INT);
+            $query->execute();
+             
+            return $query->fetchAll();
+
+     }
 
     public function validarCliente($cedula){
         $sql = "SELECT * FROM cliente where cedula_cliente = :cedula";
@@ -55,4 +92,18 @@ class Cliente extends ConexionBD {
         $stmt->bindParam(':direccion', $direccion);
         return $stmt->execute();
     }
+
+         public function obtenerClientePorId(int $id){
+
+
+            $conex = $this->getConexion();
+            $sql = "SELECT * FROM cliente WHERE cedula_cliente = :id AND estado = 1";
+            
+            $query = $conex->prepare($sql);
+                     $query->bindParam(":id",$id);
+            $query->execute();
+             
+            return $query->fetch();
+
+     }
 }

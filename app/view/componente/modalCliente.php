@@ -8,31 +8,36 @@
       </div>
       <div class="modal-body">
         <div class="container">
-            <form action="" method="post">
+            <form action="" method="post" class="ClienteForm">
                 <div class="row gap-2">
                     <div class="col-5">
                         <label for="" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" placeholder="ingrese un nombre" name="nombre">
+                        <input type="text" class="form-control" placeholder="ingrese un nombre" name="nombre"
+                        id="nombre">
                     </div>
                     <div class="col-5">
                         <label for="" class="form-label">Apellido</label>
-                        <input type="text" class="form-control" placeholder="ingrese un apellido" name="apellido">
+                        <input type="text" class="form-control" placeholder="ingrese un apellido" name="apellido" id="apellido">
                     </div>
                     <div class="col-5">
                         <label for="">Cédula</label>
-                        <input type="text" class="form-control" placeholder="ingrese una cedula" name="cedula">
+                        <input type="text" class="form-control" placeholder="ingrese una cedula" name="cedula"
+                        id="cedula_cliente">
                     </div>
                     <div class="col-5">
                         <label for="">Correo Electronico</label>
-                        <input type="text" class="form-control"placeholder="ingrese un correo electronico" name="correo">
+                        <input type="text" class="form-control"placeholder="ingrese un correo electronico" name="correo"
+                        id="correo">
                     </div>
                     <div class="col-5">
                         <label for="">telefono</label>
-                        <input type="text" class="form-control"placeholder="ingrese un telefono" name="telefono">
+                        <input type="text" class="form-control"placeholder="ingrese un telefono" name="telefono"
+                        id="telefono">
                     </div>
                     <div class="col-5">
                         <label for="">Dirección</label>
-                        <input type="text" class="form-control" placeholder="ingrese una direccion" name="direccion">
+                        <input type="text" class="form-control" placeholder="ingrese una direccion" name="direccion"
+                        id="direccion">
                     </div>
 
                     

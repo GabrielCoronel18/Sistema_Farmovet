@@ -41,7 +41,10 @@
                 </div>
             </header>
             <article class="d-flex justify-content-end">
-                <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-plus me-2"></i> Registrar Cliente</button>
+                <div class="me-3">
+                    <input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar">   
+                    </div>  
+                <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal"id="btnAgregar"> <i class="bi bi-plus me-2"></i> Registrar Cliente</button>
             </article>
             <?php require_once "componente/modalCliente.php";?>
             
@@ -57,19 +60,7 @@
                             <th class="table-purple">direccion</th>
                             <th class="table-purple">Acciones</th>
                         </tr>
-                        <tbody>
-                            <?php foreach ($datos as $cliente) {
-                               echo "                            <tr>
-                                <td>". $cliente['cedula_cliente'] ."</td>
-                                <td>". $cliente['nombre'] ."</td>
-                                <td>". $cliente['apellido'] ."</td>
-                                <td>". $cliente['telefono'] ."</td>
-                                <td>". $cliente['correo'] ."</td>
-                                <td>". $cliente['direccion'] ."</td>
-
-                                <td class='input-group'> <form method='POST' class='m-0 me-2'> <input type='hidden' name='Eliminar' value='1'> <button type='button' class='btn btn-danger btn-eliminar'>Eliminar</button>" ."<input type='hidden' name='valorEliminar' value='". $cliente['cedula_cliente'] ."'></form> <button type='button' class='btn btn-warning btn-modificar' data-cedula='". $cliente['cedula_cliente'] ."' data-nombre='". $cliente['nombre'] ."' data-apellido='". $cliente['apellido'] ."' data-correo='". $cliente['correo'] ."' data-telefono='". $cliente['telefono'] ."' data-direccion='". $cliente['direccion'] ."'>Modificar</button> </td>
-                                </tr>" ;
-                            }?>
+                        <tbody id="TablaCliente">
                         </tbody>
                         
                     </thead>
@@ -80,7 +71,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      
+    <script src="public/js/sweetalert2.min.js"></script>
+    <script src="public/js/alerts.js"></script>
     <script src="public/js/cliente.js"></script>
     <?php if (isset($mensajeAlerta)) { echo "<script>{$mensajeAlerta}</script>"; } ?>
 </body>

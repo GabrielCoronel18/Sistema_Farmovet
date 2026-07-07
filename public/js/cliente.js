@@ -1,78 +1,151 @@
-const modalElemento = document.getElementById('exampleModal');
-let miModal;
+let formularioCliente = document.querySelector(".ClienteForm");
+let TablaCliente = document.getElementById("TablaCliente");
+let TituloModal = document.getElementById("exampleModalLabel");
+let btnAgregar = document.getElementById("btnAgregar");
+let filtrar= document.getElementById("filtrar");
 
-if (modalElemento) {
-    miModal = new bootstrap.Modal(modalElemento);
+
+function obtenerDatos(param = null){
+
+let datos = new FormData;
+datos.append("obtener",true);
+
+if(param != null){
+    datos.append("parametro", param);
 }
 
-const botonesModificar = document.querySelectorAll('.btn-modificar');
-botonesModificar.forEach(boton => {
-    boton.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        // Obtener datos del boton
-        const cedula = boton.getAttribute('data-cedula');
-        const nombre = boton.getAttribute('data-nombre');
-        const apellido = boton.getAttribute('data-apellido');
-        const correo = boton.getAttribute('data-correo');
-        const telefono = boton.getAttribute('data-telefono');
-        const direccion = boton.getAttribute('data-direccion');
-
-        // Llenar el formulario
-        document.querySelector('input[name="cedula"]').value = cedula;
-        document.querySelector('input[name="nombre"]').value = nombre;
-        document.querySelector('input[name="apellido"]').value = apellido;
-        document.querySelector('input[name="correo"]').value = correo;
-        document.querySelector('input[name="telefono"]').value = telefono;
-        document.querySelector('input[name="direccion"]').value = direccion;
-
-        // Cambiar titulo y nombre del boton submit para Modificar
-        document.getElementById('exampleModalLabel').innerText = 'Modificar Cliente';
-        const submitBtn = document.querySelector('button[name="enviar"]') || document.querySelector('button[name="modificar"]');
-        submitBtn.name = 'modificar';
-        submitBtn.innerText = 'Actualizar';
+fetch(window.location,{method:"post", body: datos})
+.then(resultados => resultados.json())
+.then(result => {
+    
+    if (result.status === "success") {
         
-        // Bloquear cedula
-        document.querySelector('input[name="cedula"]').setAttribute('readonly', true);
+        TablaCliente.innerHTML = "";
+        
+        result.resultados.forEach(function(cliente){
+        TablaCliente.innerHTML += 
 
-        miModal.show();
-    });
+        `<tr>
+            <td class="table-light">${cliente.cedula_cliente}</td>
+            <td class="table-light">${cliente.nombre}</td>
+            <td class="table-light">${cliente.apellido}</td>
+            <td class="table-light">${cliente.telefono}</td>
+            <td class="table-light">${cliente.correo}</td>
+            <td class="table-light">${cliente.direccion}</td>
+            <td class="table-light">
+            <button class="btn btn-sm btn-success btn-actualizar" value="${cliente.cedula_cliente}" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
+            <button class="btn btn-sm btn-danger btn-eliminar" value="${cliente.cedula_cliente}">Eliminar</button>
+            </td>
+        </tr>`;
+      });
+    }
+    else if(result.status === "error"){
+
+         TablaCliente.innerHTML = "<tr> <td colspan='12'> Error al obtener los registros<td></tr>"
+    }
 });
 
-// Resetear modal al presionar "Registrar Cliente"
-const btnRegistrar = document.querySelector('[data-bs-target="#exampleModal"]');
-if (btnRegistrar) {
-    btnRegistrar.addEventListener('click', () => {
-        document.querySelector('form').reset();
-        document.getElementById('exampleModalLabel').innerText = 'Registrar Cliente';
-        const submitBtn = document.querySelector('button[name="modificar"]') || document.querySelector('button[name="enviar"]');
-        if (submitBtn) {
-            submitBtn.name = 'enviar';
-            submitBtn.innerText = 'Guardar';
-        }
-        document.querySelector('input[name="cedula"]').removeAttribute('readonly');
-    });
 }
 
-// SweetAlert para Confirmar Eliminación
-const botonesEliminar = document.querySelectorAll('.btn-eliminar');
-botonesEliminar.forEach(boton => {
-    boton.addEventListener('click', (e) => {
-        e.preventDefault();
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "El cliente será eliminado de la lista.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Enviar el formulario padre
-                boton.closest('form').submit();
+obtenerDatos();
+console.log("Policia03");
+
+
+btnAgregar.addEventListener("click", function(e){
+     
+      formularioCliente.reset();
+
+      TituloModal.innerText ="Agregar Nueva cliente";
+      document.getElementById("cedula_cliente").value = "";
+
+ });
+console.log("Policia02");
+
+TablaCliente.addEventListener("click", function(e) {
+  console.log("Policia06");
+    if (e.target.classList.contains("btn-actualizar")) {
+       console.log("Policia01");
+        e.preventDefault(); 
+        TituloModal.innerText = "actualizar cliente "
+        let id = e.target.value;
+        let datos = new FormData();
+
+        datos.append("obtenerCliente", true);
+        datos.append("id", id);
+
+        fetch(window.location, {method:"post", body: datos})
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            
+            let result = resultado.resultado;
+
+              if(resultado.status === "success"){
+                  document.getElementById("cedula_cliente").value = result.cedula_cliente;
+                  document.getElementById("nombre").value = result.nombre;
+                  
+                  document.getElementById("apellido").value = result.apellido;
+                  document.getElementById("telefono").value = result.telefono;
+                  document.getElementById("correo").value = result.correo;
+                  document.getElementById("direccion").value = result.direccion;
+              }
+              else if(resultado.status === "error"){
+                  Swal.fire({title: "Error", text: "Error al obtener el registro", icon: "error"})
+                             
+              }
+        })
+    }
+});
+console.log("Policia04");
+formularioCliente.addEventListener("submit", function(e){
+      
+       e.preventDefault();
+       let datos = new FormData(formularioCliente);
+       let id =  document.getElementById("cedula_cliente").value;
+
+       if(id === ""){
+        datos.append("agregar", true);
+       }
+       
+       else{
+        datos.append("actualizar", true);
+        datos.append("id", id);
+       }
+
+       fetch(window.location,{method:"post", body: datos})
+       .then(respuesta => respuesta.json())
+        .then(resultado => {
+             
+             if(resultado.status === "success"){
+                 
+                id === "" ? alertAgregar("success") : alertActualizar("success");
+                 
+                 let ModalAgregar = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
+                 ModalAgregar.hide();
+
+                 obtenerDatos();
+
+             }
+            else if(resultado.status === "error"){
+                id === "" ? alertAgregar("error") : alertActualizar("error");
             }
-        });
-    });
+ 
+        })
+
+})
+TablaCliente.addEventListener("click", function(e) {
+  
+    if (e.target.classList.contains("btn-eliminar")) {
+        e.preventDefault(); 
+        
+        let id = e.target.value;
+        let datos = new FormData();
+        datos.append("eliminar", true);
+        datos.append("id", id);
+        alertEliminar("post",datos,obtenerDatos);
+    }
+});
+console.log("Policia05");
+filtrar.addEventListener("input", function(){
+      param = this.value;
+      obtenerDatos(param);
 });

@@ -18,12 +18,74 @@ if (isset($_POST['modificar'])) {
     $mensajeAlerta = "Swal.fire({icon: 'success', title: '¡Éxito!', text: 'Cliente modificado exitosamente', showConfirmButton: false, timer: 2000});";
 }
 
+     if(isset($_POST["actualizar"])){
+        
+     
+        $id = $_POST["id"];
+        $nombre = $_POST["nombre"] ?? "";
+        $edad = $_POST["edad"]  ?? 0;
+        $fch_nacimiento = $_POST["fch_nacimiento"] ?? "";
+        $sexo = $_POST["sexo"] ?? "";
+        $chip = $_POST["chip"] ?? "";
+        $id_raza = $_POST["id_raza"] ?? 0;
+        $pelaje = $_POST["pelaje"] ?? "";
+        $cedula_cliente = $_POST["cedula_cliente"] ?? "";
+        $procedencia = $_POST["procedencia"] ?? "";
+
+        if($cliente->modificarCliente($_POST['cedula'],$_POST['nombre'],$_POST['apellido'],$_POST['correo'],$_POST['telefono'],$_POST['direccion'])){
+            echo json_encode(["status"=>"success"]);
+            }
+            else{
+            echo json_encode(["status"=>"error"]);
+            }
+
+      exit;
+     }
+
 if (isset($_POST['Eliminar'])) {
     $cliente->eliminarCliente($_POST['valorEliminar']);
     $mensajeAlerta = "Swal.fire({icon: 'success', title: 'Eliminado', text: 'Cliente eliminado exitosamente', showConfirmButton: false, timer: 2000});";
 }
 
+    if(isset($_POST["obtenerCliente"]) && isset($_POST["id"])){
+        
+        $id = $_POST["id"];
 
-$datos = $cliente->listar();
+        $resultado = $cliente->obtenerClientePorId($id);
+
+
+            if($resultado){
+            echo json_encode(["status"=>"success","resultado" => $resultado]);
+            }
+            else{
+            echo json_encode(["status"=>"error","resultado" => []]);
+            }
+
+      exit;
+    }
+
+
+    if(isset( $_POST["obtener"])){
+        $pagina = $_POST["pagina"] ?? 1;
+        $limitacion = $_POST["limite"] ?? 5;
+        
+        
+        if(isset($_POST["parametro"])){
+          
+        $param = $_POST["parametro"];
+          $resultados = $cliente->filtrarMascota($param,$pagina,$limitacion);
+        }
+        else{
+          $resultados = $cliente->obtenercliente($pagina,$limitacion);
+        }
+
+        if($resultados){
+           echo json_encode(["status"=>"success","resultados" => $resultados]);
+        }
+        else{
+           echo json_encode(["status"=>"error","resultados" => []]);
+        }
+      exit;
+    }
 require_once "app/view/ClienteView.php"
 ?>
