@@ -20,19 +20,19 @@ class Cliente extends ConexionBD {
         return $stmt->execute();
     }
 
-public function filtrarMascota($param, int $pagina, int $limitacion){
+public function filtrarCliente($param, int $pagina, int $limitacion){
             $limite = $pagina * $limitacion;
             $offset = $limite - $limitacion;
             $busqueda = $param . "%";
             $conex = $this->getConexion();
             $sql = "SELECT * FROM cliente
                     WHERE estado = 1 
-                            AND cedula_cliente LIKE :param
+                            AND (cedula_cliente LIKE :param
                             OR nombre LIKE :param
                             OR apellido LIKE :param
                             OR correo LIKE :param
                             OR telefono LIKE :param
-                            OR direccion LIKE :param
+                            OR direccion LIKE :param)
                             LIMIT :limitacion OFFSET :offset";
                 
             $query = $conex->prepare($sql);
@@ -73,12 +73,10 @@ public function filtrarMascota($param, int $pagina, int $limitacion){
     }
 
     public function eliminarCliente($cedula) {
-
-    $sql= "UPDATE cliente SET estado ='0' WHERE cedula_cliente = :cedula";
-    $stmt = $this ->getConexion()->prepare($sql);
-     $stmt->bindParam(':cedula', $cedula);
-     $stmt->execute();
-     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "UPDATE cliente SET estado = '0' WHERE cedula_cliente = :cedula";
+        $stmt = $this->getConexion()->prepare($sql);
+        $stmt->bindParam(':cedula', $cedula);
+        return $stmt->execute();
     }
 
     public function modificarCliente($cedula, $nombre, $apellido, $correo, $telefono, $direccion){
