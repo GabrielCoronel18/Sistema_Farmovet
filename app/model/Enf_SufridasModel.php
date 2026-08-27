@@ -31,6 +31,19 @@ class Enf_SufridasModel extends ConexionBD {
           
       }
 
+      public function obtenerPatologiasActivas(){
+         $conex = $this->getConexion();
+         $query = $conex->query("SELECT id_patologia, nombre FROM patologia WHERE estado = 1 ORDER BY nombre");
+         return $query->fetchAll(\PDO::FETCH_ASSOC);
+      }
+
+      public function eliminarEnfermedadesDeMascota(int $mascota){
+         $conex = $this->getConexion();
+         $query = $conex->prepare("DELETE FROM enfermedades_sufridas WHERE id_mascota = :mascota");
+         $query->bindParam(":mascota", $mascota);
+         return $query->execute();
+      }
+
 
       public function obtenerEnfermedadesSufridas(int $id){
          $this->id = $id;

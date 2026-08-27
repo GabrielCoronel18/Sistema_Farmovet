@@ -10,6 +10,9 @@ $AlergiaMascotaModel = new Alrg_MascotaModel();
 $CirgsPreviasModel = new Cirgs_PreviasModel();
 $EnfSufridasModel = new Enf_SufridasModel();
 
+$alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
+$enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
+
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
         $limitacion = $_POST["limite"] ?? 5;
@@ -45,7 +48,20 @@ $EnfSufridasModel = new Enf_SufridasModel();
         $procedencia = $_POST["procedencia"] ?? "";
 
 
-            if($mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente)){
+            $idMascota = $mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente);
+            if($idMascota){
+                $fechaAntecedente = date("Y-m-d");
+                foreach ((array) ($_POST["alergias"] ?? []) as $alergia) {
+                    $AlergiaMascotaModel->asociarAlergia((int) $alergia, (int) $idMascota, $fechaAntecedente);
+                }
+                foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
+                    $EnfSufridasModel->agregarEnfermedadSufrida((int) $idMascota, (int) $enfermedad, $fechaAntecedente, "Leve");
+                }
+                foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
+                    if (trim((string) $cirugia) !== "") {
+                        $CirgsPreviasModel->agregarCirugiaPrevia((int) $idMascota, trim((string) $cirugia), $fechaAntecedente);
+                    }
+                }
             echo json_encode(["status"=>"success"]);
             }
             else{
@@ -87,6 +103,22 @@ $EnfSufridasModel = new Enf_SufridasModel();
         $procedencia = $_POST["procedencia"] ?? "";
 
         if($mascotaModel->actualizarMascota($id,$nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente)){
+            $id = (int) $id;
+            $fechaAntecedente = date("Y-m-d");
+            $AlergiaMascotaModel->eliminarAlergiasDeMascota($id);
+            $EnfSufridasModel->eliminarEnfermedadesDeMascota($id);
+            $CirgsPreviasModel->eliminarCirugiasDeMascota($id);
+            foreach ((array) ($_POST["alergias"] ?? []) as $alergia) {
+                $AlergiaMascotaModel->asociarAlergia((int) $alergia, $id, $fechaAntecedente);
+            }
+            foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
+                $EnfSufridasModel->agregarEnfermedadSufrida($id, (int) $enfermedad, $fechaAntecedente, "Leve");
+            }
+            foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
+                if (trim((string) $cirugia) !== "") {
+                    $CirgsPreviasModel->agregarCirugiaPrevia($id, trim((string) $cirugia), $fechaAntecedente);
+                }
+            }
             echo json_encode(["status"=>"success"]);
             }
             else{

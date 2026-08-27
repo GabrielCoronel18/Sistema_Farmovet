@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
 
     
 </head>
@@ -216,6 +217,27 @@
               <textarea class="form-control" id="procedencia" name="procedencia" rows="2" placeholder=""></textarea>
             </div>
 
+            <div class="col-md-4">
+              <label for="mascota_alergias" class="form-label">Alergias</label>
+              <select class="form-select" id="mascota_alergias" name="alergias[]" multiple>
+                <?php foreach ($alergiasDisponibles as $alergia): ?>
+                  <option value="<?= (int) $alergia["id_alergia"] ?>"><?= htmlspecialchars($alergia["nombre_alergia"]) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="mascota_enfermedades" class="form-label">Enfermedades</label>
+              <select class="form-select" id="mascota_enfermedades" name="enfermedades[]" multiple>
+                <?php foreach ($enfermedadesDisponibles as $enfermedad): ?>
+                  <option value="<?= (int) $enfermedad["id_patologia"] ?>"><?= htmlspecialchars($enfermedad["nombre"]) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="mascota_cirugias" class="form-label">Cirugías</label>
+              <select class="form-select" id="mascota_cirugias" name="cirugias[]" multiple></select>
+            </div>
+
           </div>
         </div>
       <div class="modal-footer">
@@ -272,7 +294,7 @@
                             </div>
                             <div class="col-4">
                                   <label for="fecha-deteccion" class="form-label">Fecha de Deteccion:</label>
-                                  <input type="date" class="form-control" name="fecha-deteccion" id="fecha-deteccion">
+                                  <input type="date" class="form-control" name="fecha_deteccion" id="fecha-deteccion">
                             </div>
                              <div class="col-3">
                                   <button type="submit" class="btn btn-success btn-agregar" >Agregar</button> 
@@ -428,6 +450,7 @@
     <script src="public/js/sweetalert2.min.js"></script>
     
     <script src="public/js/alerts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
     <script src="public/js/Mascotas.js"></script>
 
