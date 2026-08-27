@@ -42,7 +42,10 @@ class MascotaModel extends ConexionBD{
                         $query->bindParam(":pelaje",$this->pelaje);
                         $query->bindParam(":cliente",$this->cliente);
                     
-                    return $query->execute();   
+                    if (!$query->execute()) {
+                        return false;
+                    }
+                    return (int) $conex->lastInsertId();
                         
            
      }

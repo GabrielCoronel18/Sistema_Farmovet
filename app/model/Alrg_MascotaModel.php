@@ -27,6 +27,19 @@ class Alrg_MascotaModel extends ConexionBD {
           
       }
 
+      public function obtenerAlergiasActivas(){
+         $conex = $this->getConexion();
+         $query = $conex->query("SELECT id_alergia, nombre_alergia FROM alergia WHERE estado = 1 ORDER BY nombre_alergia");
+         return $query->fetchAll(\PDO::FETCH_ASSOC);
+      }
+
+      public function eliminarAlergiasDeMascota(int $mascota){
+         $conex = $this->getConexion();
+         $query = $conex->prepare("DELETE FROM alergia_mascota WHERE id_mascota = :mascota");
+         $query->bindParam(":mascota", $mascota);
+         return $query->execute();
+      }
+
 
       public function obtenerAlergiasAsociadas($id){
          $this->id = $id;

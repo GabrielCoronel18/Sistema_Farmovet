@@ -6,6 +6,26 @@ let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar= document.getElementById("filtrar");
 
+const selectAlergias = new TomSelect("#mascota_alergias", {
+    plugins: ["remove_button"],
+    create: false,
+    persist: false,
+    placeholder: "Seleccione una o varias alergias"
+});
+const selectEnfermedades = new TomSelect("#mascota_enfermedades", {
+    plugins: ["remove_button"],
+    create: false,
+    persist: false,
+    placeholder: "Seleccione una o varias enfermedades"
+});
+const selectCirugias = new TomSelect("#mascota_cirugias", {
+    plugins: ["remove_button"],
+    create: true,
+    createOnBlur: true,
+    persist: false,
+    placeholder: "Escriba y presione Enter"
+});
+
 
 function obtenerDatos(param = null){
 
@@ -61,6 +81,9 @@ obtenerDatos();
 btnAgregar.addEventListener("click", function(e){
      
      formularioMascotas.reset();
+     selectAlergias.clear(true);
+     selectEnfermedades.clear(true);
+     selectCirugias.clear(true);
 
      TituloModal.innerText ="Agregar Nueva Mascota";
      document.getElementById("id_mascota").value = "";
@@ -97,6 +120,7 @@ TablaMascotas.addEventListener("click", function(e) {
                   document.getElementById("pelaje").value = result.pelaje;
                   document.getElementById("cedula_cliente").value = result.cedula_cliente;
                   document.getElementById("procedencia").value = result.procedencia;
+                  cargarAntecedentesEnFormulario(result.id_mascota);
 
               }
               else if(resultado.status === "error"){
@@ -106,6 +130,25 @@ TablaMascotas.addEventListener("click", function(e) {
         })
     }
 });
+
+function cargarAntecedentesEnFormulario(id) {
+    const datos = new FormData();
+    datos.append("obtenerAntecedentes", true);
+    datos.append("id", id);
+
+    fetch(window.location, {method: "post", body: datos})
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            if (resultado.status !== "success") {
+                return;
+            }
+            selectAlergias.setValue(resultado.alergias.map(alergia => String(alergia.id_alergia)));
+            selectEnfermedades.setValue(resultado.enfermedades.map(enfermedad => String(enfermedad.id_patologia)));
+            selectCirugias.clear(true);
+            resultado.cirugias.forEach(cirugia => selectCirugias.addOption({value: cirugia.nombre_cirugia, text: cirugia.nombre_cirugia}));
+            selectCirugias.setValue(resultado.cirugias.map(cirugia => cirugia.nombre_cirugia));
+        });
+}
 
 formularioMascotas.addEventListener("submit", function(e){
       
@@ -160,6 +203,5 @@ filtrar.addEventListener("input", function(){
       param = this.value;
       obtenerDatos(param);
 });
-
 
 
