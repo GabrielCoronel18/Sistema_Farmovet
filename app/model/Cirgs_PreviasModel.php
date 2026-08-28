@@ -27,7 +27,12 @@ class Cirgs_PreviasModel extends ConexionBD {
          return $query->execute();
           
       }
-
+  public function eliminarCirugiasDeMascota(int $mascota){
+         $conex = $this->getConexion();
+         $query = $conex->prepare("DELETE FROM cirugia_previa WHERE id_mascota = :mascota");
+         $query->bindParam(":mascota", $mascota);
+         return $query->execute();
+      }
 
       public function obtenerCirugiasPrevias(int $id){
          $this->id = $id;
