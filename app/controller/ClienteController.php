@@ -4,48 +4,52 @@ $cliente = new Cliente();
 
 $mensajeAlerta = "";
 
-if (isset($_POST['enviar'])) {
-    if (count($cliente->validarCliente($_POST['cedula'])) == 0) {
-        $cliente->registrar($_POST['nombre'],$_POST['apellido'],$_POST['cedula'],$_POST['telefono'],$_POST['correo'],$_POST['direccion']);
-        $mensajeAlerta = "Swal.fire({icon: 'success', title: '¡Éxito!', text: 'Cliente registrado exitosamente', showConfirmButton: false, timer: 2000});";
-    }else {
-        $mensajeAlerta = "Swal.fire({icon: 'error', title: 'Oops...', text: 'La cédula ya se encuentra registrada'});";
+    if(isset($_POST["agregar"])){
+        $nombre = trim($_POST["nombre"] ?? "");
+        $apellido = trim($_POST["apellido"] ?? "");
+        $cedula = trim($_POST["cedula_cliente"] ?? "");
+        $telefono = trim($_POST["telefono"] ?? "");
+        $correo = trim($_POST["correo"] ?? "");
+        $direccion = trim($_POST["direccion"] ?? "");
+
+        if (count($cliente->validarCliente($cedula)) == 0) {
+            if($cliente->registrar($nombre, $apellido, $cedula, $telefono, $correo, $direccion)){
+                echo json_encode(["status"=>"success"]);
+            } else {
+                echo json_encode(["status"=>"error"]);
+            }
+        } else {
+            echo json_encode(["status"=>"error", "message" => "Cédula ya registrada"]);
+        }
+        exit;
     }
-}
 
-if (isset($_POST['modificar'])) {
-    $cliente->modificarCliente($_POST['cedula'],$_POST['nombre'],$_POST['apellido'],$_POST['correo'],$_POST['telefono'],$_POST['direccion']);
-    $mensajeAlerta = "Swal.fire({icon: 'success', title: '¡Éxito!', text: 'Cliente modificado exitosamente', showConfirmButton: false, timer: 2000});";
-}
+    if(isset($_POST["actualizar"])){
+        $id = trim($_POST["id"] ?? ""); // cedula_cliente passed as id
+        $nombre = trim($_POST["nombre"] ?? "");
+        $apellido = trim($_POST["apellido"] ?? "");
+        $telefono = trim($_POST["telefono"] ?? "");
+        $correo = trim($_POST["correo"] ?? "");
+        $direccion = trim($_POST["direccion"] ?? "");
 
-     if(isset($_POST["actualizar"])){
-        
-     
-        $id = $_POST["id"];
-        $nombre = $_POST["nombre"] ?? "";
-        $edad = $_POST["edad"]  ?? 0;
-        $fch_nacimiento = $_POST["fch_nacimiento"] ?? "";
-        $sexo = $_POST["sexo"] ?? "";
-        $chip = $_POST["chip"] ?? "";
-        $id_raza = $_POST["id_raza"] ?? 0;
-        $pelaje = $_POST["pelaje"] ?? "";
-        $cedula_cliente = $_POST["cedula_cliente"] ?? "";
-        $procedencia = $_POST["procedencia"] ?? "";
-
-        if($cliente->modificarCliente($_POST['cedula'],$_POST['nombre'],$_POST['apellido'],$_POST['correo'],$_POST['telefono'],$_POST['direccion'])){
+        if($cliente->modificarCliente($id, $nombre, $apellido, $correo, $telefono, $direccion)){
             echo json_encode(["status"=>"success"]);
-            }
-            else{
+        } else {
             echo json_encode(["status"=>"error"]);
-            }
+        }
+        exit;
+    }
 
-      exit;
-     }
-
-if (isset($_POST['Eliminar'])) {
-    $cliente->eliminarCliente($_POST['valorEliminar']);
-    $mensajeAlerta = "Swal.fire({icon: 'success', title: 'Eliminado', text: 'Cliente eliminado exitosamente', showConfirmButton: false, timer: 2000});";
-}
+    if(isset($_POST["eliminar"]) && isset($_POST["id"])){
+        $id = trim($_POST["id"]);
+        
+        if($cliente->eliminarCliente($id)){
+            echo json_encode(["status"=>"success"]);
+        } else {
+            echo json_encode(["status"=>"error"]);
+        }
+        exit;
+    }
 
     if(isset($_POST["obtenerCliente"]) && isset($_POST["id"])){
         
@@ -73,7 +77,7 @@ if (isset($_POST['Eliminar'])) {
         if(isset($_POST["parametro"])){
           
         $param = $_POST["parametro"];
-          $resultados = $cliente->filtrarMascota($param,$pagina,$limitacion);
+          $resultados = $cliente->filtrarCliente($param,$pagina,$limitacion);
         }
         else{
           $resultados = $cliente->obtenercliente($pagina,$limitacion);

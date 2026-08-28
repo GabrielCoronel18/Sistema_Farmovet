@@ -60,10 +60,9 @@
                             <th class="table-purple">direccion</th>
                             <th class="table-purple">Acciones</th>
                         </tr>
-                        <tbody id="TablaCliente">
-                        </tbody>
-                        
                     </thead>
+                    <tbody id="TablaCliente">
+                    </tbody>
                 </table>
             </article>
 
