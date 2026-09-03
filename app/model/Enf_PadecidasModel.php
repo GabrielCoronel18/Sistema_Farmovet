@@ -2,7 +2,7 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 
-class Enf_SufridasModel extends ConexionBD {
+class Enf_PadecidasModel extends ConexionBD {
       private int $id;
       private int $mascota;
       private int $patologia;
@@ -10,14 +10,14 @@ class Enf_SufridasModel extends ConexionBD {
       private string $estado_enfermedad;
 
       
-      public function agregarEnfermedadSufrida(int $mascota, int $patologia, string $fecha_diagnostico, string $estado_enfermedad){
+      public function agregarEnfermedadPadecida(int $mascota, int $patologia, string $fecha_diagnostico, string $estado_enfermedad){
          $this->mascota = $mascota;
          $this->patologia = $patologia;
          $this->fecha_diagnostico = $fecha_diagnostico;
          $this->estado_enfermedad = $estado_enfermedad;
          
          $conex = $this->getConexion();
-         $sql = "INSERT INTO enfermedades_sufridas(id_mascota,id_patologia,fecha_diagnostico,estado_enfermedad) 
+         $sql = "INSERT INTO enfermedades_padecidas(id_mascota,id_patologia,fecha_diagnostico,estado_enfermedad) 
                  VALUES(:mascota,:patologia, :fecha_diagnostico, :estado_enfermedad)";
          
                 $query = $conex->prepare($sql);
@@ -32,11 +32,11 @@ class Enf_SufridasModel extends ConexionBD {
       }
 
 
-      public function obtenerEnfermedadesSufridas(int $id){
+      public function obtenerEnfermedadesPadecidas(int $id){
          $this->id = $id;
          $conex = $this->getConexion();
-         $sql = "SELECT enfermedades_sufridas.*, patologia.nombre FROM enfermedades_sufridas
-                INNER JOIN patologia ON enfermedades_sufridas.id_patologia = patologia.id_patologia 
+         $sql = "SELECT enfermedades_padecidas.*, patologia.nombre FROM enfermedades_padecidas
+                INNER JOIN patologia ON enfermedades_padecidas.id_patologia = patologia.id_patologia 
                 WHERE id_mascota = :id";
          
          $query = $conex->prepare($sql);
@@ -56,15 +56,15 @@ class Enf_SufridasModel extends ConexionBD {
 
       public function eliminarEnfermedadesDeMascota(int $mascota){
          $conex = $this->getConexion();
-         $query = $conex->prepare("DELETE FROM enfermedades_sufridas WHERE id_mascota = :mascota");
+         $query = $conex->prepare("DELETE FROM enfermedades_padecidas WHERE id_mascota = :mascota");
          $query->bindParam(":mascota", $mascota);
          return $query->execute();
       }
 
-      public function EliminarEnfermedadSufrida(int $id){
+      public function EliminarEnfermedadPadecida(int $id){
         $this->id = $id;
         $conex = $this->getConexion();
-         $sql = "DELETE FROM enfermedades_sufridas WHERE id_enfermedad_sufrida = :id";
+         $sql = "DELETE FROM enfermedades_padecidas WHERE id_enfermedad_padecida = :id";
         
          $query = $conex->prepare($sql);
         $query->bindParam(":id", $this->id);
@@ -73,5 +73,4 @@ class Enf_SufridasModel extends ConexionBD {
         return $query->execute();
 
       }
-      
 }

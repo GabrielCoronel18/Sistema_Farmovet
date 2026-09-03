@@ -2,16 +2,17 @@
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\MascotaModel;
 use Gabriel\SistemaFarmovet\model\Alrg_MascotaModel;
-use Gabriel\SistemaFarmovet\model\Cirgs_PreviasModel;
-use Gabriel\SistemaFarmovet\model\Enf_SufridasModel;
+use Gabriel\SistemaFarmovet\model\Cirgs_MascotaModel;
+use Gabriel\SistemaFarmovet\model\Enf_PadecidasModel;
 
 $mascotaModel = new MascotaModel();
 $AlergiaMascotaModel = new Alrg_MascotaModel();
-$CirgsPreviasModel = new Cirgs_PreviasModel();
-$EnfSufridasModel = new Enf_SufridasModel();
+$CirgsPreviasModel = new Cirgs_MascotaModel();
+$EnfSufridasModel = new Enf_PadecidasModel();
 
 $alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
 $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
+$cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
@@ -54,11 +55,11 @@ $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
                     $AlergiaMascotaModel->asociarAlergia((int) $alergia, (int) $idMascota, $fechaAntecedente);
                 }
                 foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
-                    $EnfSufridasModel->agregarEnfermedadSufrida((int) $idMascota, (int) $enfermedad, $fechaAntecedente, "Leve");
+                    $EnfSufridasModel->agregarEnfermedadPadecida((int) $idMascota, (int) $enfermedad, $fechaAntecedente, "Leve");
                 }
                 foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
-                    if (trim((string) $cirugia) !== "") {
-                        $CirgsPreviasModel->agregarCirugiaPrevia((int) $idMascota, trim((string) $cirugia), $fechaAntecedente);
+                    if ((int) $cirugia > 0) {
+                        $CirgsPreviasModel->agregarCirugiaPrevia((int) $idMascota, (int) $cirugia, $fechaAntecedente);
                     }
                 }
 
@@ -113,11 +114,11 @@ $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
                 $AlergiaMascotaModel->asociarAlergia((int) $alergia, $id, $fechaAntecedente);
             }
             foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
-                $EnfSufridasModel->agregarEnfermedadSufrida($id, (int) $enfermedad, $fechaAntecedente, "Leve");
+                $EnfSufridasModel->agregarEnfermedadPadecida($id, (int) $enfermedad, $fechaAntecedente, "Leve");
             }
             foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
-                if (trim((string) $cirugia) !== "") {
-                    $CirgsPreviasModel->agregarCirugiaPrevia($id, trim((string) $cirugia), $fechaAntecedente);
+                if ((int) $cirugia > 0) {
+                    $CirgsPreviasModel->agregarCirugiaPrevia($id, (int) $cirugia, $fechaAntecedente);
                 }
             }
             echo json_encode(["status"=>"success"]);
@@ -153,7 +154,7 @@ $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
 
         $alergias = $AlergiaMascotaModel->obtenerAlergiasAsociadas($id);
         $cirugias = $CirgsPreviasModel->obtenerCirugiasPrevias($id);
-        $enfermedades = $EnfSufridasModel->obtenerEnfermedadesSufridas($id);
+        $enfermedades = $EnfSufridasModel->obtenerEnfermedadesPadecidas($id);
 
             if($alergias !== false && $cirugias !== false && $enfermedades !== false){
 

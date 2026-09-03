@@ -52,6 +52,7 @@
                         <a href="?url=Medicamento" class="nav-link-sub">Medicamentos</a>
                         <a href="?url=TipoMedicamento" class="nav-link-sub">Tipos de Medicamento</a>
                         <a href="?url=Alergia" class="nav-link-sub">Alergias</a>
+                        <a href="?url=Cirugia" class="nav-link-sub">Cirugías</a>
                     </div>
                 </div>
                 <a href="#menuSeguridad" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">

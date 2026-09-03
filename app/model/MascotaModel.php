@@ -54,15 +54,16 @@ class MascotaModel extends ConexionBD{
             $sql = "SELECT mascota.*, cliente.nombre AS nombre_cliente, raza.nombre_raza,
                            GROUP_CONCAT(DISTINCT alergia.nombre_alergia SEPARATOR ', ') AS alergias,
                            GROUP_CONCAT(DISTINCT patologia.nombre SEPARATOR ', ') AS enfermedades,
-                           GROUP_CONCAT(DISTINCT cirugia_previa.nombre_cirugia SEPARATOR ', ') AS cirugias
+                           GROUP_CONCAT(DISTINCT cirugia.nombre_cirugia SEPARATOR ', ') AS cirugias
                     FROM mascota  
                     INNER JOIN cliente ON mascota.cedula_cliente = cliente.cedula_cliente
                     INNER JOIN raza ON mascota.id_raza = raza.id_raza   
                     LEFT JOIN alergia_mascota ON mascota.id_mascota = alergia_mascota.id_mascota
                     LEFT JOIN alergia ON alergia_mascota.id_alergia = alergia.id_alergia
-                    LEFT JOIN enfermedades_sufridas ON mascota.id_mascota = enfermedades_sufridas.id_mascota
-                    LEFT JOIN patologia ON enfermedades_sufridas.id_patologia = patologia.id_patologia
-                    LEFT JOIN cirugia_previa ON mascota.id_mascota = cirugia_previa.id_mascota
+                    LEFT JOIN enfermedades_padecidas ON mascota.id_mascota = enfermedades_padecidas.id_mascota
+                    LEFT JOIN patologia ON enfermedades_padecidas.id_patologia = patologia.id_patologia
+                    LEFT JOIN cirugia_mascota ON mascota.id_mascota = cirugia_mascota.id_mascota
+                    LEFT JOIN cirugia ON cirugia_mascota.id_cirugia = cirugia.id_cirugia
                     WHERE mascota.estado = 1 
                     GROUP BY mascota.id_mascota
                     LIMIT :limitacion OFFSET :offset";
@@ -95,15 +96,16 @@ class MascotaModel extends ConexionBD{
             $sql = "SELECT mascota.*, cliente.nombre AS nombre_cliente, raza.nombre_raza,
                            GROUP_CONCAT(DISTINCT alergia.nombre_alergia SEPARATOR ', ') AS alergias,
                            GROUP_CONCAT(DISTINCT patologia.nombre SEPARATOR ', ') AS enfermedades,
-                           GROUP_CONCAT(DISTINCT cirugia_previa.nombre_cirugia SEPARATOR ', ') AS cirugias
+                           GROUP_CONCAT(DISTINCT cirugia.nombre_cirugia SEPARATOR ', ') AS cirugias
                     FROM mascota 
                     INNER JOIN cliente ON mascota.cedula_cliente = cliente.cedula_cliente
                     INNER JOIN raza ON mascota.id_raza = raza.id_raza  
                     LEFT JOIN alergia_mascota ON mascota.id_mascota = alergia_mascota.id_mascota
                     LEFT JOIN alergia ON alergia_mascota.id_alergia = alergia.id_alergia
-                    LEFT JOIN enfermedades_sufridas ON mascota.id_mascota = enfermedades_sufridas.id_mascota
-                    LEFT JOIN patologia ON enfermedades_sufridas.id_patologia = patologia.id_patologia
-                    LEFT JOIN cirugia_previa ON mascota.id_mascota = cirugia_previa.id_mascota
+                    LEFT JOIN enfermedades_padecidas ON mascota.id_mascota = enfermedades_padecidas.id_mascota
+                    LEFT JOIN patologia ON enfermedades_padecidas.id_patologia = patologia.id_patologia
+                    LEFT JOIN cirugia_mascota ON mascota.id_mascota = cirugia_mascota.id_mascota
+                    LEFT JOIN cirugia ON cirugia_mascota.id_cirugia = cirugia.id_cirugia
                     WHERE mascota.estado = 1 
                             AND (mascota.id_mascota LIKE :param
                             OR mascota.nombre LIKE :param

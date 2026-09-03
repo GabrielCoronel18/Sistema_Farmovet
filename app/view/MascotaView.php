@@ -57,6 +57,7 @@
                         <a href="?url=Medicamento" class="nav-link-sub">Medicamentos</a>
                         <a href="?url=TipoMedicamento" class="nav-link-sub">Tipos de Medicamento</a>
                         <a href="?url=Alergia" class="nav-link-sub">Alergias</a>
+                        <a href="?url=Cirugia" class="nav-link-sub">Cirugías</a>
                         <a href="?url=Patologia" class="nav-link-sub">Patologias</a>
                     </div>
                 </div>
@@ -224,7 +225,11 @@
             </div>
             <div class="col-md-12">
               <label for="mascota_cirugias" class="form-label">Cirugías</label>
-              <select class="form-select" id="mascota_cirugias" name="cirugias[]" multiple></select>
+              <select class="form-select" id="mascota_cirugias" name="cirugias[]" multiple>
+                <?php foreach ($cirugiasDisponibles as $cirugia): ?>
+                  <option value="<?= (int) $cirugia["id_cirugia"] ?>"><?= htmlspecialchars($cirugia["nombre_cirugia"]) ?></option>
+                <?php endforeach; ?>
+              </select>
             </div>
 
           </div>

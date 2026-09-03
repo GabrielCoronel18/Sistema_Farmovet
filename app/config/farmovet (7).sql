@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-06-2026 a las 00:41:04
+-- Tiempo de generación: 03-09-2026 a las 02:52:41
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `farmovet`
 --
+CREATE DATABASE IF NOT EXISTS `farmovet` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci;
+USE `farmovet`;
 
 -- --------------------------------------------------------
 
@@ -34,6 +36,14 @@ CREATE TABLE `alergia` (
   `estado` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
+--
+-- Volcado de datos para la tabla `alergia`
+--
+
+INSERT INTO `alergia` (`id_alergia`, `nombre_alergia`, `tipo`, `estado`) VALUES
+(1, 'penicilina', 'alergia', 1),
+(2, 'Polen', 'tipo 3', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -46,6 +56,16 @@ CREATE TABLE `alergia_mascota` (
   `id_mascota` int(11) NOT NULL,
   `fecha_deteccion` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `alergia_mascota`
+--
+
+INSERT INTO `alergia_mascota` (`id_alergia_mascota`, `id_alergia`, `id_mascota`, `fecha_deteccion`) VALUES
+(20, 1, 25, '2026-08-28'),
+(21, 2, 25, '2026-08-28'),
+(31, 1, 4, '2026-09-02'),
+(32, 2, 4, '2026-09-02');
 
 -- --------------------------------------------------------
 
@@ -85,13 +105,25 @@ CREATE TABLE `anamnesis` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `cirugia_previa`
+-- Estructura de tabla para la tabla `cirugia`
 --
 
-CREATE TABLE `cirugia_previa` (
-  `id_cirugia_previa` int(11) NOT NULL,
+CREATE TABLE `cirugia` (
+  `id_cirugia` int(11) NOT NULL,
+  `nombre_cirugia` varchar(120) NOT NULL,
+  `gravedad` varchar(120) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cirugia_mascota`
+--
+
+CREATE TABLE `cirugia_mascota` (
+  `id_cirugia_mascota` int(11) NOT NULL,
   `id_mascota` int(11) NOT NULL,
-  `nombre_cirugia` varchar(100) NOT NULL,
+  `id_cirugia` int(11) NOT NULL,
   `fecha_cirugia` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
@@ -116,7 +148,7 @@ CREATE TABLE `cliente` (
 --
 
 INSERT INTO `cliente` (`cedula_cliente`, `nombre`, `apellido`, `correo`, `telefono`, `direccion`, `estado`) VALUES
-('12313122', 'Jaime', 'Rodrigez', 'JamRod2@gmail.com', 12331231, 'Su casa', 1);
+('12313122', 'Jaime', 'Rodrigez', 'JamRod2@gmail.com', 12331231, 'Su Casa', 1);
 
 -- --------------------------------------------------------
 
@@ -154,16 +186,23 @@ CREATE TABLE `diagnostico` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `enfermedades_sufridas`
+-- Estructura de tabla para la tabla `enfermedades_padecidas`
 --
 
-CREATE TABLE `enfermedades_sufridas` (
-  `id_enfermedad_sufrida` int(11) NOT NULL,
+CREATE TABLE `enfermedades_padecidas` (
+  `id_enfermedad_padecida` int(11) NOT NULL,
   `id_mascota` int(11) NOT NULL,
   `id_patologia` int(11) NOT NULL,
   `fecha_diagnostico` date NOT NULL,
   `estado_enfermedad` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `enfermedades_padecidas`
+--
+
+INSERT INTO `enfermedades_padecidas` (`id_enfermedad_padecida`, `id_mascota`, `id_patologia`, `fecha_diagnostico`, `estado_enfermedad`) VALUES
+(10, 4, 1, '2026-09-02', 'Leve');
 
 -- --------------------------------------------------------
 
@@ -237,9 +276,11 @@ CREATE TABLE `mascota` (
 --
 
 INSERT INTO `mascota` (`id_mascota`, `nombre`, `edad`, `sexo`, `chip`, `procedencia`, `fch_nacimiento`, `id_raza`, `pelaje`, `cedula_cliente`, `estado`) VALUES
-(4, 'Logan', 5, 'Masculino', 'Si', 'Viene de...', '2021-06-16', 1, 'De color...', '12313122', 1),
-(20, 'Lisa', 9, 'Femenino', 'Si', 'asdasda', '2026-06-17', 1, 'adas', '12313122', 1),
-(23, 'Jason', 6, 'Masculino', 'No', 'dadada', '2020-06-16', 1, 'Negro', '12313122', 1);
+(4, 'Logan', 5, 'Masculino', 'Si', 'Viene de..', '2021-06-16', 1, 'De color...', '12313122', 1),
+(20, 'Lisa', 9, 'Femenino', 'Si', 'asdasda', '2026-06-17', 1, 'amarillo', '12313122', 0),
+(23, 'Jason', 6, 'Masculino', 'No', 'dadada', '2020-06-16', 1, 'Blanco', '12313122', 1),
+(24, 'asdasdasda', 3, 'Femenino', 'No', 'asdasdsadsad', '2026-08-06', 1, 'Blanco', '12313122', 0),
+(25, 'asdsad', 324, 'Masculino', 'No', 'sadasd', '2026-07-30', 1, 'asd', '12313122', 0);
 
 -- --------------------------------------------------------
 
@@ -268,6 +309,13 @@ CREATE TABLE `patologia` (
   `sintomas` varchar(150) NOT NULL,
   `estado` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `patologia`
+--
+
+INSERT INTO `patologia` (`id_patologia`, `nombre`, `tipo`, `sintomas`, `estado`) VALUES
+(1, 'Enfermedad...', 'Tipo...', 'Sintomas...', 1);
 
 -- --------------------------------------------------------
 
@@ -375,6 +423,13 @@ CREATE TABLE `rol` (
   `estado` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
+--
+-- Volcado de datos para la tabla `rol`
+--
+
+INSERT INTO `rol` (`id_rol`, `nombre_rol`, `estado`) VALUES
+(1, 'Administrador', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -405,6 +460,13 @@ CREATE TABLE `usuario` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 --
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`cedula_usuario`, `nombre`, `apellido`, `correo`, `telefono`, `contraseña`, `id_rol`, `estado`) VALUES
+('32163299', 'Gabriel', 'Coronel', 'Gabriel@gmail.com', 2147483647, '$2y$10$i.t6K3GyC9j2QthJZCYRGOjYidi1ppovUDC4kt3E7KeapidMGsETq', 1, 0);
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -430,11 +492,18 @@ ALTER TABLE `anamnesis`
   ADD UNIQUE KEY `id_consulta` (`id_consulta`);
 
 --
--- Indices de la tabla `cirugia_previa`
+-- Indices de la tabla `cirugia`
 --
-ALTER TABLE `cirugia_previa`
-  ADD PRIMARY KEY (`id_cirugia_previa`),
-  ADD KEY `id_mascota` (`id_mascota`);
+ALTER TABLE `cirugia`
+  ADD PRIMARY KEY (`id_cirugia`);
+
+--
+-- Indices de la tabla `cirugia_mascota`
+--
+ALTER TABLE `cirugia_mascota`
+  ADD PRIMARY KEY (`id_cirugia_mascota`) USING BTREE,
+  ADD KEY `id_mascota` (`id_mascota`),
+  ADD KEY `id_cirugia` (`id_cirugia`);
 
 --
 -- Indices de la tabla `cliente`
@@ -459,10 +528,10 @@ ALTER TABLE `diagnostico`
   ADD KEY `id_consulta` (`id_consulta`);
 
 --
--- Indices de la tabla `enfermedades_sufridas`
+-- Indices de la tabla `enfermedades_padecidas`
 --
-ALTER TABLE `enfermedades_sufridas`
-  ADD PRIMARY KEY (`id_enfermedad_sufrida`),
+ALTER TABLE `enfermedades_padecidas`
+  ADD PRIMARY KEY (`id_enfermedad_padecida`) USING BTREE,
   ADD KEY `id_mascota` (`id_mascota`),
   ADD KEY `id_patologia` (`id_patologia`);
 
@@ -566,13 +635,13 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `alergia`
 --
 ALTER TABLE `alergia`
-  MODIFY `id_alergia` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_alergia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `alergia_mascota`
 --
 ALTER TABLE `alergia_mascota`
-  MODIFY `id_alergia_mascota` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_alergia_mascota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de la tabla `anamnesis`
@@ -581,10 +650,16 @@ ALTER TABLE `anamnesis`
   MODIFY `id_anamnesis` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `cirugia_previa`
+-- AUTO_INCREMENT de la tabla `cirugia`
 --
-ALTER TABLE `cirugia_previa`
-  MODIFY `id_cirugia_previa` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `cirugia`
+  MODIFY `id_cirugia` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `cirugia_mascota`
+--
+ALTER TABLE `cirugia_mascota`
+  MODIFY `id_cirugia_mascota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `consulta`
@@ -599,10 +674,10 @@ ALTER TABLE `diagnostico`
   MODIFY `id_diagnostico` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `enfermedades_sufridas`
+-- AUTO_INCREMENT de la tabla `enfermedades_padecidas`
 --
-ALTER TABLE `enfermedades_sufridas`
-  MODIFY `id_enfermedad_sufrida` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `enfermedades_padecidas`
+  MODIFY `id_enfermedad_padecida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `especie`
@@ -620,7 +695,7 @@ ALTER TABLE `examen_clinico`
 -- AUTO_INCREMENT de la tabla `mascota`
 --
 ALTER TABLE `mascota`
-  MODIFY `id_mascota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_mascota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de la tabla `medicamento`
@@ -632,7 +707,7 @@ ALTER TABLE `medicamento`
 -- AUTO_INCREMENT de la tabla `patologia`
 --
 ALTER TABLE `patologia`
-  MODIFY `id_patologia` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_patologia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `plan_sanitario`
@@ -668,7 +743,7 @@ ALTER TABLE `resultado_laboratorio`
 -- AUTO_INCREMENT de la tabla `rol`
 --
 ALTER TABLE `rol`
-  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_medicamento`
@@ -694,10 +769,11 @@ ALTER TABLE `anamnesis`
   ADD CONSTRAINT `anamnesis_ibfk_1` FOREIGN KEY (`id_consulta`) REFERENCES `consulta` (`id_consulta`);
 
 --
--- Filtros para la tabla `cirugia_previa`
+-- Filtros para la tabla `cirugia_mascota`
 --
-ALTER TABLE `cirugia_previa`
-  ADD CONSTRAINT `cirugia_previa_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascota` (`id_mascota`);
+ALTER TABLE `cirugia_mascota`
+  ADD CONSTRAINT `cirugia_mascota_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascota` (`id_mascota`),
+  ADD CONSTRAINT `cirugia_mascota_ibfk_2` FOREIGN KEY (`id_cirugia`) REFERENCES `cirugia` (`id_cirugia`);
 
 --
 -- Filtros para la tabla `consulta`
@@ -714,11 +790,11 @@ ALTER TABLE `diagnostico`
   ADD CONSTRAINT `diagnostico_ibfk_2` FOREIGN KEY (`id_consulta`) REFERENCES `consulta` (`id_consulta`);
 
 --
--- Filtros para la tabla `enfermedades_sufridas`
+-- Filtros para la tabla `enfermedades_padecidas`
 --
-ALTER TABLE `enfermedades_sufridas`
-  ADD CONSTRAINT `enfermedades_sufridas_ibfk_1` FOREIGN KEY (`id_patologia`) REFERENCES `patologia` (`id_patologia`),
-  ADD CONSTRAINT `enfermedades_sufridas_ibfk_2` FOREIGN KEY (`id_mascota`) REFERENCES `mascota` (`id_mascota`);
+ALTER TABLE `enfermedades_padecidas`
+  ADD CONSTRAINT `enfermedades_padecidas_ibfk_1` FOREIGN KEY (`id_patologia`) REFERENCES `patologia` (`id_patologia`),
+  ADD CONSTRAINT `enfermedades_padecidas_ibfk_2` FOREIGN KEY (`id_mascota`) REFERENCES `mascota` (`id_mascota`);
 
 --
 -- Filtros para la tabla `examen_clinico`

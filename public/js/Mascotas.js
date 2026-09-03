@@ -4,8 +4,6 @@ let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar = document.getElementById("filtrar");
 
-let tsAlergias, tsEnfermedades, tsCirugias;
-
 const selectAlergias = new TomSelect("#mascota_alergias", {
     plugins: ["remove_button"],
     create: false,
@@ -20,10 +18,9 @@ const selectEnfermedades = new TomSelect("#mascota_enfermedades", {
 });
 const selectCirugias = new TomSelect("#mascota_cirugias", {
     plugins: ["remove_button"],
-    create: true,
-    createOnBlur: true,
+    create: false,
     persist: false,
-    placeholder: "Escriba y presione Enter"
+    placeholder: "Seleccione una o varias cirugías"
 });
 
 
@@ -93,9 +90,9 @@ btnAgregar.addEventListener("click", function(e){
      TituloModal.innerText = "Agregar Nueva Mascota";
      document.getElementById("id_mascota").value = "";
      
-     tsAlergias.clear();
-     tsEnfermedades.clear();
-     tsCirugias.clear();
+    selectAlergias.clear();
+    selectEnfermedades.clear();
+    selectCirugias.clear();
 });
 
 TablaMascotas.addEventListener("click", function(e) {
@@ -126,14 +123,6 @@ TablaMascotas.addEventListener("click", function(e) {
                 document.getElementById("procedencia").value = result.procedencia;
                 cargarAntecedentesEnFormulario(result.id_mascota);
 
-                tsAlergias.setValue(resultado.alergias.map(item => item.id_alergia));
-                tsEnfermedades.setValue(resultado.enfermedades.map(item => item.id_patologia));
-
-                tsCirugias.clear();
-                resultado.cirugias.forEach(item => {
-                    tsCirugias.addOption({value: item.nombre_cirugia, text: item.nombre_cirugia});
-                    tsCirugias.addItem(item.nombre_cirugia);
-                });
             } else if(resultado.status === "error"){
                 Swal.fire({title: "Error", text: "Error al obtener el registro", icon: "error"});
             }
@@ -153,9 +142,7 @@ function cargarAntecedentesEnFormulario(id) {
             }
             selectAlergias.setValue(resultado.alergias.map(alergia => String(alergia.id_alergia)));
             selectEnfermedades.setValue(resultado.enfermedades.map(enfermedad => String(enfermedad.id_patologia)));
-            selectCirugias.clear(true);
-            resultado.cirugias.forEach(cirugia => selectCirugias.addOption({value: cirugia.nombre_cirugia, text: cirugia.nombre_cirugia}));
-            selectCirugias.setValue(resultado.cirugias.map(cirugia => cirugia.nombre_cirugia));
+            selectCirugias.setValue(resultado.cirugias.map(cirugia => String(cirugia.id_cirugia)));
         });
 }
 
