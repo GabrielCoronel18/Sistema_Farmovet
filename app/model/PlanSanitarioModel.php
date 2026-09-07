@@ -1,88 +1,74 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
+
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use PDO;
+use Exception;
 
-class PlanSanitarioModel extends ConexionBD
-{
-    private string $nombre;
-    private string $descripcion;
-    private int $estado;
+// Forzamos la inclusión de la conexión por si el autoload falla
+require_once __DIR__ . '/../config/ConexionBD.php';
 
-    public function agregarPlan(string $nombre, string $descripcion, string $fecha_inicio): bool
-    {
-        $conex = $this->getConexion();
-        $sql = "INSERT INTO plan_sanitario (nombre_plan, descripcion, fecha_inicio, estado) VALUES (:nombre, :descripcion, :fecha, 1)";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":nombre", $nombre);
-        $query->bindParam(":descripcion", $descripcion);
-        $query->bindParam(":fecha", $fecha_inicio);
+class PlanSanitarioModel extends ConexionBD {
 
-        return $query->execute();
+    public function registrarPlan($datos) {
+        try {
+            $db = $this->getConexion(); 
+            $sql = "INSERT INTO plan_sanitario (id_mascota, id_medicamento, fecha_aplicacion, proximo_refuerzo, estado) VALUES (?, ?, ?, ?, 1)";
+            $stmt = $db->prepare($sql);
+            return $stmt->execute([
+                $datos['id_mascota'],
+                $datos['id_medicamento'],
+                $datos['fecha_aplicacion'],
+                $datos['proximo_refuerzo']
+            ]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
-    public function obtenerPlanes(int $pagina = 1, int $limite = 10): array
-    {
-        $offset = ($pagina - 1) * $limite;
-        $conex = $this->getConexion();
-        $sql = "SELECT id_plan, nombre_plan, descripcion, fecha_inicio, estado 
-                FROM plan_sanitario 
-                WHERE estado = 1 
-                ORDER BY id_plan DESC 
-                LIMIT :limite OFFSET :offset";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":limite", $limite, \PDO::PARAM_INT);
-        $query->bindParam(":offset", $offset, \PDO::PARAM_INT);
-        $query->execute();
-        return $query->fetchAll();
+    public function consultarPlanes() {
+        try {
+            $db = $this->getConexion();
+            $sql = "SELECT p.id_plan, p.id_mascota, m.nombre AS nombre_mascota, 
+                           p.id_medicamento, med.nombre_medicamento, 
+                           p.fecha_aplicacion, p.proximo_refuerzo
+                    FROM plan_sanitario p
+                    INNER JOIN mascota m ON p.id_mascota = m.id_mascota
+                    INNER JOIN medicamento med ON p.id_medicamento = med.id_medicamento
+                    WHERE p.estado = 1";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
-    public function obtenerPlanPorId(int $id): ?array
-    {
-        $conex = $this->getConexion();
-        $sql = "SELECT id_plan, nombre_plan, descripcion, fecha_inicio, estado FROM plan_sanitario WHERE id_plan = :id AND estado = 1";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":id", $id);
-        $query->execute();
-        $result = $query->fetch();
-        return $result ?: null;
+    public function actualizarPlan($datos) {
+        try {
+            $db = $this->getConexion();
+            $sql = "UPDATE plan_sanitario SET id_mascota = ?, id_medicamento = ?, fecha_aplicacion = ?, proximo_refuerzo = ? WHERE id_plan = ?";
+            $stmt = $db->prepare($sql);
+            return $stmt->execute([
+                $datos['id_mascota'],
+                $datos['id_medicamento'],
+                $datos['fecha_aplicacion'],
+                $datos['proximo_refuerzo'],
+                $datos['id_plan']
+            ]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
-    public function filtrarPlanes(string $busqueda, int $pagina = 1, int $limite = 10): array
-    {
-        $offset = ($pagina - 1) * $limite;
-        $param = "%" . $busqueda . "%";
-        $conex = $this->getConexion();
-        $sql = "SELECT id_plan, nombre_plan, descripcion, fecha_inicio, estado 
-                FROM plan_sanitario 
-                WHERE estado = 1 AND (nombre_plan LIKE :param OR descripcion LIKE :param) 
-                ORDER BY id_plan DESC 
-                LIMIT :limite OFFSET :offset";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":param", $param);
-        $query->bindParam(":limite", $limite, \PDO::PARAM_INT);
-        $query->bindParam(":offset", $offset, \PDO::PARAM_INT);
-        $query->execute();
-        return $query->fetchAll();
-    }
-
-    public function actualizarPlan(int $id, string $nombre, string $descripcion, string $fecha_inicio): bool
-    {
-        $conex = $this->getConexion();
-        $sql = "UPDATE plan_sanitario SET nombre_plan = :nombre, descripcion = :descripcion, fecha_inicio = :fecha WHERE id_plan = :id";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":nombre", $nombre);
-        $query->bindParam(":descripcion", $descripcion);
-        $query->bindParam(":fecha", $fecha_inicio);
-        $query->bindParam(":id", $id);
-        return $query->execute();
-    }
-
-    public function eliminarPlan(int $id): bool
-    {
-        $conex = $this->getConexion();
-        $sql = "UPDATE plan_sanitario SET estado = 0 WHERE id_plan = :id";
-        $query = $conex->prepare($sql);
-        $query->bindParam(":id", $id);
-        return $query->execute();
+    public function eliminarPlan($id_plan) {
+        try {
+            $db = $this->getConexion();
+            $sql = "UPDATE plan_sanitario SET estado = 0 WHERE id_plan = ?";
+            $stmt = $db->prepare($sql);
+            return $stmt->execute([$id_plan]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }

@@ -2,13 +2,17 @@
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\MascotaModel;
 use Gabriel\SistemaFarmovet\model\Alrg_MascotaModel;
-use Gabriel\SistemaFarmovet\model\Cirgs_PreviasModel;
-use Gabriel\SistemaFarmovet\model\Enf_SufridasModel;
+use Gabriel\SistemaFarmovet\model\Cirgs_MascotaModel;
+use Gabriel\SistemaFarmovet\model\Enf_PadecidasModel;
 
 $mascotaModel = new MascotaModel();
 $AlergiaMascotaModel = new Alrg_MascotaModel();
-$CirgsPreviasModel = new Cirgs_PreviasModel();
-$EnfSufridasModel = new Enf_SufridasModel();
+$CirgsPreviasModel = new Cirgs_MascotaModel();
+$EnfSufridasModel = new Enf_PadecidasModel();
+
+$alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
+$enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
+$cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
@@ -43,16 +47,29 @@ $EnfSufridasModel = new Enf_SufridasModel();
         $pelaje = $_POST["pelaje"] ?? "";
         $cedula_cliente = $_POST["cedula_cliente"] ?? "";
         $procedencia = $_POST["procedencia"] ?? "";
+       
+ $idMascota = $mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente);
+            if($idMascota){
+                $fechaAntecedente = date("Y-m-d");
+                foreach ((array) ($_POST["alergias"] ?? []) as $alergia) {
+                    $AlergiaMascotaModel->asociarAlergia((int) $alergia, (int) $idMascota, $fechaAntecedente);
+                }
+                foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
+                    $EnfSufridasModel->agregarEnfermedadPadecida((int) $idMascota, (int) $enfermedad, $fechaAntecedente, "Leve");
+                }
+                foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
+                    if ((int) $cirugia > 0) {
+                        $CirgsPreviasModel->agregarCirugiaPrevia((int) $idMascota, (int) $cirugia, $fechaAntecedente);
+                    }
+                }
 
-
-            if($mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
+            echo json_encode(["status" => "success"]);
+        } else {
+            
+            echo json_encode(["status" => "error", ]);
+        }
+    
+    exit;
     }
 
     if(isset($_POST["obtenerMascota"]) && isset($_POST["id"])){
@@ -85,8 +102,25 @@ $EnfSufridasModel = new Enf_SufridasModel();
         $pelaje = $_POST["pelaje"] ?? "";
         $cedula_cliente = $_POST["cedula_cliente"] ?? "";
         $procedencia = $_POST["procedencia"] ?? "";
+ 
 
         if($mascotaModel->actualizarMascota($id,$nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente)){
+            $id = (int) $id;
+            $fechaAntecedente = date("Y-m-d");
+            $AlergiaMascotaModel->eliminarAlergiasDeMascota($id);
+            $EnfSufridasModel->eliminarEnfermedadesDeMascota($id);
+            $CirgsPreviasModel->eliminarCirugiasDeMascota($id);
+            foreach ((array) ($_POST["alergias"] ?? []) as $alergia) {
+                $AlergiaMascotaModel->asociarAlergia((int) $alergia, $id, $fechaAntecedente);
+            }
+            foreach ((array) ($_POST["enfermedades"] ?? []) as $enfermedad) {
+                $EnfSufridasModel->agregarEnfermedadPadecida($id, (int) $enfermedad, $fechaAntecedente, "Leve");
+            }
+            foreach ((array) ($_POST["cirugias"] ?? []) as $cirugia) {
+                if ((int) $cirugia > 0) {
+                    $CirgsPreviasModel->agregarCirugiaPrevia($id, (int) $cirugia, $fechaAntecedente);
+                }
+            }
             echo json_encode(["status"=>"success"]);
             }
             else{
@@ -120,7 +154,7 @@ $EnfSufridasModel = new Enf_SufridasModel();
 
         $alergias = $AlergiaMascotaModel->obtenerAlergiasAsociadas($id);
         $cirugias = $CirgsPreviasModel->obtenerCirugiasPrevias($id);
-        $enfermedades = $EnfSufridasModel->obtenerEnfermedadesSufridas($id);
+        $enfermedades = $EnfSufridasModel->obtenerEnfermedadesPadecidas($id);
 
             if($alergias !== false && $cirugias !== false && $enfermedades !== false){
 
@@ -132,92 +166,8 @@ $EnfSufridasModel = new Enf_SufridasModel();
 
       exit;
     }
-    
-    if(isset($_POST["agregarAlergia"]) && isset($_POST["id"])){
-        $id = $_POST["id"]  ?? 0;
-        $alergia = $_POST["alergias"] ?? 0;
-        $fecha = $_POST["fecha_deteccion"] ?? "";
-        
-            if($AlergiaMascotaModel->asociarAlergia($alergia,$id,$fecha)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
+   
 
-      exit;
-    }
 
-     if(isset($_POST["agregarCirugia"]) && isset($_POST["id"])){
-        $id = $_POST["id"]  ?? 0;
-        $cirugia = $_POST["cirugia"] ?? "";
-        $fecha = $_POST["fecha_cirugia"] ?? "";
-        
-            if($CirgsPreviasModel->agregarCirugiaPrevia($id,$cirugia,$fecha)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
-    }
-
-    if(isset($_POST["agregarEnfermedad"]) && isset($_POST["id"])){
-        $id = $_POST["id"]  ?? 0;
-        $enfermedad = $_POST["enfermedad"] ?? 0;
-        $fecha = $_POST["fecha_deteccion"] ?? "";
-        $estado = $_POST["estado_enfermedad"] ?? "";
-
-            if($EnfSufridasModel->agregarEnfermedadSufrida($id,$enfermedad,$fecha,$estado)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
-    }
-
-     if(isset($_POST["eliminarAlergia"]) && isset($_POST["id"])){
-        
-        $id = $_POST["id"];
-
-           if($AlergiaMascotaModel->EliminarAlergiasAsociadas($id)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
-    }
-     if(isset($_POST["eliminarCirugia"]) && isset($_POST["id"])){
-        
-        $id = $_POST["id"];
-
-           if($CirgsPreviasModel->EliminarCirugiaPrevia($id)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
-    }
-
-    if(isset($_POST["eliminarEnfermedad"]) && isset($_POST["id"])){
-        
-        $id = $_POST["id"];
-
-           if($EnfSufridasModel->EliminarEnfermedadSufrida($id)){
-            echo json_encode(["status"=>"success"]);
-            }
-            else{
-            echo json_encode(["status"=>"error"]);
-            }
-
-      exit;
-    }
 require_once "app/view/MascotaView.php";
 ?>
