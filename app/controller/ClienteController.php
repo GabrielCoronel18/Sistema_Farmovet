@@ -50,7 +50,8 @@ $mensajeAlerta = "";
         }
         exit;
     }
-
+    
+    // Funciona como el buscador
     if(isset($_POST["obtenerCliente"]) && isset($_POST["id"])){
         
         $id = $_POST["id"];
@@ -71,7 +72,7 @@ $mensajeAlerta = "";
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
-        $limitacion = $_POST["limite"] ?? 5;
+        $limitacion = $_POST["limite"] ?? 500;
         
         
         if(isset($_POST["parametro"])){
@@ -91,5 +92,5 @@ $mensajeAlerta = "";
         }
       exit;
     }
-require_once "app/view/ClienteView.php"
+    include_once "app/view/ClienteView.php"
 ?>
