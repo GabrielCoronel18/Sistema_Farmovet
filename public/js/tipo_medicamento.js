@@ -3,10 +3,17 @@ const tablaTipoMedicamentos = document.getElementById("TablaTipoMedicamentos");
 const tituloModal = document.getElementById("TituloModalTipoMedicamento");
 const btnAgregar = document.getElementById("btnAgregar");
 const filtrar = document.getElementById("filtrar");
+const limite = document.getElementById("limite");
+const btnAnterior = document.getElementById("btn-anterior");
+const btnSiguiente = document.getElementById("btn-siguiente");
+const infoPagina = document.getElementById("info-pagina");
+let paginaActual = 1;
 
-function obtenerDatos(param = null) {
+function obtenerDatos(param = null, pagina = paginaActual) {
 	const datos = new FormData();
 	datos.append("obtener", "true");
+	datos.append("pagina", pagina);
+	datos.append("limite", limite.value);
 	if (param !== null) datos.append("parametro", param);
 
 	fetch(window.location, { method: "POST", body: datos })
@@ -15,6 +22,8 @@ function obtenerDatos(param = null) {
 			tablaTipoMedicamentos.innerHTML = "";
 			if (resultado.status !== "success") {
 				tablaTipoMedicamentos.innerHTML = "<tr><td colspan='3'>No hay tipos de medicamentos registrados</td></tr>";
+				paginaActual = pagina;
+				actualizarPaginacion(0);
 				return;
 			}
 
@@ -28,7 +37,17 @@ function obtenerDatos(param = null) {
 					</td>
 				</tr>`;
 			});
+			paginaActual = pagina;
+			actualizarPaginacion(resultado.resultados.length);
 		});
+}
+
+function actualizarPaginacion(registrosMostrados) {
+	const limiteActual = Number(limite.value);
+	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
+	btnAnterior.disabled = paginaActual === 1;
+	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	infoPagina.innerText = `Página ${paginaActual}`;
 }
 
 obtenerDatos();
@@ -60,7 +79,7 @@ tablaTipoMedicamentos.addEventListener("click", event => {
 		const datos = new FormData();
 		datos.append("eliminar", "true");
 		datos.append("id", event.target.value);
-		alertEliminar("post", datos, obtenerDatos);
+		alertEliminar("post", datos, () => obtenerDatos(filtrar.value, paginaActual));
 	}
 });
 
@@ -80,8 +99,24 @@ tablaTipoMedicamentos.addEventListener("click", event => {
 			}
 			id === "" ? alertAgregar("success") : alertActualizar("success");
 			bootstrap.Modal.getInstance(document.getElementById("ModalAgregar")).hide();
-			obtenerDatos();
+			obtenerDatos(filtrar.value, paginaActual);
 		});
 });
 
-filtrar.addEventListener("input", () => obtenerDatos(filtrar.value));
+filtrar.addEventListener("input", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+limite.addEventListener("change", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+btnAnterior.addEventListener("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+});
+
+btnSiguiente.addEventListener("click", () => {
+	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
+});

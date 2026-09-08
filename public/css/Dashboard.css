@@ -97,6 +97,26 @@ body {
             color: #5b2c6f !important;
         }
 
+        .pagination .page-item.text-purple .page-link {
+            color: #5b2c6f;
+            border-color: #d8c1df;
+            background-color: #ffffff;
+        }
+
+        .pagination .page-item.text-purple .page-link:hover,
+        .pagination .page-item.text-purple .page-link:focus {
+            color: #ffffff;
+            background-color: #8e44ad;
+            border-color: #8e44ad;
+        }
+
+        .pagination .page-item.text-purple.disabled .page-link {
+            color: #5b2c6f;
+            background-color: #f1e8f4;
+            border-color: #d8c1df;
+            opacity: 1;
+        }
+
         
         
         .profile-dropdown-btn {

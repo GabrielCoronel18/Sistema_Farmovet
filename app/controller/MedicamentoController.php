@@ -7,10 +7,11 @@ use Gabriel\SistemaFarmovet\model\MedicamentoModel;
 $medicamentoModel = new MedicamentoModel();
 
 
-
 if (isset($_POST["obtener"])) {
-    $pagina = $_POST["pagina"] ?? 1;
-    $limitacion = $_POST["limite"] ?? 5;
+    $pagina = (int) ($_POST["pagina"] ?? 1) ;
+    $limitacion = (int) ($_POST["limite"] ?? 5);
+    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+
     $param = $_POST["parametro"] ?? "";
 
     $resultados = isset($_POST["parametro"])

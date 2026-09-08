@@ -16,7 +16,7 @@
 		<main class="main-content">
 			<header class="d-flex justify-content-between align-items-center mb-5">
 				<div>
-					<h2 class="fw-bold text-purple mb-0">Presentación</h2>
+					<h2 class="fw-bold text-purple mb-0">Presentaciones</h2>
 					<p class="text-muted">Gestión de presentaciones de medicamentos</p>
 				</div>
 				<div class="dropdown">
@@ -53,6 +53,25 @@
 					</thead>
 					<tbody id="TablaPresentaciones"></tbody>
 				</table>
+			</div>
+
+			<div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-3">
+			<div class="d-flex align-items-center gap-2">
+			<label for="limite" class="form-label mb-0 text-muted">Mostrar:</label>
+			<select name="limite" id="limite" class="form-select form-select-sm w-auto" style="min-width: 78px;" required>
+				<option value="5" selected>5</option>
+				<option value="10">10</option>
+				<option value="20">20</option>
+			</select>
+			
+			</div>
+			<nav aria-label="Paginación de tipos de medicamento">
+				<ul class="pagination pagination-sm mb-0">
+					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-anterior">Anterior</button></li>
+					<li class="page-item disabled text-purple"><span class="page-link" id="info-pagina"></span></li>
+					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-siguiente">Siguiente</button></li>
+				</ul>
+			</nav>
 			</div>
 		</main>
 	</div>

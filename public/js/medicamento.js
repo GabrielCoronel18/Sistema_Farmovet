@@ -5,6 +5,11 @@ const btnAgregar = document.getElementById("btnAgregar");
 const filtrar = document.getElementById("filtrar");
 const selectTipoMedicamento = document.getElementById("tipo");
 const selectPresentacion = document.getElementById("presentacion");
+const limite = document.getElementById("limite");
+const btnAnterior = document.getElementById("btn-anterior");
+const btnSiguiente = document.getElementById("btn-siguiente");
+const infoPagina = document.getElementById("info-pagina");
+let paginaActual = 1;
 
 function solicitar(datos) {
 	return fetch(window.location, { method: "POST", body: datos })
@@ -34,15 +39,19 @@ function cargarCatalogos() {
 		});
 }
 
-function obtenerDatos(param = null) {
+function obtenerDatos(param = null, pagina = paginaActual) {
 	const datos = new FormData();
 	datos.append("obtener", "true");
+	datos.append("pagina", pagina);
+	datos.append("limite", limite.value);
 	if (param !== null) datos.append("parametro", param);
 
 	solicitar(datos).then(resultado => {
 		tablaMedicamentos.innerHTML = "";
 		if (resultado.status !== "success") {
 			tablaMedicamentos.innerHTML = "<tr><td colspan='5'>No hay medicamentos registrados</td></tr>";
+			paginaActual = pagina;
+				actualizarPaginacion(0);
 			return;
 		}
 
@@ -58,13 +67,26 @@ function obtenerDatos(param = null) {
 				</td>
 			</tr>`;
 		});
+		paginaActual = pagina;
+			actualizarPaginacion(resultado.resultados.length);
 	});
 }
+function actualizarPaginacion(registrosMostrados) {
+	const limiteActual = Number(limite.value);
+	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
+	btnAnterior.disabled = paginaActual === 1;
+	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	infoPagina.innerText = `Página ${paginaActual}`;
+}
+
 
 cargarCatalogos().catch(() => {
 	Swal.fire({ title: "Error", text: "No se pudieron cargar los catálogos", icon: "error" });
 });
+
+
 obtenerDatos();
+
 
 btnAgregar.addEventListener("click", () => {
 	formularioMedicamento.reset();
@@ -115,4 +137,22 @@ formularioMedicamento.addEventListener("submit", event => {
 	});
 });
 
-filtrar.addEventListener("input", () => obtenerDatos(filtrar.value));
+
+
+filtrar.addEventListener("input", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+limite.addEventListener("change", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+btnAnterior.addEventListener("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+});
+
+btnSiguiente.addEventListener("click", () => {
+	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
+});

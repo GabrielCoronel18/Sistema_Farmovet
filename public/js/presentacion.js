@@ -3,10 +3,17 @@ const tablaPresentaciones = document.getElementById("TablaPresentaciones");
 const tituloModal = document.getElementById("TituloModalPresentacion");
 const btnAgregar = document.getElementById("btnAgregar");
 const filtrar = document.getElementById("filtrar");
+const limite = document.getElementById("limite");
+const btnAnterior = document.getElementById("btn-anterior");
+const btnSiguiente = document.getElementById("btn-siguiente");
+const infoPagina = document.getElementById("info-pagina");
+let paginaActual = 1;
 
-function obtenerDatos(param = null) {
+function obtenerDatos(param = null, pagina = paginaActual) {
 	const datos = new FormData();
 	datos.append("obtener", "true");
+	datos.append("pagina", pagina);
+	datos.append("limite", limite.value);
 	if (param !== null) datos.append("parametro", param);
 
 	fetch(window.location, { method: "POST", body: datos })
@@ -15,6 +22,8 @@ function obtenerDatos(param = null) {
 			tablaPresentaciones.innerHTML = "";
 			if (resultado.status !== "success") {
 				tablaPresentaciones.innerHTML = "<tr><td colspan='3'>No hay presentaciones registradas</td></tr>";
+				paginaActual = pagina;
+				actualizarPaginacion(0);
 				return;
 			}
 
@@ -28,7 +37,16 @@ function obtenerDatos(param = null) {
 					</td>
 				</tr>`;
 			});
+			paginaActual = pagina;
+			actualizarPaginacion(resultado.resultados.length);
 		});
+}
+function actualizarPaginacion(registrosMostrados) {
+	const limiteActual = Number(limite.value);
+	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
+	btnAnterior.disabled = paginaActual === 1;
+	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	infoPagina.innerText = `Página ${paginaActual}`;
 }
 
 obtenerDatos();
@@ -84,4 +102,20 @@ tablaPresentaciones.addEventListener("click", event => {
 		});
 });
 
-filtrar.addEventListener("input", () => obtenerDatos(filtrar.value));
+filtrar.addEventListener("input", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+limite.addEventListener("change", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+btnAnterior.addEventListener("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+});
+
+btnSiguiente.addEventListener("click", () => {
+	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
+});

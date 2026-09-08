@@ -5,8 +5,9 @@ use Gabriel\SistemaFarmovet\model\TipoMedicamentoModel;
 $TipoMedicamentoModel = new TipoMedicamentoModel();
 
 if(isset($_POST["obtener"])){
-    $pagina = $_POST["pagina"] ?? 1;
-    $limitacion = $_POST["limite"] ?? 5;
+    $pagina = (int) ($_POST["pagina"] ?? 1);
+    $limitacion = (int) ($_POST["limite"] ?? 5);
+    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
     
     if(isset($_POST["parametro"])){
         $param = $_POST["parametro"];
