@@ -1,14 +1,14 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\MascotaModel;
-use Gabriel\SistemaFarmovet\model\Alrg_MascotaModel;
-use Gabriel\SistemaFarmovet\model\Cirgs_MascotaModel;
-use Gabriel\SistemaFarmovet\model\Enf_PadecidasModel;
+use Gabriel\SistemaFarmovet\model\AlergiasMascotaModel;
+use Gabriel\SistemaFarmovet\model\CirugiasMascotaModel;
+use Gabriel\SistemaFarmovet\model\EnfermedadesPadecidasModel;
 
 $mascotaModel = new MascotaModel();
-$AlergiaMascotaModel = new Alrg_MascotaModel();
-$CirgsPreviasModel = new Cirgs_MascotaModel();
-$EnfSufridasModel = new Enf_PadecidasModel();
+$AlergiaMascotaModel = new AlergiasMascotaModel();
+$CirgsPreviasModel = new CirugiasMascotaModel();
+$EnfSufridasModel = new EnfermedadesPadecidasModel();
 
 $alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
 $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();

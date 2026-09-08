@@ -1,3 +1,5 @@
 <?php
-require_once "app/view/DashboardView.php"
+
+include_once "app/view/DashboardView.php";
+
 ?>

@@ -2,7 +2,7 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 
-class Alrg_MascotaModel extends ConexionBD {
+class AlergiasMascotaModel extends ConexionBD {
       private int $id;
       private int $alergia;
       private int $mascota;

@@ -56,6 +56,7 @@
                         <a href="?url=Especies" class="nav-link-sub">Especies</a>
                         <a href="?url=Medicamento" class="nav-link-sub">Medicamentos</a>
                         <a href="?url=TipoMedicamento" class="nav-link-sub">Tipos de Medicamento</a>
+                        <a href="?url=Presentacion" class="nav-link-sub">Presentaciones</a>
                         <a href="?url=Alergia" class="nav-link-sub">Alergias</a>
                         <a href="?url=Cirugia" class="nav-link-sub">Cirugías</a>
                         <a href="?url=Patologia" class="nav-link-sub">Patologias</a>

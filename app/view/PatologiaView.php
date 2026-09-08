@@ -38,9 +38,7 @@
                 <a href="?url=agente" class="nav-link-custom">
                     <div><i class="bi bi-shield-plus me-2"></i> Planes Sanitarios</div>
                 </a>
-                <a href="?url=Patologia" class="nav-link-custom active">
-                    <div><i class="bi bi-virus me-2"></i> Patologías</div>
-                </a>
+                
                 <a href="#menuConfiguracion" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
                     <div><i class="bi bi-gear-fill me-2"></i> Configuración</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
@@ -51,8 +49,10 @@
                         <a href="?url=Especies" class="nav-link-sub">Especies</a>
                         <a href="?url=Medicamento" class="nav-link-sub">Medicamentos</a>
                         <a href="?url=TipoMedicamento" class="nav-link-sub">Tipos de Medicamento</a>
+                        <a href="?url=Presentacion" class="nav-link-sub">Presentaciones</a>
                         <a href="?url=Alergia" class="nav-link-sub">Alergias</a>
                         <a href="?url=Cirugia" class="nav-link-sub">Cirugías</a>
+                        <a href="?url=Patologia" class="nav-link-sub ">Patologías</a>
                     </div>
                 </div>
                 <a href="#menuSeguridad" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">

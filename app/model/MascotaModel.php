@@ -13,7 +13,7 @@ class MascotaModel extends ConexionBD{
      private int $raza;
      private string $pelaje;
      private string $cliente;
-
+     
      public function agregarMascota(string $nombre, int $edad, string $sexo, string $chip, string $procedencia, string $fecha_nacimiento, int $raza, string $pelaje, string $cliente){
           $this->nombre = $nombre;
           $this->edad = $edad;
