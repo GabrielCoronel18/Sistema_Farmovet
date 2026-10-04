@@ -19,20 +19,7 @@
 					<h2 class="fw-bold text-purple mb-0">Medicamento</h2>
 					<p class="text-muted">Gestión de medicamentos</p>
 				</div>
-				<div class="dropdown">
-					<button class="btn profile-dropdown-btn d-flex align-items-center gap-2 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-						<div class="text-start d-none d-sm-block" style="line-height: 1.1;">
-							<span class="d-block fw-semibold text-dark" style="font-size: 0.85rem;">Usuario</span>
-							<span class="text-muted" style="font-size: 0.75rem;">Administrador</span>
-						</div>
-						<i class="bi bi-chevron-down text-muted ms-1" style="font-size: 0.75rem;"></i>
-					</button>
-					<ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-						<li><a class="dropdown-item py-2" href="?url=Usuario"><i class="bi bi-person me-2 text-purple"></i>Perfil</a></li>
-						<li><hr class="dropdown-divider"></li>
-						<li><a class="dropdown-item py-2 text-danger" href="?url=Login"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
-					</ul>
-				</div>
+				<?php require_once __DIR__ . '/componente/user.php'; ?>
 			</header>
 
 			<div class="d-flex justify-content-end mb-3 gap-3">

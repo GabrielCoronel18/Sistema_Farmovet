@@ -15,16 +15,22 @@
             <p class="text-muted mt-2">Iniciar Sesion</p>
         </div>
 
-        <form action="?url=Dashboard" method="POST">
+        <?php if (($_GET['error'] ?? '') === '1'): ?>
+            <div class="alert alert-danger" role="alert">
+                Correo o contraseña incorrectos, o cuenta desactivada.
+            </div>
+        <?php endif; ?>
+
+        <form method="POST">
             <div class="mb-3">
-                <label for="username" class="form-label">Usuario</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Escribe tu usuario" required>
+                <label for="correo" class="form-label">Correo</label>
+                <input type="text" class="form-control" id="correo" name="correo" placeholder="Escribe tu usuario" required>
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label">Contraseña</label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Escribe tu contraseña" required>
             </div>
-            <button type="submit" class="btn btn-purple w-100 py-2">Ingresar</button>
+            <button type="submit" name="login" class="btn btn-purple w-100 py-2">Ingresar</button>
         </form>
     </div>
 

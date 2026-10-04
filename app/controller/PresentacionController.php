@@ -1,6 +1,9 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\PresentacionModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1, 2, 3]);
 
 $PresentacionModel = new PresentacionModel();
 
@@ -25,6 +28,8 @@ if(isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
+    verificarRol([1]);
+
     $nombre = $_POST["nombre"] ?? "";
     $resultado = $PresentacionModel->agregarPresentacion($nombre);
     echo json_encode(["status" => $resultado ? "success" : "error"]);
@@ -40,6 +45,8 @@ if(isset($_POST["obtenerPresentacion"], $_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"])) {
+    verificarRol([1]);
+
     $id = $_POST["id"] ?? 0;
     $nombre = $_POST["nombre"] ?? "";
     $resultado = $PresentacionModel->actualizarPresentacion($id, $nombre);
@@ -48,6 +55,8 @@ if (isset($_POST["actualizar"])) {
 }
 
 if (isset($_POST["eliminar"])) {
+    verificarRol([1]);
+
     $id = $_POST["id"] ?? 0;
     $resultado = $PresentacionModel->eliminarPresentacion($id);
     echo json_encode(["status" => $resultado ? "success" : "error"]);

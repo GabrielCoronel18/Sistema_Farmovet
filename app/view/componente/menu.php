@@ -41,7 +41,7 @@ $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
                 <a href="?url=PlanSanitario" class="nav-link-custom <?= $urlActual === 'PlanSanitario' ? 'active' : '' ?>">
                     <div><i class="bi bi-shield-plus me-2"></i> Planes Sanitarios</div>
                 </a>
-
+                <?php if ((in_array($_SESSION['usuario']['id_rol'], [1, 2]))): ?>
                 <a href="#menuConfiguracion" data-bs-toggle="collapse" class="nav-link-custom <?= $catalogosActivo ? 'active' : '' ?>" aria-expanded="<?= $catalogosActivo ? 'true' : 'false' ?>">
                     <div><i class="bi bi-gear-fill me-2"></i> Configuracion</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
@@ -58,7 +58,8 @@ $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
                         <a href="?url=Cirugia" class="nav-link-sub <?= $urlActual === 'Cirugia' ? 'active' : '' ?>">Cirugías</a>
                     </div>
                 </div>
-
+                <?php endif; ?>
+                <?php if ((in_array($_SESSION['usuario']['id_rol'], [1]))): ?>
                 <a href="#menuSeguridad" data-bs-toggle="collapse" class="nav-link-custom <?= $administracionActiva ? 'active' : '' ?>" aria-expanded="<?= $administracionActiva ? 'true' : 'false' ?>">
                     <div><i class="bi bi-shield-lock-fill me-2"></i> Seguridad</div>
                     <i class="bi bi-chevron-down arrow-icon"></i>
@@ -69,6 +70,7 @@ $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
                         <a href="?url=Rol" class="nav-link-sub <?= $urlActual === 'Rol' ? 'active' : '' ?>">Roles</a>
                     </div>
                 </div>
+                 <?php endif; ?>
 
             </div>
 

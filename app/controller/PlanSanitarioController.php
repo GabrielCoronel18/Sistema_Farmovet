@@ -2,6 +2,7 @@
 namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\PlanSanitarioModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 require_once __DIR__ . '/../model/PlanSanitarioModel.php';
 
@@ -14,6 +15,8 @@ class PlanSanitarioController {
     }
 
     public function procesar() {
+        verificarRol([1, 2, 3]);
+
         // Manejador de llamadas asíncronas vía Fetch API (JSON)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['obtener']) || isset($_POST['action_form']) || isset($_POST['eliminar']))) {
             header('Content-Type: application/json');

@@ -1,6 +1,7 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use PDO;
 
 class UsuarioModel extends ConexionBD
 {
@@ -12,6 +13,54 @@ class UsuarioModel extends ConexionBD
     private string $contraseña;
     private int $rol;
     private int $estado;
+
+
+    public function autenticarUsuario(string $correo, string $contraseña): ?array
+    {
+        $conex = $this->getConexion();
+        $sql = "SELECT u.cedula_usuario,u.nombre,u.apellido, u.id_rol, r.nombre_rol, u.contraseña
+                FROM usuario u
+                INNER JOIN rol r ON u.id_rol = r.id_rol
+                WHERE u.correo = :correo AND u.estado = 1 AND r.estado = 1
+                LIMIT 1";
+        $query = $conex->prepare($sql);
+        $query->execute([':correo' => $correo]);
+        $usuario = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            return null;
+        }
+
+        $contraseñaGuardada = (string) $usuario['contraseña'];
+        $informacionHash = password_get_info($contraseñaGuardada);
+        $esHash = ($informacionHash['algoName'] ?? 'unknown') !== 'unknown';
+        $contraseñaValida = $esHash
+            ? password_verify($contraseña, $contraseñaGuardada)
+            : hash_equals($contraseñaGuardada, $contraseña);
+
+        if (!$contraseñaValida) {
+            return null;
+        }
+
+        if (!$esHash || password_needs_rehash($contraseñaGuardada, PASSWORD_DEFAULT)) {
+            $actualizarHash = $conex->prepare(
+                'UPDATE usuario SET contraseña = :hash WHERE cedula_usuario = :cedula AND contraseña = :anterior'
+            );
+            $actualizarHash->execute([
+                ':hash' => password_hash($contraseña, PASSWORD_DEFAULT),
+                ':cedula' => $usuario['cedula_usuario'],
+                ':anterior' => $contraseñaGuardada
+            ]);
+        }
+
+        return [
+            'cedula_usuario' => $usuario['cedula_usuario'],
+            'nombre' => $usuario['nombre'],
+            'apellido' => $usuario['apellido'],
+            'nombre_rol' => $usuario['nombre_rol'],
+            'id_rol' => (int) $usuario['id_rol']
+        ];
+    }
 
     public function agregarUsuario(
         string $cedula,
