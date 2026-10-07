@@ -2,6 +2,9 @@
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\UsuarioModel;
 use Gabriel\SistemaFarmovet\model\RolModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1]);
 
 $usuarioModel = new UsuarioModel();
 $rolModel = new RolModel();

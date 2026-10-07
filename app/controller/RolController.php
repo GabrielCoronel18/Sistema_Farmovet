@@ -1,6 +1,9 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\RolModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1]);
 
 $rolModel = new RolModel();
 

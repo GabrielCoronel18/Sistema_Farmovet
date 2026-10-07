@@ -1,5 +1,9 @@
 <?php
 use Gabriel\SistemaFarmovet\model\Cliente;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1, 2, 3]);
+
 $cliente = new Cliente();
 
 $mensajeAlerta = "";

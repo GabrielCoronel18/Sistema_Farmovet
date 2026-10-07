@@ -8,19 +8,32 @@
         private $url;
 
         public function __construct() {
+          
+        
+         session_start();
+            require_once __DIR__ . '/../helpers/auth.php';
 
-            
-            if (isset($_REQUEST["url"])) {
+                if (isset($_POST['logout'])) {
+                     $this->logout();
+                }
+          
+            if (isset($_REQUEST["url"]) && isset($_SESSION['usuario'])) {
+
                 $this->url = $_REQUEST["url"];
-            } else {
+                
+
+            } 
+            else {
                 
                 $this->url = "Login";
             }
 
             $this->dir = 'app/controller/';
             $this->controller = 'Controller.php';
-
+         
             $this->getURL();
+
+           
         }
 
         private function getURL() {
@@ -33,11 +46,17 @@
                 
             } else {
                 
-                header("Location: ?url=Login");
+                echo 'error';
                 exit();
             }
         }
-
+        private function logout(){
+            $_SESSION = [];
+            session_destroy();
+            header('Location: index.php?url=Login');
+            exit();
+        }
     }
+   
 
 ?>

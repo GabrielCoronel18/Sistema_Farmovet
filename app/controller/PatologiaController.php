@@ -1,6 +1,9 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\PatologiaModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1, 2, 3]);
 
 $patologiaModel = new PatologiaModel();
 
@@ -24,6 +27,8 @@ if (isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
+    verificarRol([1]);
+
     $nombre = $_POST["nombre"] ?? "";
     $tipo = $_POST["tipo"] ?? "";
     $sintomas = $_POST["sintomas"] ?? "";
@@ -49,6 +54,8 @@ if (isset($_POST["obtenerPatologia"]) && isset($_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"])) {
+    verificarRol([1]);
+
     $id = $_POST["id"];
     $nombre = $_POST["nombre"] ?? "";
     $tipo = $_POST["tipo"] ?? "";
@@ -63,6 +70,8 @@ if (isset($_POST["actualizar"])) {
 }
 
 if (isset($_POST["eliminar"]) && isset($_POST["id"])) {
+    verificarRol([1]);
+
     $id = $_POST["id"];
 
     if ($patologiaModel->eliminarPatologia($id)) {

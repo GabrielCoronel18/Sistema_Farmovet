@@ -2,7 +2,9 @@
 namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\MedicamentoModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
+verificarRol([1, 2, 3]);
 
 $medicamentoModel = new MedicamentoModel();
 
@@ -23,6 +25,8 @@ if (isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
+    verificarRol([1]);
+
     $nombre = $_POST["nombre"] ?? "";
     $tipo = $_POST["tipo"] ?? "";
     $presentacion = $_POST["presentacion"] ?? "";
@@ -39,6 +43,8 @@ if (isset($_POST["obtenerMedicamento"], $_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"], $_POST["id"])) {
+    verificarRol([1]);
+
     $nombre = $_POST["nombre"] ?? "";
     $tipo = $_POST["tipo"] ?? "";
     $presentacion = $_POST["presentacion"] ?? "";
@@ -49,6 +55,8 @@ if (isset($_POST["actualizar"], $_POST["id"])) {
 }
 
 if(isset($_POST["eliminar"], $_POST["id"])) {
+    verificarRol([1]);
+
     $resultado = $medicamentoModel->eliminarMedicamento($_POST["id"]);
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;

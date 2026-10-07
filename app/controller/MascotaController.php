@@ -4,6 +4,9 @@ use Gabriel\SistemaFarmovet\model\MascotaModel;
 use Gabriel\SistemaFarmovet\model\AlergiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\CirugiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\EnfermedadesPadecidasModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+
+verificarRol([1, 2, 3]);
 
 $mascotaModel = new MascotaModel();
 $AlergiaMascotaModel = new AlergiasMascotaModel();
