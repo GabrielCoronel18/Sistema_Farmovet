@@ -285,6 +285,7 @@ $esEdicion = $idConsultaEdicion > 0;
                     <div id="diagnosticos-container">
                         <?php foreach ($diagnosticosForm ?: [['id_patologia' => '', 'tipo_diagnostico' => '']] as $diagnosticoForm): ?>
                         <div class="row g-3 align-items-end mb-3 diagnostico-row">
+                            <input type="hidden" name="id_diagnostico[]" value="<?= $escapar($diagnosticoForm['id_diagnostico'] ?? '0') ?>">
                             <div class="col-md-5">
                                 <label class="form-label">Patología</label>
                                 <select class="form-select" name="id_patologia[]">
@@ -314,6 +315,7 @@ $esEdicion = $idConsultaEdicion > 0;
                     <div id="recetas-container">
                         <?php foreach ($recetasForm ?: [['id_medicamento' => '', 'dosis' => '', 'frecuencia' => '', 'duracion' => '']] as $recetaForm): ?>
                         <div class="row g-3 align-items-end mb-3 receta-row">
+                            <input type="hidden" name="id_recipe[]" value="<?= $escapar($recetaForm['id_recipe'] ?? '0') ?>">
                             <div class="col-md-3">
                                 <label class="form-label">Medicamento</label>
                                 <select class="form-select" name="id_medicamento[]">
@@ -358,6 +360,7 @@ $esEdicion = $idConsultaEdicion > 0;
 
 <template id="diagnostico-template">
     <div class="row g-3 align-items-end mb-3 diagnostico-row">
+        <input type="hidden" name="id_diagnostico[]" value="0">
         <div class="col-md-5">
             <label class="form-label">Patología</label>
             <select class="form-select" name="id_patologia[]">
@@ -378,6 +381,7 @@ $esEdicion = $idConsultaEdicion > 0;
 </template>
 <template id="receta-template">
     <div class="row g-3 align-items-end mb-3 receta-row">
+        <input type="hidden" name="id_recipe[]" value="0">
         <div class="col-md-3">
             <label class="form-label">Medicamento</label>
             <select class="form-select" name="id_medicamento[]">

@@ -113,15 +113,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $diagnosticos = [];
         $idsPatologia = $leerColeccion('id_patologia');
         $tiposDiagnostico = $leerColeccion('tipo_diagnostico');
-        if (count($idsPatologia) !== count($tiposDiagnostico)) {
+        $idsDiagnostico = $leerColeccion('id_diagnostico');
+        if (count($idsPatologia) !== count($tiposDiagnostico)
+            || ($idsDiagnostico && count($idsPatologia) !== count($idsDiagnostico))) {
             throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
         }
         foreach ($idsPatologia as $indice => $idPatologia) {
-            if (!is_scalar($idPatologia) || !is_scalar($tiposDiagnostico[$indice] ?? '')) {
+            $idDiagnostico = $idsDiagnostico[$indice] ?? '0';
+            if (!is_scalar($idPatologia) || !is_scalar($idDiagnostico)
+                || !is_scalar($tiposDiagnostico[$indice] ?? '')) {
                 throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
             }
             $idPatologia = trim((string) $idPatologia);
+            $idDiagnosticoValidado = filter_var($idDiagnostico, FILTER_VALIDATE_INT);
             $tipoDiagnostico = trim((string) ($tiposDiagnostico[$indice] ?? ''));
+            if ($idDiagnosticoValidado === false || $idDiagnosticoValidado < 0) {
+                throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
+            }
             if ($idPatologia === '' && $tipoDiagnostico === '') {
                 continue;
             }
@@ -130,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new InvalidArgumentException('Cada diagnóstico requiere una patología y un tipo.');
             }
             $diagnosticos[] = [
+                'id_diagnostico' => $idDiagnosticoValidado,
                 'id_patologia' => $idPatologiaValidado,
                 'tipo_diagnostico' => $tipoDiagnostico
             ];
@@ -140,24 +149,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dosis = $leerColeccion('dosis');
         $frecuencias = $leerColeccion('frecuencia');
         $duraciones = $leerColeccion('duracion');
+        $idsRecipe = $leerColeccion('id_recipe');
         if (count($idsMedicamento) !== count($dosis)
             || count($idsMedicamento) !== count($frecuencias)
-            || count($idsMedicamento) !== count($duraciones)) {
+            || count($idsMedicamento) !== count($duraciones)
+            || ($idsRecipe && count($idsMedicamento) !== count($idsRecipe))) {
             throw new InvalidArgumentException('Revise los medicamentos recetados.');
         }
         foreach ($idsMedicamento as $indice => $idMedicamento) {
+            $idRecipe = $idsRecipe[$indice] ?? '0';
             if (!is_scalar($idMedicamento)
+                || !is_scalar($idRecipe)
                 || !is_scalar($dosis[$indice] ?? '')
                 || !is_scalar($frecuencias[$indice] ?? '')
                 || !is_scalar($duraciones[$indice] ?? '')) {
                 throw new InvalidArgumentException('Revise los medicamentos recetados.');
             }
             $idMedicamento = trim((string) $idMedicamento);
+            $idRecipeValidado = filter_var($idRecipe, FILTER_VALIDATE_INT);
             $datosReceta = [
                 'dosis' => trim((string) ($dosis[$indice] ?? '')),
                 'frecuencia' => trim((string) ($frecuencias[$indice] ?? '')),
                 'duracion' => trim((string) ($duraciones[$indice] ?? ''))
             ];
+            if ($idRecipeValidado === false || $idRecipeValidado < 0) {
+                throw new InvalidArgumentException('Revise los medicamentos recetados.');
+            }
             if ($idMedicamento === '' && implode('', $datosReceta) === '') {
                 continue;
             }
@@ -165,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$idMedicamentoValidado || in_array('', $datosReceta, true)) {
                 throw new InvalidArgumentException('Cada medicamento requiere dosis, frecuencia y duración.');
             }
-            $recetas[] = ['id_medicamento' => $idMedicamentoValidado] + $datosReceta;
+            $recetas[] = ['id_recipe' => $idRecipeValidado, 'id_medicamento' => $idMedicamentoValidado] + $datosReceta;
         }
 
         if ($idConsultaEdicion > 0) {
@@ -230,8 +247,10 @@ try {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idsPatologia = $_POST['id_patologia'] ?? [];
             $tiposDiagnostico = $_POST['tipo_diagnostico'] ?? [];
+            $idsDiagnostico = $_POST['id_diagnostico'] ?? [];
             foreach ((array) $idsPatologia as $indice => $idPatologia) {
                 $diagnosticosForm[] = [
+                    'id_diagnostico' => is_scalar($idsDiagnostico[$indice] ?? '') ? (string) ($idsDiagnostico[$indice] ?? '') : '',
                     'id_patologia' => is_scalar($idPatologia) ? (string) $idPatologia : '',
                     'tipo_diagnostico' => is_scalar($tiposDiagnostico[$indice] ?? '') ? (string) ($tiposDiagnostico[$indice] ?? '') : ''
                 ];
@@ -240,8 +259,10 @@ try {
             $dosis = $_POST['dosis'] ?? [];
             $frecuencias = $_POST['frecuencia'] ?? [];
             $duraciones = $_POST['duracion'] ?? [];
+            $idsRecipe = $_POST['id_recipe'] ?? [];
             foreach ((array) $idsMedicamento as $indice => $idMedicamento) {
                 $recetasForm[] = [
+                    'id_recipe' => is_scalar($idsRecipe[$indice] ?? '') ? (string) ($idsRecipe[$indice] ?? '') : '',
                     'id_medicamento' => is_scalar($idMedicamento) ? (string) $idMedicamento : '',
                     'dosis' => is_scalar($dosis[$indice] ?? '') ? (string) ($dosis[$indice] ?? '') : '',
                     'frecuencia' => is_scalar($frecuencias[$indice] ?? '') ? (string) ($frecuencias[$indice] ?? '') : '',
@@ -258,6 +279,7 @@ try {
         $tiposDiagnostico = $_POST['tipo_diagnostico'] ?? [''];
         foreach ((array) $idsPatologia as $indice => $idPatologia) {
             $diagnosticosForm[] = [
+                'id_diagnostico' => '0',
                 'id_patologia' => is_scalar($idPatologia) ? (string) $idPatologia : '',
                 'tipo_diagnostico' => is_scalar($tiposDiagnostico[$indice] ?? '') ? (string) ($tiposDiagnostico[$indice] ?? '') : ''
             ];
@@ -268,6 +290,7 @@ try {
         $duraciones = $_POST['duracion'] ?? [''];
         foreach ((array) $idsMedicamento as $indice => $idMedicamento) {
             $recetasForm[] = [
+                'id_recipe' => '0',
                 'id_medicamento' => is_scalar($idMedicamento) ? (string) $idMedicamento : '',
                 'dosis' => is_scalar($dosis[$indice] ?? '') ? (string) ($dosis[$indice] ?? '') : '',
                 'frecuencia' => is_scalar($frecuencias[$indice] ?? '') ? (string) ($frecuencias[$indice] ?? '') : '',

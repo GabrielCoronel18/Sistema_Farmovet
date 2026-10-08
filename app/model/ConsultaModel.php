@@ -186,55 +186,21 @@ class ConsultaModel extends ConexionBD
         }
 
         $db = $this->getConexion();
+        $anamnesis = (new AnamnesisModel())->obtenerPorConsultas($db, $idConsultas);
+        $examenes = (new ExamenClinicoModel())->obtenerPorConsultas($db, $idConsultas);
+        $laboratorios = (new ResultadosLaboratoriaModel())->obtenerPorConsultas($db, $idConsultas);
+        $diagnosticos = (new DiagnosticoModel())->obtenerPorConsultas($db, $idConsultas);
+        $recetas = (new RecipeModel())->obtenerPorConsultas($db, $idConsultas);
+
         $detalles = [];
         foreach ($idConsultas as $idConsulta) {
             $detalles[$idConsulta] = [
-                'anamnesis' => [],
-                'examen' => [],
-                'laboratorio' => [],
-                'diagnosticos' => [],
-                'recetas' => []
+                'anamnesis' => $anamnesis[$idConsulta] ?? [],
+                'examen' => $examenes[$idConsulta] ?? [],
+                'laboratorio' => $laboratorios[$idConsulta] ?? [],
+                'diagnosticos' => $diagnosticos[$idConsulta] ?? [],
+                'recetas' => $recetas[$idConsulta] ?? []
             ];
-        }
-        $marcadores = implode(', ', array_fill(0, count($idConsultas), '?'));
-        foreach ([
-            'anamnesis' => "SELECT * FROM anamnesis WHERE id_consulta IN ({$marcadores})",
-            'examen' => "SELECT * FROM examen_clinico WHERE id_consulta IN ({$marcadores})",
-            'laboratorio' => "SELECT * FROM resultado_laboratorio WHERE id_consulta IN ({$marcadores})"
-        ] as $clave => $sql) {
-            $stmt = $db->prepare($sql);
-            $stmt->execute($idConsultas);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $registro) {
-                $detalles[(int) $registro['id_consulta']][$clave] = $registro;
-            }
-        }
-
-        $stmt = $db->prepare(
-            "SELECT d.id_consulta, d.id_patologia, d.tipo_diagnostico, p.nombre AS patologia
-             FROM diagnostico d
-             INNER JOIN patologia p ON p.id_patologia = d.id_patologia
-             WHERE d.id_consulta IN ({$marcadores})
-             ORDER BY d.id_diagnostico"
-        );
-        $stmt->execute($idConsultas);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $registro) {
-            $idConsulta = (int) $registro['id_consulta'];
-            unset($registro['id_consulta']);
-            $detalles[$idConsulta]['diagnosticos'][] = $registro;
-        }
-
-        $stmt = $db->prepare(
-            "SELECT r.id_consulta, r.id_medicamento, m.nombre_medicamento, r.dosis, r.frecuencia, r.duracion
-             FROM recipe r
-             INNER JOIN medicamento m ON m.id_medicamento = r.id_medicamento
-             WHERE r.id_consulta IN ({$marcadores})
-             ORDER BY r.id_recipe"
-        );
-        $stmt->execute($idConsultas);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $registro) {
-            $idConsulta = (int) $registro['id_consulta'];
-            unset($registro['id_consulta']);
-            $detalles[$idConsulta]['recetas'][] = $registro;
         }
 
         return $detalles;
@@ -259,86 +225,84 @@ class ConsultaModel extends ConexionBD
         array $diagnosticos,
         array $recetas
     ): void {
-        $this->guardarSeccion(
+        $this->guardarSeccion($db, $idConsulta, $anamnesis, new AnamnesisModel());
+        $this->guardarSeccion($db, $idConsulta, $examen, new ExamenClinicoModel());
+        $this->guardarSeccion($db, $idConsulta, $laboratorio, new ResultadosLaboratoriaModel());
+        $this->guardarColeccion(
             $db,
             $idConsulta,
-            'anamnesis',
-            $anamnesis,
-            [
-                'motivo_consulta', 'inicio_enfermedad', 'examenes_efectuados', 'tratamientos_realizados',
-                'ult_desp_interna', 'ult_desp_int_producto', 'ult_desp_externa', 'ult_desp_ext_producto',
-                'ultima_vacunacion', 'tipo_alimentacion', 'frec_alimentacion', 'apetito', 'ingesta_agua',
-                'contacto_animal', 'vomito', 'heces', 'miccion', 'fch_ultimo_celo', 'prod_higiene',
-                'frec_higiene', 'int_ambiente', 'ext_ambiente', 'act_ectoparasitos', 'ant_ectoparasitos'
-            ],
-            AnamnesisModel::class
+            $diagnosticos,
+            (new DiagnosticoModel())->obtenerPorConsulta($db, $idConsulta),
+            new DiagnosticoModel(),
+            'id_diagnostico'
         );
-        $this->guardarSeccion(
+        $this->guardarColeccion(
             $db,
             $idConsulta,
-            'examen_clinico',
-            $examen,
-            [
-                'peso', 'cc', 'temp_celsius', 'pulso_yugular', 'fr_rpm', 'fc_lpm', 'pulso_ppm',
-                'tlc_seg', 'tpc_seg', 'pas', 'pad', 'prcnt_deshidratacion', 'gangliios_palpables',
-                'mucosas_visibles', 'ectoparasitos', 'actitud', 'hallazgos'
-            ],
-            ExamenClinicoModel::class
+            $recetas,
+            (new RecipeModel())->obtenerPorConsulta($db, $idConsulta),
+            new RecipeModel(),
+            'id_recipe'
         );
-        $this->guardarSeccion(
-            $db,
-            $idConsulta,
-            'resultado_laboratorio',
-            $laboratorio,
-            [
-                'hematologia_completa', 'coprologia', 'quimica_sanguinea', 'uro_sangre', 'uro_urob',
-                'uro_bli', 'uro_prot', 'uro_nitritos', 'uro_cetona', 'uro_glucosa', 'uro_ph', 'uro_leu',
-                'uro_densidad', 'uro_microorganismos', 'uro_celulas', 'uro_cilindros', 'uro_cristales',
-                'descarte', 'piel_otros', 'snap', 'observaciones'
-            ],
-            ResultadosLaboratoriaModel::class
-        );
-
-        foreach (['diagnostico', 'recipe'] as $tabla) {
-            $stmt = $db->prepare("DELETE FROM {$tabla} WHERE id_consulta = ?");
-            $stmt->execute([$idConsulta]);
-        }
-        foreach ($diagnosticos as $diagnostico) {
-            (new DiagnosticoModel())->registrar($db, $idConsulta, $diagnostico);
-        }
-        foreach ($recetas as $receta) {
-            (new RecipeModel())->registrar($db, $idConsulta, $receta);
-        }
     }
 
     private function guardarSeccion(
         PDO $db,
         int $idConsulta,
-        string $tabla,
         array $datos,
-        array $columnas,
-        string $modelo
+        object $modelo
     ): void {
-        $stmt = $db->prepare("SELECT 1 FROM {$tabla} WHERE id_consulta = ?");
-        $stmt->execute([$idConsulta]);
-        $existe = (bool) $stmt->fetchColumn();
-
+        $registro = $modelo->obtenerPorConsulta($db, $idConsulta);
         if (!$this->contieneDatos($datos)) {
-            if ($existe) {
-                $stmt = $db->prepare("DELETE FROM {$tabla} WHERE id_consulta = ?");
-                $stmt->execute([$idConsulta]);
+            if ($registro) {
+                $columnas = array_filter(
+                    array_keys($registro),
+                    static fn(string $columna): bool => !str_starts_with($columna, 'id_')
+                );
+                $modelo->actualizar($db, $idConsulta, array_fill_keys($columnas, null));
             }
             return;
         }
 
-        if (!$existe) {
-            (new $modelo())->registrar($db, $idConsulta, $datos);
+        if (!$registro) {
+            $modelo->agregar($db, $idConsulta, $datos);
             return;
         }
+        $modelo->actualizar($db, $idConsulta, $datos);
+    }
 
-        $asignaciones = implode(', ', array_map(static fn(string $columna): string => "{$columna} = ?", $columnas));
-        $valores = array_map(static fn(string $columna) => $datos[$columna] ?? null, $columnas);
-        $stmt = $db->prepare("UPDATE {$tabla} SET {$asignaciones} WHERE id_consulta = ?");
-        $stmt->execute(array_merge($valores, [$idConsulta]));
+    private function guardarColeccion(
+        PDO $db,
+        int $idConsulta,
+        array $datosNuevos,
+        array $datosExistentes,
+        object $modelo,
+        string $idCampo
+    ): void {
+        $existentes = [];
+        foreach ($datosExistentes as $registro) {
+            $existentes[(int) $registro[$idCampo]] = $registro;
+        }
+
+        $conservar = [];
+        foreach ($datosNuevos as $datos) {
+            $idRegistro = (int) ($datos[$idCampo] ?? 0);
+            unset($datos[$idCampo]);
+            if ($idRegistro > 0) {
+                if (!isset($existentes[$idRegistro])) {
+                    throw new \InvalidArgumentException('No se encontró uno de los detalles asociados a la consulta.');
+                }
+                $modelo->actualizar($db, $idRegistro, $idConsulta, $datos);
+                $conservar[] = $idRegistro;
+            } else {
+                $modelo->agregar($db, $idConsulta, $datos);
+            }
+        }
+
+        foreach ($existentes as $idRegistro => $_registro) {
+            if (!in_array($idRegistro, $conservar, true)) {
+                $modelo->eliminar($db, $idRegistro, $idConsulta);
+            }
+        }
     }
 }
