@@ -20,7 +20,7 @@
                 <p class="text-muted">Gestión de Roles del Sistema</p>
             </div>
            <?php require_once __DIR__ . '/componente/user.php'; ?>
-
+        </header>
         <div class="d-flex justify-content-end mb-3">
             <div class="me-3">
                 <form id="form-buscar" class="d-flex">
@@ -81,7 +81,7 @@
                                 <td>${rol.id_rol}</td>
                                 <td>${rol.nombre_rol}</td>
                                 <td>
-                                    <a href="?url=Rol&accion=editar&id=${rol.id_rol}" class="btn btn-sm btn-success">Editar</a>
+                                    <a href="?url=Rol&accion=editar&id=${rol.id_rol}" class="btn btn-sm btn-success">Actualizar</a>
                                     <button class="btn btn-sm btn-danger btn-eliminar" data-id="${rol.id_rol}">Eliminar</button>
                                 </td>
                             </tr>`;
