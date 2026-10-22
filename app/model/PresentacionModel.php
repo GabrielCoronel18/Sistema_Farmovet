@@ -8,15 +8,16 @@ class PresentacionModel extends ConexionBD {
     private string $nombre;
     private int $estado;
 
-    public function agregarPresentacion(string $nombre) {
+    public function agregarPresentacion(string $nombre, int $estado = 1) {
         $this->nombre = $nombre;
 
         $conex = $this->getConexion();
         $sql = "INSERT INTO presentacion (nombre_presentacion, estado)
-                VALUES (:nombre, 1)";
+                VALUES (:nombre, :estado)";
 
         $query = $conex->prepare($sql);
         $query->bindParam(":nombre", $this->nombre);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
 
         return $query->execute();
     }
@@ -25,7 +26,6 @@ class PresentacionModel extends ConexionBD {
         $offset = ($pagina * $limitacion) - $limitacion;
         $conex = $this->getConexion();
         $sql = "SELECT * FROM presentacion
-                WHERE estado = 1
                 LIMIT :limitacion OFFSET :offset";
 
         $query = $conex->prepare($sql);
@@ -39,7 +39,7 @@ class PresentacionModel extends ConexionBD {
     public function obtenerPresentacionPorId(int $id) {
         $this->id = $id;
         $conex = $this->getConexion();
-        $query = $conex->prepare("SELECT * FROM presentacion WHERE id_presentacion = :id AND estado = 1");
+        $query = $conex->prepare("SELECT * FROM presentacion WHERE id_presentacion = :id ");
         $query->bindParam(":id", $this->id, \PDO::PARAM_INT);
         $query->execute();
 
@@ -63,15 +63,16 @@ class PresentacionModel extends ConexionBD {
         return $query->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function actualizarPresentacion(int $id, string $nombre) {
+    public function actualizarPresentacion(int $id, string $nombre, int $estado) {
         $this->id = $id;
         $this->nombre = $nombre;
 
         $conex = $this->getConexion();
-        $sql = "UPDATE presentacion SET nombre_presentacion = :nombre WHERE id_presentacion = :id AND estado = 1";
+        $sql = "UPDATE presentacion SET nombre_presentacion = :nombre, estado = :estado WHERE id_presentacion = :id";
 
         $query = $conex->prepare($sql);
         $query->bindParam(":nombre", $this->nombre);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
         $query->bindParam(":id", $this->id, \PDO::PARAM_INT);
 
         return $query->execute();

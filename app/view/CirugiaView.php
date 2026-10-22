@@ -36,7 +36,9 @@
 							<th class="table-purple">Id</th>
 							<th class="table-purple">Nombre</th>
 							<th class="table-purple">Gravedad</th>
+							<th class="table-purple">Estado</th>
 							<th class="table-purple">Acciones</th>
+							
 						</tr>
 					</thead>
 					<tbody id="TablaCirugias"></tbody>
@@ -68,6 +70,15 @@
                                 <option value="Leve">Leve</option>
                             </select>
 						</div>
+						<?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
+						<div class="mb-3">
+							<label for="estado" class="form-label">Estado</label>
+							<select class="form-select" id="estado" name="estado" required>
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+						</div>
+						<?php endif; ?>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>

@@ -31,6 +31,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				tablaPresentaciones.innerHTML += `<tr>
 					<td class="table-light">${presentacion.id_presentacion}</td>
 					<td class="table-light">${presentacion.nombre_presentacion}</td>
+					<td class="table-light">${presentacion.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
 					<td class="table-light">
 						<button class="btn btn-sm btn-success btn-actualizar" value="${presentacion.id_presentacion}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
 						<button class="btn btn-sm btn-danger btn-eliminar" value="${presentacion.id_presentacion}">Eliminar</button>
@@ -70,6 +71,8 @@ tablaPresentaciones.addEventListener("click", event => {
 				const presentacion = resultado.resultado;
 				document.getElementById("id_presentacion").value = presentacion.id_presentacion;
 				document.getElementById("nombre").value = presentacion.nombre_presentacion;
+				const estadoInput = document.getElementById("estado_presentacion");
+				if (estadoInput) estadoInput.value = presentacion.estado;
 				tituloModal.innerText = "Actualizar Presentación";
 			});
 	}

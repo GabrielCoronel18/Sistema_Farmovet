@@ -28,12 +28,13 @@ if (isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
-	verificarRol([1]);
+	verificarRol([1, 2]);
 
 	$nombre = trim((string) ($_POST["nombre_cirugia"] ?? ""));
 	$gravedad = trim((string) ($_POST["gravedad"] ?? ""));
+	$estado = (int) $_POST["estado"];
 	$resultado = $nombre !== "" && $gravedad !== ""
-		? $cirugiaModel->agregarCirugia($nombre, $gravedad)
+		? $cirugiaModel->agregarCirugia($nombre, $gravedad, $estado)
 		: false;
 
 	echo json_encode(["status" => $resultado ? "success" : "error"]);
@@ -50,12 +51,13 @@ if (isset($_POST["obtenerCirugia"], $_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"], $_POST["id"])) {
-	verificarRol([1]);
+	verificarRol([1, 2]);
 	
 	$nombre = trim((string) ($_POST["nombre_cirugia"] ?? ""));
 	$gravedad = trim((string) ($_POST["gravedad"] ?? ""));
+	$estado = (int) $_POST["estado"];
 	$resultado = $nombre !== "" && $gravedad !== ""
-		? $cirugiaModel->actualizarCirugia((int) $_POST["id"], $nombre, $gravedad)
+		? $cirugiaModel->actualizarCirugia((int) $_POST["id"], $nombre, $gravedad, $estado)
 		: false;
 
 	echo json_encode(["status" => $resultado ? "success" : "error"]);
@@ -63,7 +65,7 @@ if (isset($_POST["actualizar"], $_POST["id"])) {
 }
 
 if (isset($_POST["eliminar"], $_POST["id"])) {
-	verificarRol([1]);
+	verificarRol([1, 2]);
 
 	$resultado = $cirugiaModel->eliminarCirugia((int) $_POST["id"]);
 	echo json_encode(["status" => $resultado ? "success" : "error"]);

@@ -31,6 +31,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				tablaTipoMedicamentos.innerHTML += `<tr>
 					<td class="table-light">${tipoMedicamento.id_tipo_medicamento}</td>
 					<td class="table-light">${tipoMedicamento.nom_tipo_medicamento}</td>
+					<td class="table-light">${tipoMedicamento.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
 					<td class="table-light">
 						<button class="btn btn-sm btn-success btn-actualizar" value="${tipoMedicamento.id_tipo_medicamento}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
 						<button class="btn btn-sm btn-danger btn-eliminar" value="${tipoMedicamento.id_tipo_medicamento}">Eliminar</button>
@@ -71,6 +72,8 @@ tablaTipoMedicamentos.addEventListener("click", event => {
 				const tipoMedicamento = resultado.resultado;
 				document.getElementById("id_tipo_medicamento").value = tipoMedicamento.id_tipo_medicamento;
 				document.getElementById("nombre").value = tipoMedicamento.nom_tipo_medicamento;
+				const estadoInput = document.getElementById("estado_tipo_medicamento");
+				if (estadoInput) estadoInput.value = tipoMedicamento.estado;
 				tituloModal.innerText = "Actualizar Tipo de Medicamento";
 			});
 	}

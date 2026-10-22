@@ -30,8 +30,9 @@ if(isset($_POST["obtener"])) {
 if (isset($_POST["agregar"])) {
     verificarRol([1]);
 
-    $nombre = $_POST["nombre"] ?? "";
-    $resultado = $PresentacionModel->agregarPresentacion($nombre);
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $estado = (int) ($_POST["estado_presentacion"] ?? 1);
+    $resultado = $nombre !== "" ? $PresentacionModel->agregarPresentacion($nombre, $estado) : false;
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }
@@ -47,9 +48,10 @@ if(isset($_POST["obtenerPresentacion"], $_POST["id"])) {
 if (isset($_POST["actualizar"])) {
     verificarRol([1]);
 
-    $id = $_POST["id"] ?? 0;
-    $nombre = $_POST["nombre"] ?? "";
-    $resultado = $PresentacionModel->actualizarPresentacion($id, $nombre);
+    $id = (int) ($_POST["id"] ?? 0);
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $estado = (int) ($_POST["estado_presentacion"] ?? 1);
+    $resultado = $id > 0 && $nombre !== "" ? $PresentacionModel->actualizarPresentacion($id, $nombre, $estado) : false;
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }

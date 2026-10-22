@@ -29,15 +29,16 @@ if (isset($_POST["obtener"])) {
 if (isset($_POST["agregar"])) {
     verificarRol([1]);
 
-    $nombre = $_POST["nombre"] ?? "";
-    $tipo = $_POST["tipo"] ?? "";
-    $sintomas = $_POST["sintomas"] ?? "";
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $tipo = trim((string) ($_POST["tipo"] ?? ""));
+    $sintomas = trim((string) ($_POST["sintomas"] ?? ""));
+    $estado = (int) ($_POST["estado_patologia"] ?? 1);
 
-    if ($patologiaModel->agregarPatologia($nombre, $tipo, $sintomas)) {
-        echo json_encode(["status" => "success"]);
-    } else {
-        echo json_encode(["status" => "error"]);
-    }
+    $resultado = $nombre !== "" && $tipo !== "" && $sintomas !== ""
+        ? $patologiaModel->agregarPatologia($nombre, $tipo, $sintomas, $estado)
+        : false;
+
+    echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }
 
@@ -56,16 +57,17 @@ if (isset($_POST["obtenerPatologia"]) && isset($_POST["id"])) {
 if (isset($_POST["actualizar"])) {
     verificarRol([1]);
 
-    $id = $_POST["id"];
-    $nombre = $_POST["nombre"] ?? "";
-    $tipo = $_POST["tipo"] ?? "";
-    $sintomas = $_POST["sintomas"] ?? "";
+    $id = (int) ($_POST["id"] ?? 0);
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $tipo = trim((string) ($_POST["tipo"] ?? ""));
+    $sintomas = trim((string) ($_POST["sintomas"] ?? ""));
+    $estado = (int) ($_POST["estado_patologia"] ?? 1);
 
-    if ($patologiaModel->actualizarPatologia($id, $nombre, $tipo, $sintomas)) {
-        echo json_encode(["status" => "success"]);
-    } else {
-        echo json_encode(["status" => "error"]);
-    }
+    $resultado = $id > 0 && $nombre !== "" && $tipo !== "" && $sintomas !== ""
+        ? $patologiaModel->actualizarPatologia($id, $nombre, $tipo, $sintomas, $estado)
+        : false;
+
+    echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }
 

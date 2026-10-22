@@ -23,6 +23,7 @@ function obtenerDatos(param = null) {
 					<td class="table-light">${cirugia.id_cirugia}</td>
 					<td class="table-light">${cirugia.nombre_cirugia}</td>
 					<td class="table-light">${cirugia.gravedad}</td>
+					<td class="table-light">${cirugia.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class=' badge bg-secondary'>Inactivo</span>"}</td>
 					<td class="table-light">
 						<button class="btn btn-sm btn-success btn-actualizar" value="${cirugia.id_cirugia}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
 						<button class="btn btn-sm btn-danger btn-eliminar" value="${cirugia.id_cirugia}">Eliminar</button>
@@ -54,6 +55,8 @@ tablaCirugias.addEventListener("click", event => {
 				document.getElementById("id_cirugia").value = cirugia.id_cirugia;
 				document.getElementById("nombre_cirugia").value = cirugia.nombre_cirugia;
 				document.getElementById("gravedad").value = cirugia.gravedad;
+				const estadoInput = document.getElementById("estado");
+				if (estadoInput) estadoInput.value = cirugia.estado;
 				tituloModal.innerText = "Actualizar Cirugía";
 			});
 	}
