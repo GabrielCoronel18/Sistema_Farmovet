@@ -6,7 +6,19 @@ use PDOException;
 abstract class ConexionBD{
     protected PDO $conex;
 
-    protected function getConexion(){
+    public function __construct(?PDO $conex = null)
+    {
+        if ($conex !== null) {
+            $this->conex = $conex;
+        }
+    }
+
+    protected function getConexion(): PDO
+    {
+       if (isset($this->conex)) {
+           return $this->conex;
+       }
+
        $dsn = "mysql:host=localhost;dbname=farmovet;";
        $username = "root";
        $password = "";

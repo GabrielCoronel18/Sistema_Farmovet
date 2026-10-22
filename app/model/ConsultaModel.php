@@ -7,6 +7,18 @@ use Throwable;
 
 class ConsultaModel extends ConexionBD
 {
+    public ?int $id_consulta = null;
+    public ?string $cedula_usuario = null;
+    public ?int $id_mascota = null;
+    public ?string $fecha = null;
+    public ?int $tipo_ingreso = null;
+    public ?int $remitido = null;
+    public ?string $pronostico = null;
+    public ?string $tratamiento_consulta = null;
+    public ?string $peso_consulta = null;
+    public ?string $comentario = null;
+    public ?int $estado = null;
+
     public function obtenerMascotasActivas(): array
     {
         $db = $this->getConexion();
@@ -37,6 +49,81 @@ class ConsultaModel extends ConexionBD
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function agregar(): int
+    {
+        $stmt = $this->getConexion()->prepare(
+            "INSERT INTO consulta
+                (cedula_usuario, id_mascota, fecha, tipo_ingreso, remitido, pronostico,
+                 tratamiento_consulta, `peso_trat-consulta`, comentario_seguimientoo, estado)
+             VALUES
+                (:cedula_usuario, :id_mascota, :fecha, :tipo_ingreso, :remitido, :pronostico,
+                 :tratamiento_consulta, :peso_consulta, :comentario, 1)"
+        );
+        $stmt->execute([
+            ':cedula_usuario' => $this->cedula_usuario,
+            ':id_mascota' => $this->id_mascota,
+            ':fecha' => $this->fecha,
+            ':tipo_ingreso' => $this->tipo_ingreso,
+            ':remitido' => $this->remitido,
+            ':pronostico' => $this->pronostico,
+            ':tratamiento_consulta' => $this->tratamiento_consulta,
+            ':peso_consulta' => $this->peso_consulta,
+            ':comentario' => $this->comentario
+        ]);
+        $this->id_consulta = (int) $this->getConexion()->lastInsertId();
+        return $this->id_consulta;
+    }
+
+    public function obtener(int $idConsulta): ?array
+    {
+        $stmt = $this->getConexion()->prepare(
+            "SELECT id_consulta, id_mascota, fecha, tipo_ingreso, remitido, pronostico,
+                    tratamiento_consulta, `peso_trat-consulta` AS peso_consulta,
+                    comentario_seguimientoo AS comentario
+             FROM consulta
+             WHERE id_consulta = ? AND estado = 1"
+        );
+        $stmt->execute([$idConsulta]);
+        $consulta = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$consulta) {
+            return null;
+        }
+        $this->cargarConsulta($consulta);
+        $this->id_consulta = $idConsulta;
+        return $consulta;
+    }
+
+    public function actualizar(): bool
+    {
+        $db = $this->getConexion();
+        $stmt = $db->prepare(
+            "UPDATE consulta
+             SET id_mascota = :id_mascota, fecha = :fecha, tipo_ingreso = :tipo_ingreso,
+                 remitido = :remitido, pronostico = :pronostico,
+                 tratamiento_consulta = :tratamiento_consulta,
+                 `peso_trat-consulta` = :peso_consulta,
+                 comentario_seguimientoo = :comentario
+             WHERE id_consulta = :id_consulta AND estado = 1"
+        );
+        $stmt->execute([
+            ':id_mascota' => $this->id_mascota,
+            ':fecha' => $this->fecha,
+            ':tipo_ingreso' => $this->tipo_ingreso,
+            ':remitido' => $this->remitido,
+            ':pronostico' => $this->pronostico,
+            ':tratamiento_consulta' => $this->tratamiento_consulta,
+            ':peso_consulta' => $this->peso_consulta,
+            ':comentario' => $this->comentario,
+            ':id_consulta' => $this->id_consulta
+        ]);
+        if ($stmt->rowCount() !== 0) {
+            return true;
+        }
+        $verificar = $db->prepare('SELECT 1 FROM consulta WHERE id_consulta = ? AND estado = 1');
+        $verificar->execute([$this->id_consulta]);
+        return (bool) $verificar->fetchColumn();
+    }
+
     public function registrarConsulta(
         array $consulta,
         array $anamnesis,
@@ -45,30 +132,12 @@ class ConsultaModel extends ConexionBD
         array $diagnosticos,
         array $recetas
     ): int {
+        $this->cargarConsulta($consulta);
         $db = $this->getConexion();
         $db->beginTransaction();
 
         try {
-            $stmt = $db->prepare(
-                "INSERT INTO consulta
-                    (cedula_usuario, id_mascota, fecha, tipo_ingreso, remitido, pronostico,
-                     tratamiento_consulta, `peso_trat-consulta`, comentario_seguimientoo, estado)
-                 VALUES
-                    (:cedula_usuario, :id_mascota, :fecha, :tipo_ingreso, :remitido, :pronostico,
-                     :tratamiento_consulta, :peso_consulta, :comentario, 1)"
-            );
-            $stmt->execute([
-                ':cedula_usuario' => $consulta['cedula_usuario'],
-                ':id_mascota' => $consulta['id_mascota'],
-                ':fecha' => $consulta['fecha'],
-                ':tipo_ingreso' => $consulta['tipo_ingreso'],
-                ':remitido' => $consulta['remitido'],
-                ':pronostico' => $consulta['pronostico'] ?? '',
-                ':tratamiento_consulta' => $consulta['tratamiento_consulta'] ?? '',
-                ':peso_consulta' => $consulta['peso_consulta'] ?? '',
-                ':comentario' => $consulta['comentario'] ?? ''
-            ]);
-            $idConsulta = (int) $db->lastInsertId();
+            $idConsulta = $this->agregar();
             $this->guardarSecciones($db, $idConsulta, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas);
 
             $db->commit();
@@ -90,37 +159,14 @@ class ConsultaModel extends ConexionBD
         array $diagnosticos,
         array $recetas
     ): void {
+        $this->cargarConsulta($consulta);
+        $this->id_consulta = $idConsulta;
         $db = $this->getConexion();
         $db->beginTransaction();
 
         try {
-            $stmt = $db->prepare(
-                "UPDATE consulta
-                 SET id_mascota = :id_mascota, fecha = :fecha, tipo_ingreso = :tipo_ingreso,
-                     remitido = :remitido, pronostico = :pronostico,
-                     tratamiento_consulta = :tratamiento_consulta,
-                     `peso_trat-consulta` = :peso_consulta,
-                     comentario_seguimientoo = :comentario
-                 WHERE id_consulta = :id_consulta AND estado = 1"
-            );
-            $stmt->execute([
-                ':id_mascota' => $consulta['id_mascota'],
-                ':fecha' => $consulta['fecha'],
-                ':tipo_ingreso' => $consulta['tipo_ingreso'],
-                ':remitido' => $consulta['remitido'],
-                ':pronostico' => $consulta['pronostico'] ?? '',
-                ':tratamiento_consulta' => $consulta['tratamiento_consulta'] ?? '',
-                ':peso_consulta' => $consulta['peso_consulta'] ?? '',
-                ':comentario' => $consulta['comentario'] ?? '',
-                ':id_consulta' => $idConsulta
-            ]);
-
-            if ($stmt->rowCount() === 0) {
-                $verificar = $db->prepare('SELECT 1 FROM consulta WHERE id_consulta = ? AND estado = 1');
-                $verificar->execute([$idConsulta]);
-                if (!$verificar->fetchColumn()) {
-                    throw new \RuntimeException('La consulta que intenta actualizar no está disponible.');
-                }
+            if (!$this->actualizar()) {
+                throw new \RuntimeException('La consulta que intenta actualizar no está disponible.');
             }
 
             $this->guardarSecciones($db, $idConsulta, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas);
@@ -135,17 +181,7 @@ class ConsultaModel extends ConexionBD
 
     public function obtenerConsultaParaEditar(int $idConsulta): ?array
     {
-        $db = $this->getConexion();
-        $stmt = $db->prepare(
-            "SELECT id_consulta, id_mascota, fecha, tipo_ingreso, remitido, pronostico,
-                    tratamiento_consulta, `peso_trat-consulta` AS peso_consulta,
-                    comentario_seguimientoo AS comentario
-             FROM consulta
-             WHERE id_consulta = ? AND estado = 1"
-        );
-        $stmt->execute([$idConsulta]);
-        $consulta = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$consulta) {
+        if (!$consulta = $this->obtener($idConsulta)) {
             return null;
         }
 
@@ -186,11 +222,11 @@ class ConsultaModel extends ConexionBD
         }
 
         $db = $this->getConexion();
-        $anamnesis = (new AnamnesisModel())->obtenerPorConsultas($db, $idConsultas);
-        $examenes = (new ExamenClinicoModel())->obtenerPorConsultas($db, $idConsultas);
-        $laboratorios = (new ResultadosLaboratoriaModel())->obtenerPorConsultas($db, $idConsultas);
-        $diagnosticos = (new DiagnosticoModel())->obtenerPorConsultas($db, $idConsultas);
-        $recetas = (new RecipeModel())->obtenerPorConsultas($db, $idConsultas);
+        $anamnesis = (new AnamnesisModel($db))->obtenerPorConsultas($idConsultas);
+        $examenes = (new ExamenClinicoModel($db))->obtenerPorConsultas($idConsultas);
+        $laboratorios = (new ResultadosLaboratoriaModel($db))->obtenerPorConsultas($idConsultas);
+        $diagnosticos = (new DiagnosticoModel($db))->obtenerPorConsultas($idConsultas);
+        $recetas = (new RecipeModel($db))->obtenerPorConsultas($idConsultas);
 
         $detalles = [];
         foreach ($idConsultas as $idConsulta) {
@@ -225,54 +261,49 @@ class ConsultaModel extends ConexionBD
         array $diagnosticos,
         array $recetas
     ): void {
-        $this->guardarSeccion($db, $idConsulta, $anamnesis, new AnamnesisModel());
-        $this->guardarSeccion($db, $idConsulta, $examen, new ExamenClinicoModel());
-        $this->guardarSeccion($db, $idConsulta, $laboratorio, new ResultadosLaboratoriaModel());
+        $this->guardarSeccion($idConsulta, $anamnesis, new AnamnesisModel($db));
+        $this->guardarSeccion($idConsulta, $examen, new ExamenClinicoModel($db));
+        $this->guardarSeccion($idConsulta, $laboratorio, new ResultadosLaboratoriaModel($db));
         $this->guardarColeccion(
-            $db,
             $idConsulta,
             $diagnosticos,
-            (new DiagnosticoModel())->obtenerPorConsulta($db, $idConsulta),
-            new DiagnosticoModel(),
+            (new DiagnosticoModel($db))->obtenerPorConsulta($idConsulta),
+            new DiagnosticoModel($db),
             'id_diagnostico'
         );
         $this->guardarColeccion(
-            $db,
             $idConsulta,
             $recetas,
-            (new RecipeModel())->obtenerPorConsulta($db, $idConsulta),
-            new RecipeModel(),
+            (new RecipeModel($db))->obtenerPorConsulta($idConsulta),
+            new RecipeModel($db),
             'id_recipe'
         );
     }
 
     private function guardarSeccion(
-        PDO $db,
         int $idConsulta,
         array $datos,
         object $modelo
     ): void {
-        $registro = $modelo->obtenerPorConsulta($db, $idConsulta);
+        $modelo->id_consulta = $idConsulta;
+        $registro = $modelo->obtenerPorConsulta($idConsulta);
+        $modelo->cargarDatos($datos);
         if (!$this->contieneDatos($datos)) {
             if ($registro) {
-                $columnas = array_filter(
-                    array_keys($registro),
-                    static fn(string $columna): bool => !str_starts_with($columna, 'id_')
-                );
-                $modelo->actualizar($db, $idConsulta, array_fill_keys($columnas, null));
+                $modelo->limpiarCampos();
+                $modelo->actualizar();
             }
             return;
         }
 
         if (!$registro) {
-            $modelo->agregar($db, $idConsulta, $datos);
+            $modelo->agregar();
             return;
         }
-        $modelo->actualizar($db, $idConsulta, $datos);
+        $modelo->actualizar();
     }
 
     private function guardarColeccion(
-        PDO $db,
         int $idConsulta,
         array $datosNuevos,
         array $datosExistentes,
@@ -288,21 +319,39 @@ class ConsultaModel extends ConexionBD
         foreach ($datosNuevos as $datos) {
             $idRegistro = (int) ($datos[$idCampo] ?? 0);
             unset($datos[$idCampo]);
+            $modelo->cargarDatos($datos);
+            $modelo->id_consulta = $idConsulta;
             if ($idRegistro > 0) {
                 if (!isset($existentes[$idRegistro])) {
                     throw new \InvalidArgumentException('No se encontró uno de los detalles asociados a la consulta.');
                 }
-                $modelo->actualizar($db, $idRegistro, $idConsulta, $datos);
+                $modelo->$idCampo = $idRegistro;
+                $modelo->actualizar();
                 $conservar[] = $idRegistro;
             } else {
-                $modelo->agregar($db, $idConsulta, $datos);
+                $modelo->agregar();
             }
         }
 
         foreach ($existentes as $idRegistro => $_registro) {
             if (!in_array($idRegistro, $conservar, true)) {
-                $modelo->eliminar($db, $idRegistro, $idConsulta);
+                $modelo->$idCampo = $idRegistro;
+                $modelo->id_consulta = $idConsulta;
+                $modelo->eliminar();
             }
         }
+    }
+
+    private function cargarConsulta(array $consulta): void
+    {
+        $this->cedula_usuario = $consulta['cedula_usuario'] ?? $this->cedula_usuario;
+        $this->id_mascota = isset($consulta['id_mascota']) ? (int) $consulta['id_mascota'] : $this->id_mascota;
+        $this->fecha = $consulta['fecha'] ?? $this->fecha;
+        $this->tipo_ingreso = isset($consulta['tipo_ingreso']) ? (int) $consulta['tipo_ingreso'] : $this->tipo_ingreso;
+        $this->remitido = isset($consulta['remitido']) ? (int) $consulta['remitido'] : $this->remitido;
+        $this->pronostico = $consulta['pronostico'] ?? '';
+        $this->tratamiento_consulta = $consulta['tratamiento_consulta'] ?? '';
+        $this->peso_consulta = $consulta['peso_consulta'] ?? '';
+        $this->comentario = $consulta['comentario'] ?? '';
     }
 }

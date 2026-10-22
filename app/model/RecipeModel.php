@@ -1,46 +1,64 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 
+use Gabriel\SistemaFarmovet\config\ConexionBD;
 use PDO;
 
-class RecipeModel
+class RecipeModel extends ConexionBD
 {
-    public function agregar(PDO $db, int $idConsulta, array $datos): void
+    public ?int $id_recipe = null;
+    public ?int $id_consulta = null;
+    public ?int $id_medicamento = null;
+    public ?string $dosis = null;
+    public ?string $frecuencia = null;
+    public ?string $duracion = null;
+
+    public function cargarDatos(array $datos): void
     {
-        $stmt = $db->prepare(
-            "INSERT INTO recipe (id_consulta, id_medicamento, dosis, frecuencia, duracion)
-             VALUES (?, ?, ?, ?, ?)"
-        );
-        $stmt->execute([
-            $idConsulta,
-            $datos['id_medicamento'],
-            $datos['dosis'],
-            $datos['frecuencia'],
-            $datos['duracion']
-        ]);
+        foreach ($datos as $campo => $valor) {
+            if (property_exists($this, $campo)) {
+                $this->$campo = $valor === '' ? null : $valor;
+            }
+        }
     }
 
-    public function obtenerPorConsulta(PDO $db, int $idConsulta): array
+    public function agregar(): void
     {
-        $stmt = $db->prepare(
-            "SELECT r.id_recipe, r.id_consulta, r.id_medicamento,
+        $stmt = $this->getConexion()->prepare(
+            'INSERT INTO recipe (id_consulta, id_medicamento, dosis, frecuencia, duracion)
+             VALUES (:id_consulta, :id_medicamento, :dosis, :frecuencia, :duracion)'
+        );
+        $stmt->execute([
+            ':id_consulta' => $this->id_consulta,
+            ':id_medicamento' => $this->id_medicamento,
+            ':dosis' => $this->dosis,
+            ':frecuencia' => $this->frecuencia,
+            ':duracion' => $this->duracion
+        ]);
+        $this->id_recipe = (int) $this->getConexion()->lastInsertId();
+    }
+
+    public function obtenerPorConsulta(int $idConsulta): array
+    {
+        $stmt = $this->getConexion()->prepare(
+            'SELECT r.id_recipe, r.id_consulta, r.id_medicamento,
                     m.nombre_medicamento, r.dosis, r.frecuencia, r.duracion
              FROM recipe r
              INNER JOIN medicamento m ON m.id_medicamento = r.id_medicamento
              WHERE r.id_consulta = ?
-             ORDER BY r.id_recipe"
+             ORDER BY r.id_recipe'
         );
         $stmt->execute([$idConsulta]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerPorConsultas(PDO $db, array $idConsultas): array
+    public function obtenerPorConsultas(array $idConsultas): array
     {
         if (!$idConsultas) {
             return [];
         }
         $marcadores = implode(', ', array_fill(0, count($idConsultas), '?'));
-        $stmt = $db->prepare(
+        $stmt = $this->getConexion()->prepare(
             "SELECT r.id_recipe, r.id_consulta, r.id_medicamento,
                     m.nombre_medicamento, r.dosis, r.frecuencia, r.duracion
              FROM recipe r
@@ -56,26 +74,28 @@ class RecipeModel
         return $registros;
     }
 
-    public function actualizar(PDO $db, int $idRecipe, int $idConsulta, array $datos): void
+    public function actualizar(): void
     {
-        $stmt = $db->prepare(
-            "UPDATE recipe
-             SET id_medicamento = ?, dosis = ?, frecuencia = ?, duracion = ?
-             WHERE id_recipe = ? AND id_consulta = ?"
+        $stmt = $this->getConexion()->prepare(
+            'UPDATE recipe
+             SET id_medicamento = :id_medicamento, dosis = :dosis, frecuencia = :frecuencia, duracion = :duracion
+             WHERE id_recipe = :id_recipe AND id_consulta = :id_consulta'
         );
         $stmt->execute([
-            $datos['id_medicamento'],
-            $datos['dosis'],
-            $datos['frecuencia'],
-            $datos['duracion'],
-            $idRecipe,
-            $idConsulta
+            ':id_medicamento' => $this->id_medicamento,
+            ':dosis' => $this->dosis,
+            ':frecuencia' => $this->frecuencia,
+            ':duracion' => $this->duracion,
+            ':id_recipe' => $this->id_recipe,
+            ':id_consulta' => $this->id_consulta
         ]);
     }
 
-    public function eliminar(PDO $db, int $idRecipe, int $idConsulta): void
+    public function eliminar(): void
     {
-        $stmt = $db->prepare('DELETE FROM recipe WHERE id_recipe = ? AND id_consulta = ?');
-        $stmt->execute([$idRecipe, $idConsulta]);
+        $stmt = $this->getConexion()->prepare(
+            'DELETE FROM recipe WHERE id_recipe = ? AND id_consulta = ?'
+        );
+        $stmt->execute([$this->id_recipe, $this->id_consulta]);
     }
 }
