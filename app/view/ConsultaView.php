@@ -1,284 +1,249 @@
+<?php
+$escapar = static fn($valor): string => htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
+$etiquetas = [
+    'anamnesis' => [
+        'motivo_consulta' => 'Motivo de consulta',
+        'inicio_enfermedad' => 'Inicio de la enfermedad',
+        'examenes_efectuados' => 'Exámenes efectuados',
+        'tratamientos_realizados' => 'Tratamientos realizados',
+        'ult_desp_interna' => 'Última desparasitación interna',
+        'ult_desp_int_producto' => 'Producto interno',
+        'ult_desp_externa' => 'Última desparasitación externa',
+        'ult_desp_ext_producto' => 'Producto externo',
+        'ultima_vacunacion' => 'Última vacunación',
+        'tipo_alimentacion' => 'Tipo de alimentación',
+        'frec_alimentacion' => 'Frecuencia de alimentación',
+        'apetito' => 'Apetito',
+        'ingesta_agua' => 'Ingesta de agua',
+        'contacto_animal' => 'Contacto con animales',
+        'vomito' => 'Vómito',
+        'heces' => 'Heces',
+        'miccion' => 'Micción',
+        'fch_ultimo_celo' => 'Fecha del último celo',
+        'prod_higiene' => 'Producto de higiene',
+        'frec_higiene' => 'Frecuencia de higiene',
+        'int_ambiente' => 'Ambiente interno',
+        'ext_ambiente' => 'Ambiente externo',
+        'act_ectoparasitos' => 'Ectoparásitos actuales',
+        'ant_ectoparasitos' => 'Antecedente de ectoparásitos'
+    ],
+    'examen' => [
+        'peso' => 'Peso (kg)', 'cc' => 'Condición corporal', 'temp_celsius' => 'Temperatura (°C)',
+        'pulso_yugular' => 'Pulso yugular', 'fr_rpm' => 'FR (rpm)', 'fc_lpm' => 'FC (lpm)',
+        'pulso_ppm' => 'Pulso (ppm)', 'tlc_seg' => 'TLC (seg)', 'tpc_seg' => 'TPC (seg)',
+        'pas' => 'PAS', 'pad' => 'PAD', 'prcnt_deshidratacion' => 'Deshidratación (%)',
+        'gangliios_palpables' => 'Ganglios palpables', 'mucosas_visibles' => 'Mucosas visibles',
+        'ectoparasitos' => 'Ectoparásitos', 'actitud' => 'Actitud', 'hallazgos' => 'Hallazgos'
+    ],
+    'laboratorio' => [
+        'hematologia_completa' => 'Hematología', 'coprologia' => 'Coprología',
+        'quimica_sanguinea' => 'Química sanguínea', 'uro_sangre' => 'Sangre',
+        'uro_urob' => 'Urobilinógeno', 'uro_bli' => 'Bilirrubina', 'uro_prot' => 'Proteínas',
+        'uro_nitritos' => 'Nitritos', 'uro_cetona' => 'Cetonas', 'uro_glucosa' => 'Glucosa',
+        'uro_ph' => 'pH', 'uro_leu' => 'Leucocitos', 'uro_densidad' => 'Densidad',
+        'uro_microorganismos' => 'Microorganismos', 'uro_celulas' => 'Células',
+        'uro_cilindros' => 'Cilindros', 'uro_cristales' => 'Cristales', 'descarte' => 'Descarte',
+        'piel_otros' => 'Piel u otros', 'snap' => 'SNAP', 'observaciones' => 'Observaciones'
+    ]
+];
+$mostrarCampos = static function (array $datos, array $nombres) use ($escapar): string {
+    $contenido = '';
+    foreach ($nombres as $columna => $etiqueta) {
+        $valor = $datos[$columna] ?? null;
+        if ($valor === null || $valor === '') {
+            continue;
+        }
+        if (in_array($columna, ['act_ectoparasitos', 'ant_ectoparasitos'], true)) {
+            $valor = (int) $valor === 1 ? 'Sí' : 'No';
+        }
+        $contenido .= '<div class="col-md-6 mb-3"><dt>' . $escapar($etiqueta) . '</dt><dd class="mb-0 text-break">'
+            . nl2br($escapar($valor)) . '</dd></div>';
+    }
+    return $contenido !== '' ? '<dl class="row mb-0">' . $contenido . '</dl>'
+        : '<p class="text-muted mb-0">Sin información registrada.</p>';
+};
+?>
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Farmovet - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Farmovet - Consultas</title>
+    <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
-
-    
 </head>
 <body>
-
-   <div class="d-flex">
-        
-        <?php require_once __DIR__ . '/componente/menu.php'; ?>
-
-       <main class="main-content">
-            
-            <header class="d-flex  justify-content-between align-items-center mb-5">
-                <div>
-                    <h2 class="fw-bold text-purple mb-0">Mascotas</h2>
-                     <p class="text-muted">Gestion de Mascotas</p>
-                </div>
-             
+<div class="d-flex">
+    <?php require_once __DIR__ . '/componente/menu.php'; ?>
+    <main class="main-content w-100 p-4" data-consulta-error="<?= $escapar($consultaError) ?>">
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-purple mb-0">Consultas</h2>
+                <p class="text-muted">Historial de consultas veterinarias</p>
+            </div>
             <?php require_once __DIR__ . '/componente/user.php'; ?>
-            </header>
-              <div class=" d-flex justify-content-end mb-3">
-                    <div class="me-3">
-                    <input type="text" class="form-control" placeholder="Filtrar" name="filtrar">
-                    </div>
-                      <a href="index.php?url=NuevaConsulta" class="btn btn-success" > <i class="bi bi-plus"></i> Agregar Consulta</a>               
-                 
-              </div>
-              <div class="table-responsive shadow-sm rounded">
-              <table class="table table-striped align-middle text-nowrap ">
-                 
-              <thead >
-                     <th class="table-purple">Id</th>
-                     <th class="table-purple">Mascota</th>
-                     <th class="table-purple">Fecha</th>
-                     <th class="table-purple">Tipo de Ingreso</th>
-                     <th class="table-purple">Remtido</th>
-                     <th class="table-purple">Pronostico</th>
-                     <th class="table-purple">Tratamiento En Consulta</th>
-                     <th class="table-purple">Peso en Consulta</th>
-                     <th class="table-purple">Comentario de Seguimiento</th>
-                     <th class="table-purple">Detalles de Consulta</th>
-                     <th class="table-purple">Acciones</th>
+        </header>
 
-                 </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">1</td>
-                        <td class="table-light">Logan</td>
-                        <td class="table-light">12/02/2026</td>
-                        <td class="table-light">1ra vez</td>
-                        <td class="table-light td-large">Remitido Por</td>
-                        <td class="table-light td-large">Se Pronostica que ...</td>
-                        <td class="table-light td-large">Se aplico ...</td>
-                        <td class="table-light">10kg</td>
-                        <td class="table-light td-large">Comentario...</td>
-                        <td class="table-light"> <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#AntecedentesModal">Detalles de Consulta</button></td>
-                        <td class="table-light"><a href="index.php?url=NuevaConsulta"class="btn btn-sm btn-success">Editar</a> <button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
+        <div class="d-flex justify-content-end mb-3">
+            <a href="index.php?url=NuevaConsulta" class="btn btn-success"><i class="bi bi-plus"></i> Agregar consulta</a>
+        </div>
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th class="table-purple">Id</th>
+                    <th class="table-purple">Mascota</th>
+                    <th class="table-purple">Responsable</th>
+                    <th class="table-purple">Fecha</th>
+                    <th class="table-purple">Tipo de ingreso</th>
+                    <th class="table-purple">Remitido</th>
+                    <th class="table-purple">Pronóstico</th>
+                    <th class="table-purple">Tratamiento</th>
+                    <th class="table-purple">Peso</th>
+                    <th class="table-purple">Seguimiento</th>
+                    <th class="table-purple">Detalle</th>
+                    <th class="table-purple">Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tabla-consultas" data-url="index.php?url=Consulta">
+                <?php if (!$consultas): ?>
+                    <tr><td colspan="12" class="text-center text-muted py-4">Todavía no hay consultas registradas.</td></tr>
+                <?php endif; ?>
+                <?php foreach ($consultas as $consulta): ?>
+                    <?php $modalId = 'consulta-detalle-' . (int) $consulta['id_consulta']; ?>
+                    <tr>
+                        <td><?= (int) $consulta['id_consulta'] ?></td>
+                        <td><?= $escapar($consulta['nombre_mascota']) ?></td>
+                        <td><?= $escapar($consulta['nombre_cliente']) ?></td>
+                        <td><?= $escapar($consulta['fecha']) ?></td>
+                        <td><?= (int) $consulta['tipo_ingreso'] === 1 ? 'Primera vez' : 'Sucesivo' ?></td>
+                        <td><?= (int) $consulta['remitido'] === 1 ? 'Sí' : 'No' ?></td>
+                        <td><?= $escapar($consulta['pronostico'] ?: '—') ?></td>
+                        <td><?= $escapar($consulta['tratamiento_consulta'] ?: '—') ?></td>
+                        <td><?= $escapar($consulta['peso_consulta'] ?: '—') ?></td>
+                        <td><?= $escapar($consulta['comentario'] ?: '—') ?></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#<?= $modalId ?>">Ver detalle</button>
+                        </td>
+                        <td class="text-nowrap">
+                            <a href="index.php?url=NuevaConsulta&amp;id_consulta=<?= (int) $consulta['id_consulta'] ?>"
+                               class="btn btn-sm btn-success">Actualizar</a>
+                            <form method="post" action="index.php?url=Consulta" class="d-inline" data-eliminar-consulta>
+                                <input type="hidden" name="id_consulta" value="<?= (int) $consulta['id_consulta'] ?>">
+                                <input type="hidden" name="eliminar_consulta" value="1">
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
                     </tr>
-                    <tr class="table-light">
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-                        <td class="table-light">...</td>
-
-                    </tr>
-                  
-                 </tbody>
-             </table>
-            </div>
-            
-            </main>
-    </div>
-
-
-<div class="modal fade" id="AntecedentesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header ">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Antecedentes</h1>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active text-purple" id="Anamnesis-tab" data-bs-toggle="tab" data-bs-target="#Anamnesis-tab-pane" type="button" role="tab" aria-controls="Anamnesis-tab-pane" aria-selected="true">Anamnesis</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-purple" id="Examen-Clinico-tab" data-bs-toggle="tab" data-bs-target="#Examen-Clinico-tab-pane" type="button" role="tab" aria-controls="Examen-Clinico-tab-pane" aria-selected="false">Examen Clinico</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-purple" id="Resultados-Laboratorio-tab" data-bs-toggle="tab" data-bs-target="#Resultados-Laboratorio-tab-pane" type="button" role="tab" aria-controls="Resultados-Laboratorio-tab-pane" aria-selected="false">Resultado de Laboratorio</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-purple" id="Diagnostico-tab" data-bs-toggle="tab" data-bs-target="#Diagnostico-tab-pane" type="button" role="tab" aria-controls="Diagnostico-tab-pane" aria-selected="false">Diagnostico</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-purple" id="Recipe-tab" data-bs-toggle="tab" data-bs-target="#Recipe-tab-pane" type="button" role="tab" aria-controls="Recipe-tab-pane" aria-selected="false">Recipe</button>
-  </li>
-
-</ul>
-<div class="tab-content" id="myTabContent">
-  <div class="tab-pane fade show active" id="Anamnesis-tab-pane" role="tabpanel" aria-labelledby="Anamnesis-tab" tabindex="0">
-            <span>Datos de la anamnesis...</span>
-            
-  </div>
-   <div class="tab-pane fade" id="Examen-Clinico-tab-pane" role="tabpanel" aria-labelledby="Examen-Clinico-tab" tabindex="0">
-            <span>Datos del examen clinico...</span>
-            
-  </div>
-   <div class="tab-pane fade" id="Resultados-Laboratorio-tab-pane" role="tabpanel" aria-labelledby="Resultados-Laboratorio-tab" tabindex="0">
-            <span>Datos de los resultados de laboratorio...</span>
-            
-  </div>
-  <div class="tab-pane fade" id="Diagnostico-tab-pane" role="tabpanel" aria-labelledby="Diagnostico-tab" tabindex="0">
-     <div class="d-flex justify-content-end mb-2">
-                 <button class="btn btn-success mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDiagnostico" aria-expanded="false" aria-controls="collapseExample">Agregar Diagnostico</button>
-            </div>
-             
-            <div class="collapse" id="collapseDiagnostico">
-                    <div class="card card-body">
-                       <div class="container-form">
-                        <div class="row align-items-end">
-                            
-                        <div class="col-4">
-
-                            <label for="patologia">Tipo de Diagnostico:</label>
-                              <select class="form-select" name="patologia" aria-label="Default select example">
-                                <option selected>Seleccione la patologia</option>
-                                <option value="1">Patologia...</option>
-                                
-                                </select>
-                                
-                            </div>
-                            <div class="col-4">
-
-                            <label for="tipo_diagnostico">Tipo de Diagnostico:</label>
-                              <select class="form-select" name="tipo_diagnostico" aria-label="Default select example">
-                                <option selected>Seleccione el tipo</option>
-                                <option value="1">Dx Tentativo</option>
-                                <option value="1">Dx Diferenciales</option>
-                                <option value="1">Definitivo</option>
-                                </select>
-
-                            </div>
-                             <div class="col-3">
-                                  <button class="btn btn-success btn-agregar" >Agregar</button> 
-                            </div>
-                            
-                        </div>
-                        </div>
-             
-                    </div>
-             </div>
-             <div class="table-responsive shadow-sm rounded mt-3">
-              <table class="table table-striped align-middle text-nowrap ">
-                 
-              <thead >
-                     <th class="table-purple">Patologia</th>
-                     <th class="table-purple">Tipo de Diagnostico</th>
-                     <th class="table-purple">Acciones</th>
-
-                 </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">Patologia ...</td>
-                        <td class="table-light">Dx Tentativo</td>
-                        <td class="table-light"><button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
-                    </tr>
-                    
-                 </tbody>
-             </table>
-            </div>
-            
-  </div>
-  <div class="tab-pane fade" id="Recipe-tab-pane" role="tabpanel" aria-labelledby="Recipe-tab" tabindex="0">
-     <div class="d-flex justify-content-end mb-2">
-                 <button class="btn btn-success mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecipe" aria-expanded="false" aria-controls="collapseExample">Agregar Recipe</button>
-            </div>
-             
-            <div class="collapse" id="collapseRecipe">
-                    <div class="card card-body">
-                       <div class="container-form">
-                        <div class="row align-items-end">
-                            
-                           <div class="col-6">
-                             
-                            <label for="Medicamento">Medicamento:</label>
-                              <select class="form-select" name="Medicamento" aria-label="Default select example">
-                                <option selected>Seleccione el Medicamento</option>
-                                <option value="1">Medicamento...</option>
-                                </select>
-                            </div>
-
-                            <div class="col-6">
-                                  <label for="dosis" class="form-label">Dosis:</label>
-                                  <input type="text" class="form-control" name="dosis">
-                            </div>
-                            <div class="col-6">
-                                  <label for="frecuencia" class="form-label">Frecuencia:</label>
-                                  <input type="text" class="form-control" name="frecuencia">
-                            </div>
-                            <div class="col-6">
-                                  <label for="duracion" class="form-label">Duracion:</label>
-                                  <input type="text" class="form-control" name="duracion">
-                            </div>
-                            
-                             <div class="col-3">
-                                  <button class="btn btn-success btn-agregar mt-3" >Agregar</button> 
-                            </div>
-                            
-                        </div>
-                        </div>
-             
-                    </div>
-
-                   
-             </div>
-              <div class="table-responsive shadow-sm rounded mt-3">
-              <table class="table table-striped align-middle text-nowrap ">
-                 
-              <thead >
-                     <th class="table-purple">Medicamento</th>
-                     <th class="table-purple">Dosis</th>
-                     <th class="table-purple">Frecuencia</th>
-                     <th class="table-purple">Duracion</th>
-                     <th class="table-purple">Acciones</th>
-
-                 </thead>
-                 <tbody>
-                    <tr class="table-light">
-                        <td class="table-light">Medicamento...</td>
-                        <td class="table-light">1 pastilla</td>
-                        <td class="table-light">Cada 24 horas</td>
-                        <td class="table-light">3 Semanas</td>
-                        <td class="table-light"><button class="btn btn-sm btn-danger btn-eliminar">Eliminar</button></td>
-                             
-                    </tr>
-                    
-                 </tbody>
-             </table>
-            </div>
-             
-            
-  </div>
- 
-</div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        
-      </div>
-    </div>
-  </div>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </main>
 </div>
 
+<?php foreach ($consultas as $consulta): ?>
+    <?php $modalId = 'consulta-detalle-' . (int) $consulta['id_consulta']; ?>
+    <div class="modal fade" id="<?= $modalId ?>" tabindex="-1" aria-labelledby="<?= $modalId ?>-label" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="<?= $modalId ?>-label">Consulta #<?= (int) $consulta['id_consulta'] ?></h5>
+                        <div class="small text-white-50">
+                            <?= $escapar($consulta['nombre_mascota']) ?> · <?= $escapar($consulta['fecha']) ?>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <?php
+                        $tabsDetalle = [
+                            ['general', 'General'],
+                            ['anamnesis', 'Anamnesis'],
+                            ['examen', 'Examen clínico'],
+                            ['laboratorio', 'Laboratorio'],
+                            ['diagnosticos', 'Diagnósticos'],
+                            ['recetas', 'Recipe']
+                        ];
+                        foreach ($tabsDetalle as $indice => [$id, $titulo]):
+                            $tabId = $modalId . '-' . $id;
+                        ?>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link <?= $indice === 0 ? 'active' : '' ?>" id="<?= $tabId ?>-tab"
+                                        data-bs-toggle="tab" data-bs-target="#<?= $tabId ?>-pane" type="button"
+                                        role="tab" aria-controls="<?= $tabId ?>-pane"
+                                        aria-selected="<?= $indice === 0 ? 'true' : 'false' ?>"><?= $titulo ?></button>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="<?= $modalId ?>-general-pane" role="tabpanel">
+                            <dl class="row mb-0">
+                                <div class="col-md-6 mb-3"><dt>Paciente / responsable</dt><dd><?= $escapar($consulta['nombre_mascota']) ?> / <?= $escapar($consulta['nombre_cliente']) ?></dd></div>
+                                <div class="col-md-6 mb-3"><dt>Fecha y tipo</dt><dd><?= $escapar($consulta['fecha']) ?> · <?= (int) $consulta['tipo_ingreso'] === 1 ? 'Primera vez' : 'Sucesivo' ?></dd></div>
+                                <div class="col-md-6 mb-3"><dt>Remitido</dt><dd><?= (int) $consulta['remitido'] === 1 ? 'Sí' : 'No' ?></dd></div>
+                                <div class="col-md-6 mb-3"><dt>Pronóstico</dt><dd><?= nl2br($escapar($consulta['pronostico'] ?: '—')) ?></dd></div>
+                                <div class="col-md-6 mb-3"><dt>Tratamiento en consulta</dt><dd><?= nl2br($escapar($consulta['tratamiento_consulta'] ?: '—')) ?></dd></div>
+                                <div class="col-md-6 mb-3"><dt>Peso en tratamiento</dt><dd><?= $escapar($consulta['peso_consulta'] ?: '—') ?></dd></div>
+                                <div class="col-12 mb-3"><dt>Comentario / seguimiento</dt><dd><?= nl2br($escapar($consulta['comentario'] ?: '—')) ?></dd></div>
+                            </dl>
+                        </div>
+                        <?php foreach (['anamnesis', 'examen', 'laboratorio'] as $seccion): ?>
+                            <div class="tab-pane fade" id="<?= $modalId . '-' . $seccion ?>-pane" role="tabpanel">
+                                <?= $mostrarCampos($consulta['detalle'][$seccion], $etiquetas[$seccion]) ?>
+                            </div>
+                        <?php endforeach; ?>
+                        <div class="tab-pane fade" id="<?= $modalId ?>-diagnosticos-pane" role="tabpanel">
+                            <?php if (!$consulta['detalle']['diagnosticos']): ?>
+                                <p class="text-muted mb-0">Sin diagnósticos registrados.</p>
+                            <?php else: ?>
+                                <ul class="list-group">
+                                    <?php foreach ($consulta['detalle']['diagnosticos'] as $diagnostico): ?>
+                                        <li class="list-group-item">
+                                            <strong><?= $escapar($diagnostico['patologia']) ?></strong>
+                                            <span class="text-muted"> — <?= $escapar($diagnostico['tipo_diagnostico']) ?></span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                        <div class="tab-pane fade" id="<?= $modalId ?>-recetas-pane" role="tabpanel">
+                            <?php if (!$consulta['detalle']['recetas']): ?>
+                                <p class="text-muted mb-0">Sin medicamentos recetados.</p>
+                            <?php else: ?>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr></thead>
+                                        <tbody>
+                                        <?php foreach ($consulta['detalle']['recetas'] as $receta): ?>
+                                            <tr>
+                                                <td><?= $escapar($receta['nombre_medicamento']) ?></td>
+                                                <td><?= $escapar($receta['dosis']) ?></td>
+                                                <td><?= $escapar($receta['frecuencia']) ?></td>
+                                                <td><?= $escapar($receta['duracion']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <script src="public/js/Dashboard.js"></script>
-
-   
+<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/js/consulta.js"></script>
 </body>
 </html>
-       

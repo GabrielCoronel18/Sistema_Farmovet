@@ -6,7 +6,7 @@ use PDO;
 use Exception;
 
 // Forzamos la inclusión de la conexión por si el autoload falla
-require_once __DIR__ . '/../config/ConexionBD.php';
+require_once __DIR__ . '/../config/ConexionBD.php'; // linea de mas //
 
 class PlanSanitarioModel extends ConexionBD {
 

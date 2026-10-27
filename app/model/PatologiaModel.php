@@ -8,19 +8,20 @@ class PatologiaModel extends ConexionBD {
     private string $tipo;
     private string $sintomas;
 
-    public function agregarPatologia(string $nombre, string $tipo, string $sintomas) {
+    public function agregarPatologia(string $nombre, string $tipo, string $sintomas, int $estado = 1) {
         $this->nombre = $nombre;
         $this->tipo = $tipo;
         $this->sintomas = $sintomas;
 
         $conex = $this->getConexion();
         $sql = "INSERT INTO patologia (nombre, tipo, sintomas, estado) 
-                VALUES (:nombre, :tipo, :sintomas, 1)";
+                VALUES (:nombre, :tipo, :sintomas, :estado)";
 
         $query = $conex->prepare($sql);
         $query->bindParam(":nombre", $this->nombre);
         $query->bindParam(":tipo", $this->tipo);
         $query->bindParam(":sintomas", $this->sintomas);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
 
         return $query->execute();
     }
@@ -77,7 +78,7 @@ class PatologiaModel extends ConexionBD {
         return $query->fetchAll();
     }
 
-    public function actualizarPatologia(int $id, string $nombre, string $tipo, string $sintomas) {
+    public function actualizarPatologia(int $id, string $nombre, string $tipo, string $sintomas, int $estado = 1) {
         $this->id = $id;
         $this->nombre = $nombre;
         $this->tipo = $tipo;
@@ -87,7 +88,8 @@ class PatologiaModel extends ConexionBD {
         $sql = "UPDATE patologia 
                 SET nombre = :nombre, 
                     tipo = :tipo, 
-                    sintomas = :sintomas 
+                    sintomas = :sintomas, 
+                    estado = :estado 
                 WHERE id_patologia = :id";
 
         $query = $conex->prepare($sql);
@@ -95,6 +97,7 @@ class PatologiaModel extends ConexionBD {
         $query->bindParam(":nombre", $this->nombre);
         $query->bindParam(":tipo", $this->tipo);
         $query->bindParam(":sintomas", $this->sintomas);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
 
         return $query->execute();
     }

@@ -10,19 +10,20 @@ class MedicamentoModel extends ConexionBD {
     private int $presentacion;
     private int $estado;
 
-	public function agregarMedicamento(string $nombre,int $tipo, int $presentacion) {
+	public function agregarMedicamento(string $nombre,int $tipo, int $presentacion, int $estado = 1) {
 		$this->nombre = $nombre;
         $this->tipo = $tipo;
 		$this->presentacion = $presentacion;
 
 		$conex = $this->getConexion();
 		$sql = "INSERT INTO medicamento (nombre_medicamento, id_tipo_medicamento,id_presentacion, estado)
-				VALUES (:nombre, :tipo, :presentacion, 1)";
+				VALUES (:nombre, :tipo, :presentacion, :estado)";
 
 		$query = $conex->prepare($sql);
 		$query->bindParam(":nombre", $this->nombre);
 		$query->bindParam(":tipo", $this->tipo);
         $query->bindParam(":presentacion", $this->presentacion);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
 
 		return $query->execute();
 	}
@@ -81,7 +82,7 @@ class MedicamentoModel extends ConexionBD {
 		return $query->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	public function actualizarMedicamento(int $id, string $nombre,int $tipo, int $presentacion) {
+	public function actualizarMedicamento(int $id, string $nombre,int $tipo, int $presentacion, int $estado = 1) {
 		$this->id = $id;
 		$this->nombre = $nombre;
         $this->tipo = $tipo;
@@ -89,14 +90,15 @@ class MedicamentoModel extends ConexionBD {
 
 		$conex = $this->getConexion();
 		$sql = "UPDATE medicamento
-				SET nombre_medicamento = :nombre, id_tipo_medicamento = :tipo, id_presentacion  = :presentacion
-				WHERE id_medicamento = :id AND estado = 1";
+				SET nombre_medicamento = :nombre, id_tipo_medicamento = :tipo, id_presentacion  = :presentacion, estado = :estado
+				WHERE id_medicamento = :id";
 
 		$query = $conex->prepare($sql);
 		$query->bindParam(":id", $this->id, \PDO::PARAM_INT);
 		$query->bindParam(":nombre", $this->nombre);
 		$query->bindParam(":tipo", $this->tipo);
         $query->bindParam(":presentacion", $this->presentacion);
+        $query->bindParam(":estado", $estado, \PDO::PARAM_INT);
 
 		return $query->execute();
 	}

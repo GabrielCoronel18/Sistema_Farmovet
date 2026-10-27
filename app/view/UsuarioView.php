@@ -94,7 +94,7 @@
                             <td>${u.correo}</td>
                             <td>${u.nombre_rol}</td>
                             <td>
-                                <a href="?url=Usuario&accion=editar&cedula=${encodeURIComponent(u.cedula_usuario)}" class="btn btn-sm btn-success">Editar</a>
+                                <a href="?url=Usuario&accion=editar&cedula=${encodeURIComponent(u.cedula_usuario)}" class="btn btn-sm btn-success">Actualizar</a>
                                 <button class="btn btn-sm btn-danger btn-eliminar" data-cedula="${u.cedula_usuario}">Eliminar</button>
                             </td>
                         </tr>`;

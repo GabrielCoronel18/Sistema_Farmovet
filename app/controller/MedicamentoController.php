@@ -27,11 +27,14 @@ if (isset($_POST["obtener"])) {
 if (isset($_POST["agregar"])) {
     verificarRol([1]);
 
-    $nombre = $_POST["nombre"] ?? "";
-    $tipo = $_POST["tipo"] ?? "";
-    $presentacion = $_POST["presentacion"] ?? "";
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $tipo = (int) ($_POST["tipo"] ?? 0);
+    $presentacion = (int) ($_POST["presentacion"] ?? 0);
+    $estado = (int) ($_POST["estado_medicamento"] ?? 1);
 
-    $resultado = $medicamentoModel->agregarMedicamento($nombre, $tipo, $presentacion);
+    $resultado = $nombre !== "" && $tipo > 0 && $presentacion > 0
+        ? $medicamentoModel->agregarMedicamento($nombre, $tipo, $presentacion, $estado)
+        : false;
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }
@@ -45,11 +48,15 @@ if (isset($_POST["obtenerMedicamento"], $_POST["id"])) {
 if (isset($_POST["actualizar"], $_POST["id"])) {
     verificarRol([1]);
 
-    $nombre = $_POST["nombre"] ?? "";
-    $tipo = $_POST["tipo"] ?? "";
-    $presentacion = $_POST["presentacion"] ?? "";
+    $id = (int) ($_POST["id"] ?? 0);
+    $nombre = trim((string) ($_POST["nombre"] ?? ""));
+    $tipo = (int) ($_POST["tipo"] ?? 0);
+    $presentacion = (int) ($_POST["presentacion"] ?? 0);
+    $estado = (int) ($_POST["estado_medicamento"] ?? 1);
 
-    $resultado = $medicamentoModel->actualizarMedicamento($_POST["id"], $nombre, $tipo, $presentacion);
+    $resultado = $id > 0 && $nombre !== "" && $tipo > 0 && $presentacion > 0
+        ? $medicamentoModel->actualizarMedicamento($id, $nombre, $tipo, $presentacion, $estado)
+        : false;
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
 }

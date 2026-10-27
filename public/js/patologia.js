@@ -25,6 +25,7 @@ function obtenerDatos(param = null) {
                             <td class="table-light">${patologia.nombre}</td>
                             <td class="table-light">${patologia.tipo}</td>
                             <td class="table-light td-large">${patologia.sintomas}</td>
+                            <td class="table-light">${patologia.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
                             <td class="table-light">
                                 <button class="btn btn-sm btn-success btn-actualizar" value="${patologia.id_patologia}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
                                 <button class="btn btn-sm btn-danger btn-eliminar" value="${patologia.id_patologia}">Eliminar</button>
@@ -63,6 +64,8 @@ TablaPatologias.addEventListener("click", function (e) {
                     document.getElementById("nombre").value = result.nombre;
                     document.getElementById("tipo").value = result.tipo;
                     document.getElementById("sintomas").value = result.sintomas;
+                    const estadoInput = document.getElementById("estado_patologia");
+                    if (estadoInput) estadoInput.value = result.estado;
                 } else if (resultado.status === "error") {
                     Swal.fire({ title: "Error", text: "Error al obtener el registro", icon: "error" });
                 }

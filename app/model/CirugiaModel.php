@@ -2,23 +2,31 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 class CirugiaModel extends ConexionBD {
+	
+    use Validation;
+
 	private int $id;
 	private string $nombre;
 	private string $gravedad;
+	private int $estado;
 
-	public function agregarCirugia(string $nombre, string $gravedad) {
+	public function agregarCirugia(string $nombre, string $gravedad, int $estado) {
 		$this->nombre = $nombre;
 		$this->gravedad = $gravedad;
+		$this->estado = $estado;
 
 		$conex = $this->getConexion();
 		$sql = "INSERT INTO cirugia (nombre_cirugia, gravedad, estado)
-				VALUES (:nombre, :gravedad, 1)";
+				VALUES (:nombre, :gravedad, :estado)";
 
 		$query = $conex->prepare($sql);
 		$query->bindParam(":nombre", $this->nombre);
 		$query->bindParam(":gravedad", $this->gravedad);
+		$query->bindParam(":estado", $this->estado);
+
 
 		return $query->execute();
 	}
@@ -27,7 +35,6 @@ class CirugiaModel extends ConexionBD {
 		$offset = ($pagina * $limitacion) - $limitacion;
 		$conex = $this->getConexion();
 		$sql = "SELECT * FROM cirugia
-				WHERE estado = 1
 				ORDER BY nombre_cirugia
 				LIMIT :limitacion OFFSET :offset";
 
@@ -42,7 +49,7 @@ class CirugiaModel extends ConexionBD {
 	public function obtenerCirugiaPorId(int $id) {
 		$this->id = $id;
 		$conex = $this->getConexion();
-		$query = $conex->prepare("SELECT * FROM cirugia WHERE id_cirugia = :id AND estado = 1");
+		$query = $conex->prepare("SELECT * FROM cirugia WHERE id_cirugia = :id");
 		$query->bindParam(":id", $this->id, \PDO::PARAM_INT);
 		$query->execute();
 
@@ -73,20 +80,22 @@ class CirugiaModel extends ConexionBD {
 		return $query->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	public function actualizarCirugia(int $id, string $nombre, string $gravedad) {
+	public function actualizarCirugia(int $id, string $nombre, string $gravedad, int $estado) {
 		$this->id = $id;
 		$this->nombre = $nombre;
 		$this->gravedad = $gravedad;
+		$this->estado = $estado;
 
 		$conex = $this->getConexion();
 		$sql = "UPDATE cirugia
-				SET nombre_cirugia = :nombre, gravedad = :gravedad
+				SET nombre_cirugia = :nombre, gravedad = :gravedad, estado = :estado
 				WHERE id_cirugia = :id";
 
 		$query = $conex->prepare($sql);
 		$query->bindParam(":id", $this->id, \PDO::PARAM_INT);
 		$query->bindParam(":nombre", $this->nombre);
 		$query->bindParam(":gravedad", $this->gravedad);
+		$query->bindParam(":estado", $this->estado);
 
 		return $query->execute();
 	}
