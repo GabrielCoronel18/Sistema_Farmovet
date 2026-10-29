@@ -6,6 +6,15 @@ use PDO;
 
 class RazasModel extends ConexionBD {
 
+    public function obtenerRazasActivas(): array {
+        $sql = "SELECT id_raza, nombre_raza
+                FROM raza
+                WHERE estado = 1
+                ORDER BY nombre_raza";
+
+        return $this->getConexion()->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Registrar una nueva raza
     public function registrar($nombre_raza, $id_especie) {
         $sql = "INSERT INTO raza (nombre_raza, id_especie, estado) VALUES (:nombre_raza, :id_especie, :estado)";

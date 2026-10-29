@@ -3,6 +3,14 @@ let TablaPatologias = document.getElementById("TablaPatologias");
 let TituloModal = document.getElementById("TituloModalPatologia");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar = document.getElementById("filtrar");
+let campoNombre = document.getElementById("nombre");
+let campoTipo = document.getElementById("tipo");
+let campoSintomas = document.getElementById("sintomas");
+let campoEstado = document.getElementById("estado_patologia");
+let errorNombre = document.getElementById("error-nombre");
+let errorTipo = document.getElementById("error-tipo");
+let errorSintomas = document.getElementById("error-sintomas");
+let errorEstado = document.getElementById("error-estado");
 
 function obtenerDatos(param = null) {
     let datos = new FormData();
@@ -94,6 +102,25 @@ formularioPatologia.addEventListener("submit", function (e) {
                 ModalAgregar.hide();
                 obtenerDatos();
             } else if (resultado.status === "error") {
+
+                if(resultado.errors) {
+				if(resultado.errors.nombre) {
+					campoNombre.classList.add("is-invalid");
+					errorNombre.innerText = resultado.errors.nombre;
+				}
+				if(resultado.errors.tipo) {
+					campoTipo.classList.add("is-invalid");
+					errorTipo.innerText = resultado.errors.tipo;
+				}
+				if(resultado.errors.sintomas) {
+					campoSintomas.classList.add("is-invalid");
+					errorSintomas.innerText = resultado.errors.sintomas;
+				}
+				if(resultado.errors.estado) {
+					campoEstado.classList.add("is-invalid");
+					errorEstado.innerText = resultado.errors.estado;
+				}
+			}
                 id === "" ? alertAgregar("error") : alertActualizar("error");
             }
         });

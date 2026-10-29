@@ -167,6 +167,54 @@ body {
            min-width: 250px; 
            max-width: 250px;
         }
+
+        .consultas-tabla-contenedor {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .consultas-tabla {
+            width: 100%;
+            min-width: 1100px;
+            table-layout: fixed;
+        }
+
+        .consultas-tabla th,
+        .consultas-tabla td {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            vertical-align: middle;
+        }
+
+        .consultas-tabla th:nth-child(1),
+        .consultas-tabla td:nth-child(1) {
+            width: 55px;
+        }
+
+        .consultas-tabla th:nth-child(4),
+        .consultas-tabla td:nth-child(4),
+        .consultas-tabla th:nth-child(6),
+        .consultas-tabla td:nth-child(6),
+        .consultas-tabla th:nth-child(9),
+        .consultas-tabla td:nth-child(9) {
+            width: 95px;
+        }
+
+        .consultas-tabla th:nth-child(11),
+        .consultas-tabla td:nth-child(11) {
+            width: 105px;
+        }
+
+        .consultas-tabla th:nth-child(12),
+        .consultas-tabla td:nth-child(12) {
+            width: 185px;
+        }
+
+        .consultas-tabla td:nth-child(12) .btn {
+            margin: 2px 0;
+        }
+
         .modal-header{
             background-color:#8e44ad !important;
             

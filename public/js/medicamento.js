@@ -9,6 +9,12 @@ const limite = document.getElementById("limite");
 const btnAnterior = document.getElementById("btn-anterior");
 const btnSiguiente = document.getElementById("btn-siguiente");
 const infoPagina = document.getElementById("info-pagina");
+const campoNombre = document.getElementById("nombre");
+const campoEstado = document.getElementById("estado_medicamento");
+const errorNombre = document.getElementById("error-nombre");
+const errorTipo = document.getElementById("error-tipo");
+const errorPresentacion = document.getElementById("error-presentacion");
+const errorEstado = document.getElementById("error-estado");
 let paginaActual = 1;
 
 function solicitar(datos) {
@@ -54,6 +60,10 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				actualizarPaginacion(0);
 			return;
 		}
+		if (resultado.resultados.length === 0 && pagina > 1) {
+			obtenerDatos(param, pagina - 1);
+			return;
+		}
 
 		resultado.resultados.forEach(medicamento => {
 			tablaMedicamentos.innerHTML += `<tr>
@@ -69,14 +79,13 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 			</tr>`;
 		});
 		paginaActual = pagina;
-			actualizarPaginacion(resultado.resultados.length);
+		actualizarPaginacion(resultado.hasMore);
 	});
 }
-function actualizarPaginacion(registrosMostrados) {
-	const limiteActual = Number(limite.value);
+function actualizarPaginacion(hasMore) {
 	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
 	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	btnSiguiente.disabled = !hasMore;
 	infoPagina.innerText = `Página ${paginaActual}`;
 }
 
@@ -118,7 +127,7 @@ tablaMedicamentos.addEventListener("click", event => {
 		const datos = new FormData();
 		datos.append("eliminar", "true");
 		datos.append("id", event.target.value);
-		alertEliminar("post", datos, obtenerDatos);
+		alertEliminar("post", datos, () => obtenerDatos(filtrar.value, paginaActual));
 	}
 });
 
@@ -131,6 +140,24 @@ formularioMedicamento.addEventListener("submit", event => {
 
 	solicitar(datos).then(resultado => {
 		if (resultado.status !== "success") {
+			if(resultado.errors) {
+				if(resultado.errors.nombre) {
+					campoNombre.classList.add("is-invalid");
+					errorNombre.innerText = resultado.errors.nombre;
+				}
+				if(resultado.errors.tipo) {
+					selectTipoMedicamento.classList.add("is-invalid");
+					errorTipo.innerText = resultado.errors.tipo;
+				}
+				if(resultado.errors.presentacion) {
+					selectPresentacion.classList.add("is-invalid");
+					errorPresentacion.innerText = resultado.errors.presentacion;
+				}
+				if(resultado.errors.estado) {
+					campoEstado.classList.add("is-invalid");
+					errorEstado.innerText = resultado.errors.estado;
+				}
+			}
 			Swal.fire({ title: "Error", text: "No se pudo guardar el medicamento", icon: "error" });
 			return;
 		}

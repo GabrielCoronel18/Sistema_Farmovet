@@ -80,6 +80,27 @@ class CirugiaModel extends ConexionBD {
 		return $query->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
+	public function contarCirugias(?string $param = null): int {
+		$conex = $this->getConexion();
+		if ($param === null) {
+			$query = $conex->query("SELECT COUNT(*) FROM cirugia");
+		} else {
+			$query = $conex->prepare("SELECT COUNT(*) FROM cirugia
+				WHERE estado = 1 AND (
+					CAST(id_cirugia AS CHAR) LIKE :param_id
+					OR nombre_cirugia LIKE :param_nombre
+					OR gravedad LIKE :param_gravedad
+				)");
+			$busqueda = $param . "%";
+			$query->bindValue(":param_id", $busqueda);
+			$query->bindValue(":param_nombre", $busqueda);
+			$query->bindValue(":param_gravedad", $busqueda);
+			$query->execute();
+		}
+
+		return (int) $query->fetchColumn();
+	}
+
 	public function actualizarCirugia(int $id, string $nombre, string $gravedad, int $estado) {
 		$this->id = $id;
 		$this->nombre = $nombre;

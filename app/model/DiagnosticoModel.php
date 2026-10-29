@@ -11,84 +11,41 @@ class DiagnosticoModel extends ConexionBD
     public ?int $id_patologia = null;
     public ?string $tipo_diagnostico = null;
 
-    public function cargarDatos(array $datos): void
+    public function obtenerDiagnosticos(int $id): array
     {
-        foreach ($datos as $campo => $valor) {
-            if (property_exists($this, $campo)) {
-                $this->$campo = $valor === '' ? null : $valor;
-            }
-        }
+        $consulta = $this->getConexion()->prepare(
+            "SELECT diagnostico.*, patologia.nombre AS patologia
+             FROM diagnostico
+             INNER JOIN patologia ON patologia.id_patologia = diagnostico.id_patologia
+             WHERE diagnostico.id_consulta = :id"
+        );
+        $consulta->execute([':id' => $id]);
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function agregar(): void
+    public function agregarDiagnostico(int $id, array $datos): bool
     {
-        $stmt = $this->getConexion()->prepare(
-            'INSERT INTO diagnostico (id_consulta, id_patologia, tipo_diagnostico)
-             VALUES (:id_consulta, :id_patologia, :tipo_diagnostico)'
+        $consulta = $this->getConexion()->prepare(
+            "INSERT INTO diagnostico (id_consulta, id_patologia, tipo_diagnostico)
+             VALUES (:id_consulta, :id_patologia, :tipo_diagnostico)"
         );
-        $stmt->execute([
-            ':id_consulta' => $this->id_consulta,
-            ':id_patologia' => $this->id_patologia,
-            ':tipo_diagnostico' => $this->tipo_diagnostico
-        ]);
-        $this->id_diagnostico = (int) $this->getConexion()->lastInsertId();
-    }
-
-    public function obtenerPorConsulta(int $idConsulta): array
-    {
-        $stmt = $this->getConexion()->prepare(
-            'SELECT d.id_diagnostico, d.id_consulta, d.id_patologia, d.tipo_diagnostico,
-                    p.nombre AS patologia
-             FROM diagnostico d
-             INNER JOIN patologia p ON p.id_patologia = d.id_patologia
-             WHERE d.id_consulta = ?
-             ORDER BY d.id_diagnostico'
-        );
-        $stmt->execute([$idConsulta]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function obtenerPorConsultas(array $idConsultas): array
-    {
-        if (!$idConsultas) {
-            return [];
-        }
-        $marcadores = implode(', ', array_fill(0, count($idConsultas), '?'));
-        $stmt = $this->getConexion()->prepare(
-            "SELECT d.id_diagnostico, d.id_consulta, d.id_patologia, d.tipo_diagnostico,
-                    p.nombre AS patologia
-             FROM diagnostico d
-             INNER JOIN patologia p ON p.id_patologia = d.id_patologia
-             WHERE d.id_consulta IN ({$marcadores})
-             ORDER BY d.id_diagnostico"
-        );
-        $stmt->execute($idConsultas);
-        $registros = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $registro) {
-            $registros[(int) $registro['id_consulta']][] = $registro;
-        }
-        return $registros;
-    }
-
-    public function actualizar(): void
-    {
-        $stmt = $this->getConexion()->prepare(
-            'UPDATE diagnostico SET id_patologia = :id_patologia, tipo_diagnostico = :tipo_diagnostico
-             WHERE id_diagnostico = :id_diagnostico AND id_consulta = :id_consulta'
-        );
-        $stmt->execute([
-            ':id_patologia' => $this->id_patologia,
-            ':tipo_diagnostico' => $this->tipo_diagnostico,
-            ':id_diagnostico' => $this->id_diagnostico,
-            ':id_consulta' => $this->id_consulta
+        return $consulta->execute([
+            ':id_consulta' => $id,
+            ':id_patologia' => $datos['id_patologia'],
+            ':tipo_diagnostico' => $datos['tipo_diagnostico']
         ]);
     }
 
-    public function eliminar(): void
+    public function editarDiagnostico(int $id, array $datos): bool
     {
-        $stmt = $this->getConexion()->prepare(
-            'DELETE FROM diagnostico WHERE id_diagnostico = ? AND id_consulta = ?'
+        $consulta = $this->getConexion()->prepare(
+            "UPDATE diagnostico SET id_patologia = :id_patologia,
+             tipo_diagnostico = :tipo_diagnostico WHERE id_diagnostico = :id"
         );
-        $stmt->execute([$this->id_diagnostico, $this->id_consulta]);
+        return $consulta->execute([
+            ':id' => $id,
+            ':id_patologia' => $datos['id_patologia'],
+            ':tipo_diagnostico' => $datos['tipo_diagnostico']
+        ]);
     }
 }

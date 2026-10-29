@@ -1,310 +1,118 @@
 <?php
 use Gabriel\SistemaFarmovet\model\ConsultaModel;
+use Gabriel\SistemaFarmovet\model\AnamnesisModel;
+use Gabriel\SistemaFarmovet\model\ExamenClinicoModel;
+use Gabriel\SistemaFarmovet\model\ResultadosLaboratorioModel;
+use Gabriel\SistemaFarmovet\model\DiagnosticoModel;
+use Gabriel\SistemaFarmovet\model\RecipeModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 verificarRol([1, 2, 3]);
 
 $consultaModel = new ConsultaModel();
-$consultaError = '';
-$idConsultaSolicitado = $_POST['id_consulta'] ?? $_GET['id_consulta'] ?? null;
-$idConsultaEdicion = filter_var(
-    $idConsultaSolicitado,
-    FILTER_VALIDATE_INT
-);
-$idConsultaEdicion = $idConsultaEdicion && $idConsultaEdicion > 0 ? $idConsultaEdicion : 0;
-$consultaEdicion = null;
-$consultaValores = [];
-$diagnosticosForm = [];
-$recetasForm = [];
-$responderAjax = static function (array $respuesta, int $codigo = 200): void {
-    http_response_code($codigo);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode($respuesta, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+$idConsulta = (int) ($_GET['id_consulta'] ?? $_POST['id_consulta'] ?? 0);
+
+if (isset($_POST['obtenerCatalogos'])) {
+    echo json_encode([
+        'status' => 'success',
+        'mascotas' => $consultaModel->obtenerMascotasActivas(),
+        'patologias' => $consultaModel->obtenerPatologiasActivas(),
+        'medicamentos' => $consultaModel->obtenerMedicamentosActivos()
+    ]);
     exit;
-};
-if ($idConsultaSolicitado !== null && $idConsultaSolicitado !== ''
-    && (!$idConsultaEdicion || !is_scalar($idConsultaSolicitado))) {
-    $consultaError = 'El identificador de consulta no es válido.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        if ($consultaError !== '') {
-            throw new InvalidArgumentException($consultaError);
-        }
-        if ($idConsultaEdicion > 0) {
-            $consultaEdicion = $consultaModel->obtenerConsultaParaEditar($idConsultaEdicion);
-            if (!$consultaEdicion) {
-                throw new InvalidArgumentException('La consulta que intenta editar ya no está disponible.');
-            }
-        }
-        $obtenerEntrada = static function (string $clave): string {
-            $valor = $_POST[$clave] ?? '';
-            if (!is_scalar($valor)) {
-                throw new InvalidArgumentException('Se recibieron datos de consulta con un formato inválido.');
-            }
-            return trim((string) $valor);
-        };
-        $idMascota = filter_var($obtenerEntrada('id_mascota'), FILTER_VALIDATE_INT);
-        $tipoIngreso = filter_var($obtenerEntrada('tipo_ingreso'), FILTER_VALIDATE_INT);
-        $remitido = filter_var($obtenerEntrada('remitido'), FILTER_VALIDATE_INT);
-        $fecha = $obtenerEntrada('fecha');
-        $fechaValidada = DateTime::createFromFormat('!Y-m-d', $fecha);
+if (isset($_POST['obtenerConsulta']) && $idConsulta > 0) {
+    $consulta = $consultaModel->obtenerConsultaPorId($idConsulta);
+    if ($consulta) {
+        $consulta['anamnesis'] = (new AnamnesisModel())->obtenerAnamnesis($idConsulta);
+        $consulta['examen'] = (new ExamenClinicoModel())->obtenerExamen($idConsulta);
+        $consulta['laboratorio'] = (new ResultadosLaboratorioModel())->obtenerResultado($idConsulta);
+        $consulta['diagnosticos'] = (new DiagnosticoModel())->obtenerDiagnosticos($idConsulta);
+        $consulta['recetas'] = (new RecipeModel())->obtenerRecipes($idConsulta);
+    }
+    echo json_encode(['status' => $consulta ? 'success' : 'error', 'resultado' => $consulta ?: []]);
+    exit;
+}
 
-        if (!$idMascota || !in_array($tipoIngreso, [1, 2], true)
-            || !in_array($remitido, [0, 1], true)
-            || !$fechaValidada || $fechaValidada->format('Y-m-d') !== $fecha) {
-            throw new InvalidArgumentException('Seleccione una mascota, fecha, tipo de ingreso y remitente válidos.');
-        }
-
-        $obtenerValor = static function (string $clave) use ($obtenerEntrada): ?string {
-            $valor = $obtenerEntrada($clave);
-            return $valor === '' ? null : $valor;
-        };
-        $convertirDatos = static function (array $claves) use ($obtenerValor): array {
-            $resultado = [];
-            foreach ($claves as $clave) {
-                $resultado[$clave] = $obtenerValor($clave);
-            }
-            return $resultado;
-        };
-        $leerColeccion = static function (string $clave): array {
-            $valores = $_POST[$clave] ?? [];
-            if (!is_array($valores)) {
-                throw new InvalidArgumentException('Se recibieron datos de consulta con un formato inválido.');
-            }
-            return $valores;
-        };
-
-        $consulta = [
-            'cedula_usuario' => (string) ($_SESSION['usuario']['cedula_usuario'] ?? ''),
-            'id_mascota' => $idMascota,
-            'fecha' => $fecha,
-            'tipo_ingreso' => $tipoIngreso,
-            'remitido' => $remitido,
-            'pronostico' => $obtenerValor('pronostico'),
-            'tratamiento_consulta' => $obtenerValor('tratamiento_consulta'),
-            'peso_consulta' => $obtenerValor('peso_consulta'),
-            'comentario' => $obtenerValor('comentario_seguimiento')
-        ];
-
-        $anamnesis = $convertirDatos([
-            'motivo_consulta', 'inicio_enfermedad', 'examenes_efectuados', 'tratamientos_realizados',
-            'ult_desp_interna', 'ult_desp_int_producto', 'ult_desp_externa', 'ult_desp_ext_producto',
-            'ultima_vacunacion', 'tipo_alimentacion', 'frec_alimentacion', 'apetito', 'ingesta_agua',
-            'contacto_animal', 'vomito', 'heces', 'miccion', 'fch_ultimo_celo', 'prod_higiene',
-            'frec_higiene', 'int_ambiente', 'ext_ambiente'
-        ]);
-        $anamnesis['act_ectoparasitos'] = $obtenerValor('act_ectoparasitos');
-        $anamnesis['ant_ectoparasitos'] = $obtenerValor('ant_ectoparasitos');
-
-        $examen = $convertirDatos([
-            'peso', 'cc', 'temp_celsius', 'pulso_yugular', 'fr_rpm', 'fc_lpm', 'pulso_ppm',
-            'tlc_seg', 'tpc_seg', 'pas', 'pad', 'prcnt_deshidratacion', 'gangliios_palpables',
-            'mucosas_visibles', 'ectoparasitos', 'actitud', 'hallazgos'
-        ]);
-        $laboratorio = $convertirDatos([
-            'hematologia_completa', 'coprologia', 'quimica_sanguinea', 'uro_sangre', 'uro_urob',
-            'uro_bli', 'uro_prot', 'uro_nitritos', 'uro_cetona', 'uro_glucosa', 'uro_ph', 'uro_leu',
-            'uro_densidad', 'uro_microorganismos', 'uro_celulas', 'uro_cilindros', 'uro_cristales',
-            'descarte', 'piel_otros', 'snap', 'observaciones'
-        ]);
-
-        $diagnosticos = [];
-        $idsPatologia = $leerColeccion('id_patologia');
-        $tiposDiagnostico = $leerColeccion('tipo_diagnostico');
-        $idsDiagnostico = $leerColeccion('id_diagnostico');
-        if (count($idsPatologia) !== count($tiposDiagnostico)
-            || ($idsDiagnostico && count($idsPatologia) !== count($idsDiagnostico))) {
-            throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
-        }
-        foreach ($idsPatologia as $indice => $idPatologia) {
-            $idDiagnostico = $idsDiagnostico[$indice] ?? '0';
-            if (!is_scalar($idPatologia) || !is_scalar($idDiagnostico)
-                || !is_scalar($tiposDiagnostico[$indice] ?? '')) {
-                throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
-            }
-            $idPatologia = trim((string) $idPatologia);
-            $idDiagnosticoValidado = filter_var($idDiagnostico, FILTER_VALIDATE_INT);
-            $tipoDiagnostico = trim((string) ($tiposDiagnostico[$indice] ?? ''));
-            if ($idDiagnosticoValidado === false || $idDiagnosticoValidado < 0) {
-                throw new InvalidArgumentException('Revise los diagnósticos ingresados.');
-            }
-            if ($idPatologia === '' && $tipoDiagnostico === '') {
-                continue;
-            }
-            $idPatologiaValidado = filter_var($idPatologia, FILTER_VALIDATE_INT);
-            if (!$idPatologiaValidado || $tipoDiagnostico === '') {
-                throw new InvalidArgumentException('Cada diagnóstico requiere una patología y un tipo.');
-            }
-            $diagnosticos[] = [
-                'id_diagnostico' => $idDiagnosticoValidado,
-                'id_patologia' => $idPatologiaValidado,
-                'tipo_diagnostico' => $tipoDiagnostico
-            ];
-        }
-
-        $recetas = [];
-        $idsMedicamento = $leerColeccion('id_medicamento');
-        $dosis = $leerColeccion('dosis');
-        $frecuencias = $leerColeccion('frecuencia');
-        $duraciones = $leerColeccion('duracion');
-        $idsRecipe = $leerColeccion('id_recipe');
-        if (count($idsMedicamento) !== count($dosis)
-            || count($idsMedicamento) !== count($frecuencias)
-            || count($idsMedicamento) !== count($duraciones)
-            || ($idsRecipe && count($idsMedicamento) !== count($idsRecipe))) {
-            throw new InvalidArgumentException('Revise los medicamentos recetados.');
-        }
-        foreach ($idsMedicamento as $indice => $idMedicamento) {
-            $idRecipe = $idsRecipe[$indice] ?? '0';
-            if (!is_scalar($idMedicamento)
-                || !is_scalar($idRecipe)
-                || !is_scalar($dosis[$indice] ?? '')
-                || !is_scalar($frecuencias[$indice] ?? '')
-                || !is_scalar($duraciones[$indice] ?? '')) {
-                throw new InvalidArgumentException('Revise los medicamentos recetados.');
-            }
-            $idMedicamento = trim((string) $idMedicamento);
-            $idRecipeValidado = filter_var($idRecipe, FILTER_VALIDATE_INT);
-            $datosReceta = [
-                'dosis' => trim((string) ($dosis[$indice] ?? '')),
-                'frecuencia' => trim((string) ($frecuencias[$indice] ?? '')),
-                'duracion' => trim((string) ($duraciones[$indice] ?? ''))
-            ];
-            if ($idRecipeValidado === false || $idRecipeValidado < 0) {
-                throw new InvalidArgumentException('Revise los medicamentos recetados.');
-            }
-            if ($idMedicamento === '' && implode('', $datosReceta) === '') {
-                continue;
-            }
-            $idMedicamentoValidado = filter_var($idMedicamento, FILTER_VALIDATE_INT);
-            if (!$idMedicamentoValidado || in_array('', $datosReceta, true)) {
-                throw new InvalidArgumentException('Cada medicamento requiere dosis, frecuencia y duración.');
-            }
-            $recetas[] = ['id_recipe' => $idRecipeValidado, 'id_medicamento' => $idMedicamentoValidado] + $datosReceta;
-        }
-
-        if ($idConsultaEdicion > 0) {
-            $consultaModel->actualizarConsulta(
-                $idConsultaEdicion,
-                $consulta,
-                $anamnesis,
-                $examen,
-                $laboratorio,
-                $diagnosticos,
-                $recetas
-            );
-            $responderAjax([
-                'status' => 'success',
-                'mensaje' => 'La consulta se actualizó correctamente.',
-                'id_consulta' => $idConsultaEdicion,
-                'redirect' => 'index.php?url=Consulta'
-            ]);
-        } else {
-            $idConsultaGuardada = $consultaModel->registrarConsulta(
-                $consulta,
-                $anamnesis,
-                $examen,
-                $laboratorio,
-                $diagnosticos,
-                $recetas
-            );
-            $responderAjax([
-                'status' => 'success',
-                'mensaje' => 'La consulta se guardó correctamente.',
-                'id_consulta' => $idConsultaGuardada,
-                'redirect' => 'index.php?url=Consulta'
-            ]);
-        }
-    } catch (InvalidArgumentException $e) {
-        $responderAjax(['status' => 'error', 'mensaje' => $e->getMessage()], 422);
-    } catch (Throwable $e) {
-        error_log('Error al guardar consulta: ' . $e->getMessage());
-        $responderAjax([
+if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $datos = [
+        'cedula_usuario' => (string) ($_SESSION['usuario']['cedula_usuario'] ?? ''),
+        'id_mascota' => (int) ($_POST['id_mascota'] ?? 0),
+        'fecha' => (string) ($_POST['fecha'] ?? ''),
+        'tipo_ingreso' => (int) ($_POST['tipo_ingreso'] ?? 0),
+        'remitido' => (int) ($_POST['remitido'] ?? 0),
+        'pronostico' => trim((string) ($_POST['pronostico'] ?? '')),
+        'tratamiento_consulta' => trim((string) ($_POST['tratamiento_consulta'] ?? '')),
+        'peso_consulta' => trim((string) ($_POST['peso_consulta'] ?? '')),
+        'comentario' => trim((string) ($_POST['comentario_seguimiento'] ?? ''))
+    ];
+    if ($datos['cedula_usuario'] === '' || $datos['id_mascota'] < 1
+        || $datos['fecha'] === '' || !in_array($datos['tipo_ingreso'], [1, 2], true)
+        || !in_array($datos['remitido'], [0, 1], true)) {
+        echo json_encode([
             'status' => 'error',
-            'mensaje' => 'No se pudo guardar la consulta. Verifique los datos e inténtelo nuevamente.'
-        ], 500);
+            'mensaje' => 'Complete los datos obligatorios de la consulta.'
+        ]);
+        exit;
     }
-}
+    $camposAnamnesis = ['motivo_consulta','inicio_enfermedad','examenes_efectuados','tratamientos_realizados',
+        'ult_desp_interna','ult_desp_int_producto','ult_desp_externa','ult_desp_ext_producto','ultima_vacunacion',
+        'tipo_alimentacion','frec_alimentacion','apetito','ingesta_agua','contacto_animal','vomito','heces',
+        'miccion','fch_ultimo_celo','prod_higiene','frec_higiene','int_ambiente','ext_ambiente',
+        'act_ectoparasitos','ant_ectoparasitos'];
+    $camposExamen = ['peso','cc','temp_celsius','pulso_yugular','fr_rpm','fc_lpm','pulso_ppm','tlc_seg','tpc_seg',
+        'pas','pad','prcnt_deshidratacion','gangliios_palpables','mucosas_visibles','ectoparasitos','actitud','hallazgos'];
+    $camposLaboratorio = ['hematologia_completa','coprologia','quimica_sanguinea','uro_sangre','uro_urob','uro_bli',
+        'uro_prot','uro_nitritos','uro_cetona','uro_glucosa','uro_ph','uro_leu','uro_densidad','uro_microorganismos',
+        'uro_celulas','uro_cilindros','uro_cristales','descarte','piel_otros','snap','observaciones'];
+    $anamnesis = [];
+    $examen = [];
+    $laboratorio = [];
+    foreach ($camposAnamnesis as $campo) {
+        $valor = $_POST[$campo] ?? null;
+        $anamnesis[$campo] = $valor === '' ? null : $valor;
+    }
+    foreach ($camposExamen as $campo) {
+        $valor = $_POST[$campo] ?? null;
+        $examen[$campo] = $valor === '' ? null : $valor;
+    }
+    foreach ($camposLaboratorio as $campo) {
+        $valor = $_POST[$campo] ?? null;
+        $laboratorio[$campo] = $valor === '' ? null : $valor;
+    }
 
-try {
-    if ($idConsultaEdicion > 0 && !$consultaEdicion) {
-        $consultaEdicion = $consultaModel->obtenerConsultaParaEditar($idConsultaEdicion);
-        if (!$consultaEdicion) {
-            $consultaError = 'La consulta solicitada no existe o ya fue eliminada.';
-            $idConsultaEdicion = 0;
-        }
-    }
-    if ($consultaEdicion) {
-        $consultaValores = array_merge(
-            $consultaEdicion['consulta'],
-            $consultaEdicion['detalle']['anamnesis'],
-            $consultaEdicion['detalle']['examen'],
-            $consultaEdicion['detalle']['laboratorio']
-        );
-        $consultaValores['comentario_seguimiento'] = $consultaEdicion['consulta']['comentario'];
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $idsPatologia = $_POST['id_patologia'] ?? [];
-            $tiposDiagnostico = $_POST['tipo_diagnostico'] ?? [];
-            $idsDiagnostico = $_POST['id_diagnostico'] ?? [];
-            foreach ((array) $idsPatologia as $indice => $idPatologia) {
-                $diagnosticosForm[] = [
-                    'id_diagnostico' => is_scalar($idsDiagnostico[$indice] ?? '') ? (string) ($idsDiagnostico[$indice] ?? '') : '',
-                    'id_patologia' => is_scalar($idPatologia) ? (string) $idPatologia : '',
-                    'tipo_diagnostico' => is_scalar($tiposDiagnostico[$indice] ?? '') ? (string) ($tiposDiagnostico[$indice] ?? '') : ''
-                ];
-            }
-            $idsMedicamento = $_POST['id_medicamento'] ?? [];
-            $dosis = $_POST['dosis'] ?? [];
-            $frecuencias = $_POST['frecuencia'] ?? [];
-            $duraciones = $_POST['duracion'] ?? [];
-            $idsRecipe = $_POST['id_recipe'] ?? [];
-            foreach ((array) $idsMedicamento as $indice => $idMedicamento) {
-                $recetasForm[] = [
-                    'id_recipe' => is_scalar($idsRecipe[$indice] ?? '') ? (string) ($idsRecipe[$indice] ?? '') : '',
-                    'id_medicamento' => is_scalar($idMedicamento) ? (string) $idMedicamento : '',
-                    'dosis' => is_scalar($dosis[$indice] ?? '') ? (string) ($dosis[$indice] ?? '') : '',
-                    'frecuencia' => is_scalar($frecuencias[$indice] ?? '') ? (string) ($frecuencias[$indice] ?? '') : '',
-                    'duracion' => is_scalar($duraciones[$indice] ?? '') ? (string) ($duraciones[$indice] ?? '') : ''
-                ];
-            }
-        } else {
-            $diagnosticosForm = $consultaEdicion['detalle']['diagnosticos'];
-            $recetasForm = $consultaEdicion['detalle']['recetas'];
-        }
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $consultaValores = $_POST;
-        $idsPatologia = $_POST['id_patologia'] ?? [''];
-        $tiposDiagnostico = $_POST['tipo_diagnostico'] ?? [''];
-        foreach ((array) $idsPatologia as $indice => $idPatologia) {
-            $diagnosticosForm[] = [
-                'id_diagnostico' => '0',
-                'id_patologia' => is_scalar($idPatologia) ? (string) $idPatologia : '',
-                'tipo_diagnostico' => is_scalar($tiposDiagnostico[$indice] ?? '') ? (string) ($tiposDiagnostico[$indice] ?? '') : ''
-            ];
-        }
-        $idsMedicamento = $_POST['id_medicamento'] ?? [''];
-        $dosis = $_POST['dosis'] ?? [''];
-        $frecuencias = $_POST['frecuencia'] ?? [''];
-        $duraciones = $_POST['duracion'] ?? [''];
-        foreach ((array) $idsMedicamento as $indice => $idMedicamento) {
-            $recetasForm[] = [
-                'id_recipe' => '0',
-                'id_medicamento' => is_scalar($idMedicamento) ? (string) $idMedicamento : '',
-                'dosis' => is_scalar($dosis[$indice] ?? '') ? (string) ($dosis[$indice] ?? '') : '',
-                'frecuencia' => is_scalar($frecuencias[$indice] ?? '') ? (string) ($frecuencias[$indice] ?? '') : '',
-                'duracion' => is_scalar($duraciones[$indice] ?? '') ? (string) ($duraciones[$indice] ?? '') : ''
+    $diagnosticos = [];
+    foreach ((array) ($_POST['id_patologia'] ?? []) as $indice => $patologia) {
+        if ((int) $patologia > 0 && trim((string) ($_POST['tipo_diagnostico'][$indice] ?? '')) !== '') {
+            $diagnosticos[] = [
+                'id_diagnostico' => (int) ($_POST['id_diagnostico'][$indice] ?? 0),
+                'id_patologia' => (int) $patologia,
+                'tipo_diagnostico' => trim((string) $_POST['tipo_diagnostico'][$indice])
             ];
         }
     }
-    $mascotas = $consultaModel->obtenerMascotasActivas();
-    $patologias = $consultaModel->obtenerPatologiasActivas();
-    $medicamentos = $consultaModel->obtenerMedicamentosActivos();
-} catch (Throwable $e) {
-    error_log('Error al cargar catálogos para consulta: ' . $e->getMessage());
-    $mascotas = $patologias = $medicamentos = [];
-    $consultaError = 'No fue posible cargar los datos necesarios para registrar la consulta.';
+    $recetas = [];
+    foreach ((array) ($_POST['id_medicamento'] ?? []) as $indice => $medicamento) {
+        if ((int) $medicamento > 0) {
+            $recetas[] = [
+                'id_recipe' => (int) ($_POST['id_recipe'][$indice] ?? 0),
+                'id_medicamento' => (int) $medicamento,
+                'dosis' => trim((string) ($_POST['dosis'][$indice] ?? '')),
+                'frecuencia' => trim((string) ($_POST['frecuencia'][$indice] ?? '')),
+                'duracion' => trim((string) ($_POST['duracion'][$indice] ?? ''))
+            ];
+        }
+    }
+    $resultado = $idConsulta > 0
+        ? $consultaModel->editarConsulta($idConsulta, $datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas)
+        : $consultaModel->agregarConsulta($datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas);
+    echo json_encode([
+        'status' => $resultado ? 'success' : 'error',
+        'mensaje' => $resultado ? 'La consulta se guardó correctamente.' : 'No fue posible guardar la consulta.',
+        'redirect' => 'index.php?url=Consulta'
+    ]);
+    exit;
 }
 
-require_once "app/view/NuevaConsultaView.php";
+require_once 'app/view/NuevaConsultaView.php';

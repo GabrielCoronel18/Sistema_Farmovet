@@ -3,27 +3,95 @@ let TablaMascotas = document.getElementById("TablaMascotas");
 let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar = document.getElementById("filtrar");
+let selectRaza = document.getElementById("id_raza");
+let selectCliente = document.getElementById("cedula_cliente");
+const camposValidacion = [
+    { error: "nombre", campo: "nombre", mensaje: "error-nombre" },
+    { error: "edad", campo: "edad", mensaje: "error-edad" },
+    { error: "fch_nacimiento", campo: "fch_nacimiento", mensaje: "error-fch_nacimiento" },
+    { error: "sexo", campo: "sexo", mensaje: "error-sexo" },
+    { error: "chip", campo: "chip", mensaje: "error-chip" },
+    { error: "raza", campo: "id_raza", mensaje: "error-id_raza" },
+    { error: "pelaje", campo: "pelaje", mensaje: "error-pelaje" },
+    { error: "cedula", campo: "cedula_cliente", mensaje: "error-cedula_cliente" },
+    { error: "procedencia", campo: "procedencia", mensaje: "error-procedencia" }
+];
 
-const selectAlergias = new TomSelect("#mascota_alergias", {
+
+let selectAlergias;
+let selectEnfermedades;
+let selectCirugias;
+
+function limpiarErroresValidacion() {
+    camposValidacion.forEach(({ campo, mensaje }) => {
+        document.getElementById(campo).classList.remove("is-invalid");
+        document.getElementById(mensaje).textContent = "";
+    });
+}
+
+function renderizarErroresValidacion(errores = {}) {
+    camposValidacion.forEach(({ error, campo, mensaje }) => {
+        const mensajeError = errores[error];
+        if (mensajeError) {
+            document.getElementById(campo).classList.add("is-invalid");
+            document.getElementById(mensaje).textContent = mensajeError;
+        }
+    });
+}
+
+function inicializarSelectsAntecedentes() {
+    selectAlergias = new TomSelect("#mascota_alergias", {
     plugins: ["remove_button"],
     create: false,
     persist: false,
     placeholder: "Seleccione una o varias alergias"
-});
-const selectEnfermedades = new TomSelect("#mascota_enfermedades", {
+    });
+    selectEnfermedades = new TomSelect("#mascota_enfermedades", {
     plugins: ["remove_button"],
     create: false,
     persist: false,
     placeholder: "Seleccione una o varias enfermedades"
-});
-const selectCirugias = new TomSelect("#mascota_cirugias", {
+    });
+    selectCirugias = new TomSelect("#mascota_cirugias", {
     plugins: ["remove_button"],
     create: false,
     persist: false,
     placeholder: "Seleccione una o varias cirugías"
-});
+    });
+}
 
+function cargarCatalogos() {
+    const datos = new FormData();
+    datos.append("obtenerCatalogos", true);
 
+    return fetch(window.location, { method: "post", body: datos })
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            if (resultado.status !== "success") {
+                throw new Error("No se pudieron obtener los catálogos.");
+            }
+
+            resultado.razas.forEach(raza => {
+                selectRaza.add(new Option(raza.nombre_raza, raza.id_raza));
+            });
+
+            resultado.clientes.forEach(cliente => {
+                const nombre = `${cliente.nombre} ${cliente.apellido} (${cliente.cedula_cliente})`;
+                selectCliente.add(new Option(nombre, cliente.cedula_cliente));
+            });
+
+            inicializarSelectsAntecedentes();
+        })
+        .catch(error => {
+            console.error(error);
+            Swal.fire({
+                title: "Error",
+                text: "No se pudieron cargar los catálogos de razas y clientes.",
+                icon: "error"
+            });
+            throw error;
+        });
+}
 
 function obtenerDatos(param = null){
     let datos = new FormData();
@@ -79,10 +147,11 @@ function obtenerDatos(param = null){
     });
 }
 
-obtenerDatos();
+cargarCatalogos().then(obtenerDatos);
 
 btnAgregar.addEventListener("click", function(e){
      formularioMascotas.reset();
+     limpiarErroresValidacion();
      selectAlergias.clear(true);
      selectEnfermedades.clear(true);
      selectCirugias.clear(true);
@@ -148,6 +217,7 @@ function cargarAntecedentesEnFormulario(id) {
 
 formularioMascotas.addEventListener("submit", function(e){
        e.preventDefault();
+       limpiarErroresValidacion();
        let datos = new FormData(formularioMascotas);
        let id = document.getElementById("id_mascota").value;
 
@@ -169,6 +239,7 @@ formularioMascotas.addEventListener("submit", function(e){
 
                 obtenerDatos();
             } else if(resultado.status === "error"){
+                renderizarErroresValidacion(resultado.errors);
                 id === "" ? alertAgregar("error") : alertActualizar("error");
             }
        });
@@ -189,4 +260,3 @@ filtrar.addEventListener("input", function(){
       let param = this.value;
       obtenerDatos(param);
 });
-

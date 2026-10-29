@@ -2,15 +2,19 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 class PresentacionModel extends ConexionBD {
     private int $id;
     private string $nombre;
     private int $estado;
 
+    use Validation;
+
     public function agregarPresentacion(string $nombre, int $estado = 1) {
         $this->nombre = $nombre;
-
+        
+      
         $conex = $this->getConexion();
         $sql = "INSERT INTO presentacion (nombre_presentacion, estado)
                 VALUES (:nombre, :estado)";
@@ -61,6 +65,20 @@ class PresentacionModel extends ConexionBD {
         $query->execute();
 
         return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function contarPresentaciones(?string $param = null): int {
+        $conex = $this->getConexion();
+        if ($param === null) {
+            $query = $conex->query("SELECT COUNT(*) FROM presentacion");
+        } else {
+            $query = $conex->prepare("SELECT COUNT(*) FROM presentacion
+                WHERE estado = 1 AND nombre_presentacion LIKE :busqueda");
+            $query->bindValue(":busqueda", $param . "%");
+            $query->execute();
+        }
+
+        return (int) $query->fetchColumn();
     }
 
     public function actualizarPresentacion(int $id, string $nombre, int $estado) {

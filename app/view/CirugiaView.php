@@ -44,6 +44,23 @@
 					<tbody id="TablaCirugias"></tbody>
 				</table>
 			</div>
+			<div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-3">
+				<div class="d-flex align-items-center gap-2">
+					<label for="limite" class="form-label mb-0 text-muted">Mostrar:</label>
+					<select name="limite" id="limite" class="form-select form-select-sm w-auto" required>
+						<option value="5" selected>5</option>
+						<option value="10">10</option>
+						<option value="20">20</option>
+					</select>
+				</div>
+				<nav aria-label="Paginación de cirugías">
+					<ul class="pagination pagination-sm mb-0">
+						<li class="page-item"><button type="button" class="page-link" id="btn-anterior">Anterior</button></li>
+						<li class="page-item disabled"><span class="page-link" id="info-pagina"></span></li>
+						<li class="page-item"><button type="button" class="page-link" id="btn-siguiente">Siguiente</button></li>
+					</ul>
+				</nav>
+			</div>
 		</main>
 	</div>
 
@@ -60,6 +77,7 @@
 						<div class="mb-3">
 							<label for="nombre_cirugia" class="form-label">Nombre</label>
 							<input type="text" class="form-control" id="nombre_cirugia" name="nombre_cirugia" maxlength="120" required>
+							<div class="invalid-feedback" id="error-nombre"></div>
 						</div>
 						<div class="mb-3">
 							<label for="gravedad" class="form-label">Gravedad</label>
@@ -69,6 +87,7 @@
                                 <option value="Moderada">Moderada</option>
                                 <option value="Leve">Leve</option>
                             </select>
+							<div class="invalid-feedback" id="error-gravedad"></div>
 						</div>
 						<?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
 						<div class="mb-3">
@@ -77,6 +96,7 @@
                                 <option value="1">Activo</option>
                                 <option value="0">Inactivo</option>
                             </select>
+							<div class="invalid-feedback" id="error-estado"></div>
 						</div>
 						<?php endif; ?>
 					</div>

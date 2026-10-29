@@ -7,6 +7,7 @@
     <title>Farmovet - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
     <link href="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.css" rel="stylesheet" integrity="sha384-qWEvqSybGvARiE5fKMA75H4edwdEGqOXm8GFt12T7kp5MOlvOxrbnpNkv9bB+XAB" crossorigin="anonymous">
@@ -74,6 +75,7 @@
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
     <script src="public/js/cliente.js"></script>
+    <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <?php if (isset($mensajeAlerta)) {
         echo "<script>{$mensajeAlerta}</script>";
     } ?>

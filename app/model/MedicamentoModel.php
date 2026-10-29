@@ -2,14 +2,17 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 class MedicamentoModel extends ConexionBD {
+
 	private int $id;
 	private string $nombre;
 	private int $tipo;
     private int $presentacion;
     private int $estado;
 
+	use Validation;
 	public function agregarMedicamento(string $nombre,int $tipo, int $presentacion, int $estado = 1) {
 		$this->nombre = $nombre;
         $this->tipo = $tipo;
@@ -34,7 +37,6 @@ class MedicamentoModel extends ConexionBD {
 		$sql = "SELECT * FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
-				WHERE medicamento.estado = 1
 				LIMIT :limitacion OFFSET :offset";
 
 		$query = $conex->prepare($sql);
@@ -51,7 +53,7 @@ class MedicamentoModel extends ConexionBD {
 		$sql = "SELECT * FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
-				WHERE medicamento.id_medicamento = :id AND medicamento.estado = 1";
+				WHERE medicamento.id_medicamento = :id";
 		$query = $conex->prepare($sql);
 		$query->bindParam(":id", $this->id, \PDO::PARAM_INT);
 		$query->execute();
@@ -66,7 +68,7 @@ class MedicamentoModel extends ConexionBD {
 		$sql = "SELECT * FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
-				WHERE medicamento.estado = 1 AND (
+				WHERE(
 				   CAST(medicamento.id_medicamento AS CHAR) LIKE :param
 				   OR medicamento.nombre_medicamento LIKE :param
 				   OR medicamento.id_tipo_medicamento LIKE :param
@@ -82,7 +84,26 @@ class MedicamentoModel extends ConexionBD {
 		return $query->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	public function actualizarMedicamento(int $id, string $nombre,int $tipo, int $presentacion, int $estado = 1) {
+	public function contarMedicamentos(?string $param = null): int {
+		$conex = $this->getConexion();
+		if ($param === null) {
+			$query = $conex->query("SELECT COUNT(*) FROM medicamento");
+		} else {
+			$query = $conex->prepare("SELECT COUNT(*) FROM medicamento
+				WHERE CAST(id_medicamento AS CHAR) LIKE :param_id
+				OR nombre_medicamento LIKE :param_nombre
+				OR id_tipo_medicamento LIKE :param_tipo");
+			$busqueda = $param . "%";
+			$query->bindValue(":param_id", $busqueda);
+			$query->bindValue(":param_nombre", $busqueda);
+			$query->bindValue(":param_tipo", $busqueda);
+			$query->execute();
+		}
+
+		return (int) $query->fetchColumn();
+	}
+
+	public function actualizarMedicamento(int $id, string $nombre,int $tipo, int $presentacion, int $estado) {
 		$this->id = $id;
 		$this->nombre = $nombre;
         $this->tipo = $tipo;

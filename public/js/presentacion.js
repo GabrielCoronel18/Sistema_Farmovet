@@ -7,6 +7,11 @@ const limite = document.getElementById("limite");
 const btnAnterior = document.getElementById("btn-anterior");
 const btnSiguiente = document.getElementById("btn-siguiente");
 const infoPagina = document.getElementById("info-pagina");
+const errorNombre = document.getElementById("error-nombre");
+const errorEstado = document.getElementById("error-estado_presentacion");
+const campoNombre = document.getElementById("nombre");
+const campoEstado = document.getElementById("estado_presentacion");
+
 let paginaActual = 1;
 
 function obtenerDatos(param = null, pagina = paginaActual) {
@@ -26,6 +31,10 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				actualizarPaginacion(0);
 				return;
 			}
+			if (resultado.resultados.length === 0 && pagina > 1) {
+				obtenerDatos(param, pagina - 1);
+				return;
+			}
 
 			resultado.resultados.forEach(presentacion => {
 				tablaPresentaciones.innerHTML += `<tr>
@@ -39,14 +48,13 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				</tr>`;
 			});
 			paginaActual = pagina;
-			actualizarPaginacion(resultado.resultados.length);
+			actualizarPaginacion(resultado.hasMore);
 		});
 }
-function actualizarPaginacion(registrosMostrados) {
-	const limiteActual = Number(limite.value);
+function actualizarPaginacion(hasMore) {
 	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
 	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	btnSiguiente.disabled = !hasMore;
 	infoPagina.innerText = `Página ${paginaActual}`;
 }
 
@@ -81,12 +89,19 @@ tablaPresentaciones.addEventListener("click", event => {
 		const datos = new FormData();
 		datos.append("eliminar", "true");
 		datos.append("id", event.target.value);
-		alertEliminar("post", datos, obtenerDatos);
+		alertEliminar("post", datos, () => obtenerDatos(filtrar.value, paginaActual));
 	}
 });
 
  formularioPresentacion.addEventListener("submit", event => {
 	event.preventDefault();
+	campoNombre.classList.remove("is-invalid");
+	errorNombre.textContent = "";
+	if (campoEstado) {
+		campoEstado.classList.remove("is-invalid");
+		errorEstado.textContent = "";
+	}
+
 	const datos = new FormData(formularioPresentacion);
 	const id = document.getElementById("id_presentacion").value;
 	datos.append(id === "" ? "agregar" : "actualizar", "true");
@@ -96,12 +111,37 @@ tablaPresentaciones.addEventListener("click", event => {
 		.then(respuesta => respuesta.json())
 		.then(resultado => {
 			if (resultado.status !== "success") {
+				if (resultado.errors) {
+					if (resultado.errors.nombre) {
+						errorNombre.textContent = resultado.errors.nombre;
+						campoNombre.classList.add("is-invalid");
+					} else {
+						errorNombre.textContent = "";
+						campoNombre.classList.remove("is-invalid");
+					}
+					if (campoEstado && resultado.errors.estado_presentacion) {
+						errorEstado.textContent = resultado.errors.estado_presentacion;
+						campoEstado.classList.add("is-invalid");
+					} else {
+						errorEstado.textContent = "";
+						if (campoEstado) campoEstado.classList.remove("is-invalid");
+					}
+				}
+
 				Swal.fire({ title: "Error", text: "No se pudo guardar la presentación", icon: "error" });
 				return;
 			}
 			id === "" ? alertAgregar("success") : alertActualizar("success");
 			bootstrap.Modal.getInstance(document.getElementById("ModalAgregar")).hide();
 			obtenerDatos();
+		})
+		.catch(error => {
+			console.error("Error al guardar la presentación:", error);
+			Swal.fire({
+				title: "Error",
+				text: "No se pudo procesar la respuesta del servidor",
+				icon: "error"
+			});
 		});
 });
 

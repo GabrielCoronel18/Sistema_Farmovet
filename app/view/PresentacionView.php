@@ -77,6 +77,7 @@
 						<div class="mb-3">
 							<label for="nombre" class="form-label">Nombre</label>
 							<input type="text" class="form-control" id="nombre" name="nombre" maxlength="120" required>
+							<div class="invalid-feedback" id="error-nombre"></div>
 						</div>
 						<?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
 						<div class="mb-3">
@@ -85,6 +86,7 @@
 								<option value="1">Activo</option>
 								<option value="0">Inactivo</option>
 							</select>
+							<div class="invalid-feedback" id="error-estado_presentacion"></div>
 						</div>
 						<?php endif; ?>
 					</div>

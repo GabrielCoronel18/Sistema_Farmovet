@@ -3,7 +3,18 @@ let TablaCliente = document.getElementById("TablaCliente");
 let TituloModal = document.getElementById("exampleModalLabel");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar = document.getElementById("filtrar");
-
+let campoCedula = document.getElementById("cedula_cliente");
+let campoNombre = document.getElementById("nombre");
+let campoApellido = document.getElementById("apellido");
+let campoTelefono = document.getElementById("telefono");
+let campoCorreo = document.getElementById("correo");
+let campoDireccion = document.getElementById("direccion");
+let errorCedula = document.getElementById("error-cedula");
+let errorNombre = document.getElementById("error-nombre");
+let errorApellido = document.getElementById("error-apellido");
+let errorDireccion = document.getElementById("error-direccion");
+let errorTelefono= document.getElementById("error-telefono");
+let errorCorreo = document.getElementById("error-correo");
 // Variable global para almacenar la instancia de la tabla
 let dataTableInstance = null;
 
@@ -128,6 +139,9 @@ TablaCliente.addEventListener("click", function (e) {
 
 formularioCliente.addEventListener("submit", function (e) {
     e.preventDefault();
+    [campoCedula, campoNombre, campoApellido, campoTelefono, campoCorreo, campoDireccion]
+        .forEach(campo => campo.classList.remove("is-invalid"));
+
     let datos = new FormData(formularioCliente);
     let is_update = document.getElementById("is_update").value;
 
@@ -148,6 +162,33 @@ formularioCliente.addEventListener("submit", function (e) {
                 ModalAgregar.hide();
                 obtenerDatos(); // Recarga la tabla y reconstruye DataTables
             } else if (resultado.status === "error") {
+                if (resultado.errors) {
+                    if (resultado.errors.cedula) {
+                        campoCedula.classList.add("is-invalid");
+                        errorCedula.innerText = resultado.errors.cedula;
+                    }
+                    if (resultado.errors.nombre) {
+                        campoNombre.classList.add("is-invalid");
+                        errorNombre.innerText = resultado.errors.nombre;
+                    }
+                    if (resultado.errors.apellido) {
+                        campoApellido.classList.add("is-invalid");
+                        errorApellido.innerText = resultado.errors.apellido;
+                    }
+                    if (resultado.errors.telefono) {
+                        campoTelefono.classList.add("is-invalid");
+                        errorTelefono.innerText = resultado.errors.telefono;
+                    }
+                    if (resultado.errors.correo) {
+                        campoCorreo.classList.add("is-invalid");
+                        errorCorreo.innerText = resultado.errors.correo;
+                    }
+                    if (resultado.errors.direccion) {
+                        campoDireccion.classList.add("is-invalid");
+                        errorDireccion.innerText = resultado.errors.direccion;
+                    }
+                }
+
                 if (resultado.message) {
                     Swal.fire({ title: "Error", text: resultado.message, icon: "error" });
                 } else {

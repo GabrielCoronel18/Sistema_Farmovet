@@ -2,12 +2,14 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 class TipoMedicamentoModel extends ConexionBD {
     private int $id;
     private string $nombre;
     private int $estado;
 
+    use Validation;
    
    public function agregarTipoMedicamento(string $nombre, int $estado = 1) {
         $this->nombre = $nombre;
@@ -60,6 +62,20 @@ class TipoMedicamentoModel extends ConexionBD {
         $query->execute();
 
         return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function contarTipoMedicamentos(?string $param = null): int {
+        $conex = $this->getConexion();
+        if ($param === null) {
+            $query = $conex->query("SELECT COUNT(*) FROM tipo_medicamento");
+        } else {
+            $query = $conex->prepare("SELECT COUNT(*) FROM tipo_medicamento
+                WHERE estado = 1 AND nom_tipo_medicamento LIKE :busqueda");
+            $query->bindValue(":busqueda", $param . "%");
+            $query->execute();
+        }
+
+        return (int) $query->fetchColumn();
     }
     public function actualizarTipoMedicamento(int $id, string $nombre, int $estado) {
         $this->id = $id;

@@ -80,6 +80,7 @@
 						<div class="mb-3">
 							<label for="nombre" class="form-label">Nombre</label>
 							<input type="text" class="form-control" id="nombre" name="nombre" maxlength="120" required>
+							<div class="invalid-feedback" id="error-nombre"></div>
 						</div>
                         <div class="mb-3">
 							<label for="tipo" class="form-label">Tipo</label>
@@ -87,6 +88,7 @@
 								<option value="">Seleccione un tipo</option>
 
                             </select>
+							<div class="invalid-feedback" id="error-tipo"></div>
 						</div>
 						<div class="mb-3">
 							<label for="presentacion" class="form-label">Presentación</label>
@@ -94,6 +96,7 @@
 								<option value="">Seleccione una presentación</option>
 
                             </select>
+							<div class="invalid-feedback" id="error-presentacion"></div>
 						</div>
 						<?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
 						<div class="mb-3">
@@ -102,6 +105,7 @@
 								<option value="1">Activo</option>
 								<option value="0">Inactivo</option>
 							</select>
+							<div class="invalid-feedback" id="error-estado"></div>
 						</div>
 						<?php endif; ?>
 					</div>

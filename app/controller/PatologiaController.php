@@ -34,9 +34,35 @@ if (isset($_POST["agregar"])) {
     $sintomas = trim((string) ($_POST["sintomas"] ?? ""));
     $estado = (int) ($_POST["estado_patologia"] ?? 1);
 
-    $resultado = $nombre !== "" && $tipo !== "" && $sintomas !== ""
-        ? $patologiaModel->agregarPatologia($nombre, $tipo, $sintomas, $estado)
-        : false;
+    $patologiaModel->clearErrors();
+    
+	
+	$patologiaModel->validateRequired(['nombre' => $nombre, 'tipo' => $tipo, 'sintomas' => $sintomas, 'estado' => $estado], ['nombre', 'tipo', 'sintomas', 'estado']);
+	
+	$patologiaModel->validateMinLength($nombre, 'nombre', 5);
+	$patologiaModel->validateMaxLength($nombre, 'nombre', 50);
+	
+    $patologiaModel->validateMinLength($tipo, 'tipo', 5);
+	$patologiaModel->validateMaxLength($tipo, 'tipo', 50);
+    
+    $patologiaModel->validateMinLength($sintomas, 'sintomas', 5);
+	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 50);
+	
+	if ($estado !== 0 && $estado !== 1) {
+		$patologiaModel->addError('estado', 'Debe ser activo o inactivo.');
+	}
+
+	$errors = $patologiaModel->getErrors();
+	if(!empty($patologiaModel->getErrors())) {
+		echo json_encode([
+			"status" => "error",
+			"errors" => $errors
+		]);
+		exit;
+	}
+    
+
+    $resultado =  $patologiaModel->agregarPatologia($nombre, $tipo, $sintomas, $estado);
 
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;
@@ -63,9 +89,34 @@ if (isset($_POST["actualizar"])) {
     $sintomas = trim((string) ($_POST["sintomas"] ?? ""));
     $estado = (int) ($_POST["estado_patologia"] ?? 1);
 
-    $resultado = $id > 0 && $nombre !== "" && $tipo !== "" && $sintomas !== ""
-        ? $patologiaModel->actualizarPatologia($id, $nombre, $tipo, $sintomas, $estado)
-        : false;
+    $patologiaModel->clearErrors();
+    
+	
+	$patologiaModel->validateRequired(['nombre' => $nombre, 'tipo' => $tipo, 'sintomas' => $sintomas, 'estado' => $estado], ['nombre', 'tipo', 'sintomas', 'estado']);
+	
+	$patologiaModel->validateMinLength($nombre, 'nombre', 5);
+	$patologiaModel->validateMaxLength($nombre, 'nombre', 50);
+	
+    $patologiaModel->validateMinLength($tipo, 'tipo', 5);
+	$patologiaModel->validateMaxLength($tipo, 'tipo', 50);
+    
+    $patologiaModel->validateMinLength($sintomas, 'sintomas', 5);
+	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 50);
+	
+	if ($estado !== 0 && $estado !== 1) {
+		$patologiaModel->addError('estado', 'Debe ser activo o inactivo.');
+	}
+
+	$errors = $patologiaModel->getErrors();
+	if(!empty($patologiaModel->getErrors())) {
+		echo json_encode([
+			"status" => "error",
+			"errors" => $errors
+		]);
+		exit;
+	}
+
+    $resultado =  $patologiaModel->actualizarPatologia($id, $nombre, $tipo, $sintomas, $estado);
 
     echo json_encode(["status" => $resultado ? "success" : "error"]);
     exit;

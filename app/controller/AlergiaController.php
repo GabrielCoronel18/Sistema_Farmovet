@@ -57,7 +57,7 @@ class AlergiaController {
                 exit;
 
             default:
-    require_once __DIR__ . "/../view/AlergiaView.php";
+    require_once __DIR__ . "app/view/AlergiaView.php";
     break;
         }
     }

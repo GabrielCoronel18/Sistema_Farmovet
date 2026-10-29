@@ -1,5 +1,7 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
+
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 use Gabriel\SistemaFarmovet\model\MascotaModel;
 use Gabriel\SistemaFarmovet\model\AlergiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\CirugiasMascotaModel;
@@ -16,6 +18,8 @@ $EnfSufridasModel = new EnfermedadesPadecidasModel();
 $alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
 $enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
 $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
+
+
 
     if(isset( $_POST["obtener"])){
         $pagina = $_POST["pagina"] ?? 1;
@@ -50,6 +54,36 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         $pelaje = $_POST["pelaje"] ?? "";
         $cedula_cliente = $_POST["cedula_cliente"] ?? "";
         $procedencia = $_POST["procedencia"] ?? "";
+   
+        $catalogos = $mascotaModel->obtenerCatalogos();
+        $mascotaModel->clearErrors();
+        
+        
+	    $mascotaModel->validateRequired(['nombre' => $nombre, 'edad' => $edad, 'sexo' => $sexo, 'chip' => $chip, 'procedencia' => $procedencia, 'fch_nacimiento' => $fch_nacimiento, 'raza' => $id_raza, 'pelaje' => $pelaje, 'cedula' => $cedula_cliente], ['nombre', 'edad', 'sexo', 'chip', 'procedencia', 'fch_nacimiento', 'raza', 'pelaje', 'cedula']);
+        $mascotaModel->validateDateFormat($fch_nacimiento, 'Y-m-d', 'fch_nacimiento');
+        $mascotaModel->validateInteger($edad, 'edad');
+        $mascotaModel->validateInArray($sexo, 'sexo', ['Masculino', 'Femenino']);
+        $mascotaModel->validateInArray($chip, 'chip', ['Si', 'No']);
+        $mascotaModel->validateInArray($id_raza, 'raza', array_column($catalogos['razas'], 'id_raza'));
+        $mascotaModel->validateInArray($cedula_cliente, 'cedula', array_column($catalogos['clientes'], 'cedula_cliente'));
+        $mascotaModel->validateMinLength($nombre, 'nombre', 2);
+        $mascotaModel->validateMaxLength($nombre, 'nombre', 50);
+        $mascotaModel->validateMinLength($pelaje, 'pelaje', 4);
+        $mascotaModel->validateMaxLength($pelaje, 'pelaje', 50);
+        $mascotaModel->validateMinLength($procedencia, 'procedencia', 5);
+        $mascotaModel->validateMaxLength($procedencia, 'procedencia', 200);
+        
+        
+		$errors = $mascotaModel->getErrors();
+	    
+        if(!empty($errors)) {
+		echo json_encode([
+			"status" => "error",
+			"errors" => $errors
+		]);
+		exit;
+	}
+
        
  $idMascota = $mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente);
             if($idMascota){
@@ -170,6 +204,10 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
       exit;
     }
    
+        if (isset($_POST["obtenerCatalogos"])) {
+        echo json_encode(["status" => "success"] + $mascotaModel->obtenerCatalogos());
+        exit;
+    }
 
 
 require_once "app/view/MascotaView.php";

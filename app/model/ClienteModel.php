@@ -1,11 +1,23 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 use PDO;
 
-class Cliente extends ConexionBD {
+class ClienteModel extends ConexionBD {
     
+   use Validation;
 
+    public function obtenerClientesActivos(): array {
+        $sql = "SELECT cedula_cliente, nombre, apellido
+                FROM cliente
+                WHERE estado = 1
+                ORDER BY nombre, apellido";
+
+        return $this->getConexion()->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+   
     public function registrar($nombre, $apellido, $cedula, $telefono, $correo, $direccion) {
         $sql = "INSERT INTO cliente (cedula_cliente, nombre, apellido, correo, telefono, direccion, estado) VALUES (:cedula, :nombre, :apellido, :correo, :telefono, :direccion, :estado)";
         $stmt = $this->getConexion()->prepare($sql);

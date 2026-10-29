@@ -1,10 +1,12 @@
 <?php
-use Gabriel\SistemaFarmovet\model\Cliente;
+
+use Gabriel\SistemaFarmovet\model\ClienteModel;
+
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 verificarRol([1, 2, 3]);
 
-$cliente = new Cliente();
+$cliente = new ClienteModel();
 
 $mensajeAlerta = "";
 
@@ -15,6 +17,40 @@ $mensajeAlerta = "";
         $telefono = trim($_POST["telefono"] ?? "");
         $correo = trim($_POST["correo"] ?? "");
         $direccion = trim($_POST["direccion"] ?? "");
+
+    $cliente->clearErrors();
+	
+	$cliente->validateRequired(['nombre' => $nombre, 'apellido' => $apellido, 'cedula' => $cedula, 'telefono' => $telefono, 'correo' => $correo, 'direccion' => $direccion], ['nombre', 'apellido', 'cedula','telefono','correo','direccion']);
+	
+	$cliente->validateMinLength($nombre, 'nombre', 5);
+	$cliente->validateMaxLength($nombre, 'nombre', 30);
+    
+    $cliente->validateMinLength($apellido, 'apellido', 5);
+	$cliente->validateMaxLength($apellido, 'apellido', 30);
+
+    $cliente->validateMinLength($cedula, 'cedula', 10);
+	$cliente->validateMaxLength($cedula, 'cedula', 12);
+    
+    $cliente->validateMinLength($telefono, 'telefono', 9);
+	$cliente->validateMaxLength($telefono, 'telefono', 11);
+    $cliente->validateNumeric($telefono, 'telefono');
+
+    $cliente->validateMinLength($correo, 'correo', 5);
+	$cliente->validateMaxLength($correo, 'correo', 60);
+    $cliente->validateEmail($correo, 'correo');
+
+    $cliente->validateMinLength($direccion, 'direccion', 10);
+	$cliente->validateMaxLength($direccion, 'direccion', 50);
+	
+	
+	$errors = $cliente->getErrors();
+	if(!empty($errors)) {
+		echo json_encode([
+			"status" => "error",
+			"errors" => $errors
+		]);
+		exit;
+	}
 
         if (count($cliente->validarCliente($cedula)) == 0) {
             if($cliente->registrar($nombre, $apellido, $cedula, $telefono, $correo, $direccion)){
@@ -32,9 +68,47 @@ $mensajeAlerta = "";
         $id = trim($_POST["id"] ?? ""); // cedula_cliente passed as id
         $nombre = trim($_POST["nombre"] ?? "");
         $apellido = trim($_POST["apellido"] ?? "");
+        $cedula = trim($_POST["cedula_cliente"] ?? $id);
         $telefono = trim($_POST["telefono"] ?? "");
         $correo = trim($_POST["correo"] ?? "");
         $direccion = trim($_POST["direccion"] ?? "");
+
+        $cliente->clearErrors();
+        $cliente->validateRequired(
+            [
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'cedula' => $cedula,
+                'telefono' => $telefono,
+                'correo' => $correo,
+                'direccion' => $direccion
+            ],
+            ['nombre', 'apellido', 'cedula', 'telefono', 'correo', 'direccion']
+        );
+
+        $cliente->validateMinLength($nombre, 'nombre', 5);
+        $cliente->validateMaxLength($nombre, 'nombre', 30);
+        $cliente->validateMinLength($apellido, 'apellido', 5);
+        $cliente->validateMaxLength($apellido, 'apellido', 30);
+        $cliente->validateMinLength($cedula, 'cedula', 10);
+        $cliente->validateMaxLength($cedula, 'cedula', 12);
+        $cliente->validateMinLength($telefono, 'telefono', 9);
+        $cliente->validateMaxLength($telefono, 'telefono', 11);
+        $cliente->validateNumeric($telefono, 'telefono');
+        $cliente->validateMinLength($correo, 'correo', 5);
+        $cliente->validateMaxLength($correo, 'correo', 60);
+        $cliente->validateEmail($correo, 'correo');
+        $cliente->validateMinLength($direccion, 'direccion', 10);
+        $cliente->validateMaxLength($direccion, 'direccion', 50);
+
+        $errors = $cliente->getErrors();
+        if(!empty($errors)) {
+            echo json_encode([
+                "status" => "error",
+                "errors" => $errors
+            ]);
+            exit;
+        }
 
         if($cliente->modificarCliente($id, $nombre, $apellido, $correo, $telefono, $direccion)){
             echo json_encode(["status"=>"success"]);

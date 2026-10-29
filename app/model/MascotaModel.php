@@ -1,6 +1,8 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use PDO;
 
 class MascotaModel extends ConexionBD{
      private int $id;
@@ -13,7 +15,10 @@ class MascotaModel extends ConexionBD{
      private int $raza;
      private string $pelaje;
      private string $cliente;
-     
+      
+     use Validation;
+
+
      public function agregarMascota(string $nombre, int $edad, string $sexo, string $chip, string $procedencia, string $fecha_nacimiento, int $raza, string $pelaje, string $cliente){
           $this->nombre = $nombre;
           $this->edad = $edad;
@@ -177,4 +182,27 @@ class MascotaModel extends ConexionBD{
 
             return $query->execute();
      }
+          public function obtenerCatalogos(): array {
+          $conex = $this->getConexion();
+
+          $razas = $conex->query(
+               "SELECT id_raza, nombre_raza
+                FROM raza
+                WHERE estado = 1
+                ORDER BY nombre_raza"
+          )->fetchAll(PDO::FETCH_ASSOC);
+
+          $clientes = $conex->query(
+               "SELECT cedula_cliente, nombre, apellido
+                FROM cliente
+                WHERE estado = 1
+                ORDER BY nombre, apellido"
+          )->fetchAll(PDO::FETCH_ASSOC);
+
+          return [
+               "razas" => $razas,
+               "clientes" => $clientes
+          ];
+     }
+
 }

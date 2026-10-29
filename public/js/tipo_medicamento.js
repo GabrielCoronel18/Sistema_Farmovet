@@ -7,6 +7,12 @@ const limite = document.getElementById("limite");
 const btnAnterior = document.getElementById("btn-anterior");
 const btnSiguiente = document.getElementById("btn-siguiente");
 const infoPagina = document.getElementById("info-pagina");
+const campoNombre = document.getElementById("nombre");
+const errorNombre = document.getElementById("error-nombre");
+const campoEstado = document.getElementById("estado_tipo_medicamento");
+const errorEstado = document.getElementById("error-estado_tipo_medicamento");
+
+
 let paginaActual = 1;
 
 function obtenerDatos(param = null, pagina = paginaActual) {
@@ -26,6 +32,10 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				actualizarPaginacion(0);
 				return;
 			}
+			if (resultado.resultados.length === 0 && pagina > 1) {
+				obtenerDatos(param, pagina - 1);
+				return;
+			}
 
 			resultado.resultados.forEach(tipoMedicamento => {
 				tablaTipoMedicamentos.innerHTML += `<tr>
@@ -39,15 +49,14 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				</tr>`;
 			});
 			paginaActual = pagina;
-			actualizarPaginacion(resultado.resultados.length);
+			actualizarPaginacion(resultado.hasMore);
 		});
 }
 
-function actualizarPaginacion(registrosMostrados) {
-	const limiteActual = Number(limite.value);
+function actualizarPaginacion(hasMore) {
 	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
 	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = registrosMostrados < limiteActual;
+	btnSiguiente.disabled = !hasMore;
 	infoPagina.innerText = `Página ${paginaActual}`;
 }
 
@@ -97,6 +106,18 @@ tablaTipoMedicamentos.addEventListener("click", event => {
 		.then(respuesta => respuesta.json())
 		.then(resultado => {
 			if (resultado.status !== "success") {
+				if(resultado.errors) {
+					if(resultado.errors.nombre) {
+						campoNombre.classList.add("is-invalid");
+						errorNombre.innerText = resultado.errors.nombre;
+					}
+					
+					if(resultado.errors.estado_tipo_medicamento) {
+						campoEstado.classList.add("is-invalid");
+						errorEstado.innerText = resultado.errors.estado_tipo_medicamento;
+					}
+					
+				}
 				Swal.fire({ title: "Error", text: "No se pudo guardar el tipo de medicamento", icon: "error" });
 				return;
 			}

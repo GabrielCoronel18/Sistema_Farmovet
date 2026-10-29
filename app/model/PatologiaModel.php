@@ -1,12 +1,15 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 class PatologiaModel extends ConexionBD {
     private int $id;
     private string $nombre;
     private string $tipo;
     private string $sintomas;
+
+    use Validation;
 
     public function agregarPatologia(string $nombre, string $tipo, string $sintomas, int $estado = 1) {
         $this->nombre = $nombre;
@@ -31,7 +34,7 @@ class PatologiaModel extends ConexionBD {
         $offset = $limite - $limitacion;
 
         $conex = $this->getConexion();
-        $sql = "SELECT * FROM patologia WHERE estado = 1 
+        $sql = "SELECT * FROM patologia 
                 LIMIT :limitacion OFFSET :offset";
 
         $query = $conex->prepare($sql);
@@ -46,7 +49,7 @@ class PatologiaModel extends ConexionBD {
         $this->id = $id;
 
         $conex = $this->getConexion();
-        $sql = "SELECT * FROM patologia WHERE id_patologia = :id AND estado = 1";
+        $sql = "SELECT * FROM patologia WHERE id_patologia = :id";
 
         $query = $conex->prepare($sql);
         $query->bindParam(":id", $this->id);

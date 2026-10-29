@@ -75,16 +75,19 @@
             <div class="col-md-6">
               <label for="nombre" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="nombre" name="nombre" required>
+              <div class="invalid-feedback" id="error-nombre"></div>
             </div>
 
             <div class="col-md-6">
               <label for="edad" class="form-label">Edad</label>
               <input type="number" class="form-control" id="edad" name="edad" required>
+              <div class="invalid-feedback" id="error-edad"></div>
             </div>
             
             <div class="col-md-6">
               <label for="fch_nacimiento" class="form-label">Fecha de Nacimiento</label>
               <input type="date" class="form-control" id="fch_nacimiento" name="fch_nacimiento" required>
+              <div class="invalid-feedback" id="error-fch_nacimiento"></div>
             </div>
 
             <div class="col-md-6">
@@ -94,6 +97,7 @@
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
               </select>
+              <div class="invalid-feedback" id="error-sexo"></div>
             </div>
 
             <div class="col-md-6">
@@ -103,32 +107,35 @@
                 <option value="Si">Si</option>
                 <option value="No">No</option>
               </select>
+              <div class="invalid-feedback" id="error-chip"></div>
             </div>
 
             <div class="col-md-6">
               <label for="id_raza" class="form-label">Raza</label>
               <select class="form-select" id="id_raza" name="id_raza" required>
                 <option value="" selected disabled>Seleccione una raza</option>
-                <option value="1">Pastor Alemán</option> 
               </select>
+              <div class="invalid-feedback" id="error-id_raza"></div>
             </div>
 
              <div class="col-md-6">
               <label for="pelaje" class="form-label">Pelaje</label>
               <input type="text" class="form-control" id="pelaje" name="pelaje" required>
+              <div class="invalid-feedback" id="error-pelaje"></div>
             </div>
 
             <div class="col-md-6">
               <label for="cedula_cliente" class="form-label">Cliente</label>
               <select class="form-select" id="cedula_cliente" name="cedula_cliente" required>
                 <option value="" selected disabled>Seleccione un cliente</option>
-                <option value="12313122">Jaime</option>
               </select>
+              <div class="invalid-feedback" id="error-cedula_cliente"></div>
             </div>
 
             <div class="col-12">
               <label for="procedencia" class="form-label">Procedencia</label>
               <textarea class="form-control" id="procedencia" name="procedencia" rows="2"></textarea>
+              <div class="invalid-feedback" id="error-procedencia"></div>
             </div>
 
             <hr class="my-4">
