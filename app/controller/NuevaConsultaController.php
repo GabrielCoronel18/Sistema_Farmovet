@@ -36,6 +36,7 @@ if (isset($_POST['obtenerConsulta']) && $idConsulta > 0) {
 }
 
 if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idConsulta = (int) ($_POST['id_consulta'] ?? $idConsulta);
     $datos = [
         'cedula_usuario' => (string) ($_SESSION['usuario']['cedula_usuario'] ?? ''),
         'id_mascota' => (int) ($_POST['id_mascota'] ?? 0),
@@ -105,7 +106,7 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
         }
     }
     $resultado = $idConsulta > 0
-        ? $consultaModel->editarConsulta($idConsulta, $datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas)
+        ? $consultaModel->actualizarConsulta($idConsulta, $datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas)
         : $consultaModel->agregarConsulta($datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas);
     echo json_encode([
         'status' => $resultado ? 'success' : 'error',

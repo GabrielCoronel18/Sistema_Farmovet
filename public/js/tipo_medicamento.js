@@ -49,14 +49,14 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				</tr>`;
 			});
 			paginaActual = pagina;
-			actualizarPaginacion(resultado.hasMore);
+			actualizarPaginacion(resultado.hayMas);
 		});
 }
 
-function actualizarPaginacion(hasMore) {
+function actualizarPaginacion(hayMas) {
 	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
 	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = !hasMore;
+	btnSiguiente.disabled = !hayMas;
 	infoPagina.innerText = `Página ${paginaActual}`;
 }
 

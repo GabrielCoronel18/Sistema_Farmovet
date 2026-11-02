@@ -6,29 +6,43 @@ use PDO;
 
 class ResultadosLaboratorioModel extends ConexionBD
 {
-    public ?int $id_resultado = null;
-    public ?int $id_consulta = null;
-    public ?string $hematologia_completa = null;
-    public ?string $coprologia = null;
-    public ?string $quimica_sanguinea = null;
-    public ?string $uro_sangre = null;
-    public ?string $uro_urob = null;
-    public ?string $uro_bli = null;
-    public ?string $uro_prot = null;
-    public ?string $uro_nitritos = null;
-    public ?string $uro_cetona = null;
-    public ?string $uro_glucosa = null;
-    public ?string $uro_ph = null;
-    public ?string $uro_leu = null;
-    public ?string $uro_densidad = null;
-    public ?string $uro_microorganismos = null;
-    public ?string $uro_celulas = null;
-    public ?string $uro_cilindros = null;
-    public ?string $uro_cristales = null;
-    public ?string $descarte = null;
-    public ?string $piel_otros = null;
-    public ?string $snap = null;
-    public ?string $observaciones = null;
+    private ?int $id_resultado = null;
+    private ?int $id_consulta = null;
+    private ?string $hematologia_completa = null;
+    private ?string $coprologia = null;
+    private ?string $quimica_sanguinea = null;
+    private ?string $uro_sangre = null;
+    private ?string $uro_urob = null;
+    private ?string $uro_bli = null;
+    private ?string $uro_prot = null;
+    private ?string $uro_nitritos = null;
+    private ?string $uro_cetona = null;
+    private ?string $uro_glucosa = null;
+    private ?string $uro_ph = null;
+    private ?string $uro_leu = null;
+    private ?string $uro_densidad = null;
+    private ?string $uro_microorganismos = null;
+    private ?string $uro_celulas = null;
+    private ?string $uro_cilindros = null;
+    private ?string $uro_cristales = null;
+    private ?string $descarte = null;
+    private ?string $piel_otros = null;
+    private ?string $snap = null;
+    private ?string $observaciones = null;
+
+    private const COLUMNAS = [
+        'hematologia_completa','coprologia','quimica_sanguinea','uro_sangre','uro_urob',
+        'uro_bli','uro_prot','uro_nitritos','uro_cetona','uro_glucosa','uro_ph','uro_leu','uro_densidad',
+        'uro_microorganismos','uro_celulas','uro_cilindros','uro_cristales','descarte','piel_otros',
+        'snap','observaciones'
+    ];
+
+    private function hidratar(array $datos): void
+    {
+        foreach (self::COLUMNAS as $columna) {
+            $this->{$columna} = $datos[$columna] ?? null;
+        }
+    }
 
     public function obtenerResultado(int $id): ?array
     {
@@ -40,15 +54,14 @@ class ResultadosLaboratorioModel extends ConexionBD
 
     public function agregarResultado(int $id, array $datos): bool
     {
-        $columnas = ['hematologia_completa','coprologia','quimica_sanguinea','uro_sangre','uro_urob',
-            'uro_bli','uro_prot','uro_nitritos','uro_cetona','uro_glucosa','uro_ph','uro_leu','uro_densidad',
-            'uro_microorganismos','uro_celulas','uro_cilindros','uro_cristales','descarte','piel_otros',
-            'snap','observaciones'];
-        $valores = [':id_consulta' => $id];
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
+        $columnas = self::COLUMNAS;
+        $valores = [':id_consulta' => $this->id_consulta];
         $marcadores = [];
         foreach ($columnas as $columna) {
             $marcadores[] = ":$columna";
-            $valores[":$columna"] = $datos[$columna] ?? null;
+            $valores[":$columna"] = $this->{$columna};
         }
         $consulta = $this->getConexion()->prepare(
             "INSERT INTO resultado_laboratorio (id_consulta, " . implode(', ', $columnas) . ")
@@ -57,21 +70,30 @@ class ResultadosLaboratorioModel extends ConexionBD
         return $consulta->execute($valores);
     }
 
-    public function editarResultado(int $id, array $datos): bool
+    public function actualizarResultado(int $id, array $datos): bool
     {
-        $columnas = ['hematologia_completa','coprologia','quimica_sanguinea','uro_sangre','uro_urob',
-            'uro_bli','uro_prot','uro_nitritos','uro_cetona','uro_glucosa','uro_ph','uro_leu','uro_densidad',
-            'uro_microorganismos','uro_celulas','uro_cilindros','uro_cristales','descarte','piel_otros',
-            'snap','observaciones'];
-        $valores = [':id_consulta' => $id];
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
+        $columnas = self::COLUMNAS;
+        $valores = [':id_consulta' => $this->id_consulta];
         $cambios = [];
         foreach ($columnas as $columna) {
             $cambios[] = "$columna = :$columna";
-            $valores[":$columna"] = $datos[$columna] ?? null;
+            $valores[":$columna"] = $this->{$columna};
         }
         $consulta = $this->getConexion()->prepare(
             "UPDATE resultado_laboratorio SET " . implode(', ', $cambios) . " WHERE id_consulta = :id_consulta"
         );
-        return $consulta->execute($valores);
+        if (!$consulta->execute($valores)) {
+            return false;
+        }
+        $existencia = $this->getConexion()->prepare(
+            "SELECT 1 FROM resultado_laboratorio WHERE id_consulta = :id_consulta"
+        );
+        $existencia->execute([':id_consulta' => $this->id_consulta]);
+        if ($existencia->fetchColumn() !== false) {
+            return true;
+        }
+        return $this->agregarResultado($id, $datos);
     }
 }

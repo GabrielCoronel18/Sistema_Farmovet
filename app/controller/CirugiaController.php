@@ -17,15 +17,17 @@ if (isset($_POST["obtener"])) {
 	$pagina = max(1, (int) ($_POST["pagina"] ?? 1));
 	$limitacion = (int) ($_POST["limite"] ?? 5);
 	$limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
-	$resultados = isset($_POST["parametro"])
-		? $cirugiaModel->filtrarCirugia((string) $_POST["parametro"], $pagina, $limitacion)
+	$param = trim((string) ($_POST["parametro"] ?? ""));
+	$tieneFiltro = $param !== "";
+	$resultados = $tieneFiltro
+		? $cirugiaModel->filtrarCirugia($param, $pagina, $limitacion)
 		: $cirugiaModel->obtenerCirugias($pagina, $limitacion);
-	$total = $cirugiaModel->contarCirugias(isset($_POST["parametro"]) ? (string) $_POST["parametro"] : null);
+	$total = $cirugiaModel->contarCirugias($tieneFiltro ? $param : null);
 
 	echo json_encode([
 		"status" => "success",
 		"resultados" => $resultados,
-		"hasMore" => $pagina * $limitacion < $total
+		"hayMas" => $pagina * $limitacion < $total
 	]);
 	exit;
 }

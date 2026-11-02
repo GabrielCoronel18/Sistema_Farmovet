@@ -37,6 +37,7 @@ class MedicamentoModel extends ConexionBD {
 		$sql = "SELECT * FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
+				ORDER BY medicamento.id_medicamento
 				LIMIT :limitacion OFFSET :offset";
 
 		$query = $conex->prepare($sql);
@@ -73,6 +74,7 @@ class MedicamentoModel extends ConexionBD {
 				   OR medicamento.nombre_medicamento LIKE :param
 				   OR medicamento.id_tipo_medicamento LIKE :param
 				)
+				ORDER BY medicamento.id_medicamento
 				LIMIT :limitacion OFFSET :offset";
 
 		$query = $conex->prepare($sql);

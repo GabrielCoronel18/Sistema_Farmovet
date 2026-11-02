@@ -13,22 +13,24 @@ $PresentacionModel = new PresentacionModel();
 $errors = [];
 
 if(isset($_POST["obtener"])) {
-    $pagina = (int) ($_POST["pagina"] ?? 1) ;
+    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
     $limitacion = (int) ($_POST["limite"] ?? 5);
     $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
 
-    if (isset($_POST["parametro"])) {
-        $param = $_POST["parametro"];
+    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $tieneFiltro = $param !== "";
+
+    if ($tieneFiltro) {
         $resultados = $PresentacionModel->filtrarPresentacion($param, $pagina, $limitacion);
     } else {
         $resultados = $PresentacionModel->obtenerPresentacion($pagina, $limitacion);
     }
-    $total = $PresentacionModel->contarPresentaciones(isset($_POST["parametro"]) ? $param : null);
+    $total = $PresentacionModel->contarPresentaciones($tieneFiltro ? $param : null);
 
     if ($resultados) {
-        echo json_encode(["status" => "success", "resultados" => $resultados, "hasMore" => $pagina * $limitacion < $total]);
+        echo json_encode(["status" => "success", "resultados" => $resultados, "hayMas" => $pagina * $limitacion < $total]);
     } else {
-        echo json_encode(["status" => "success", "resultados" => [], "hasMore" => false]);
+        echo json_encode(["status" => "success", "resultados" => [], "hayMas" => false]);
     }
     exit;
 }

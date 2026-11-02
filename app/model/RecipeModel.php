@@ -6,12 +6,21 @@ use PDO;
 
 class RecipeModel extends ConexionBD
 {
-    public ?int $id_recipe = null;
-    public ?int $id_consulta = null;
-    public ?int $id_medicamento = null;
-    public ?string $dosis = null;
-    public ?string $frecuencia = null;
-    public ?string $duracion = null;
+    private ?int $id_recipe = null;
+    private ?int $id_consulta = null;
+    private ?int $id_medicamento = null;
+    private ?string $dosis = null;
+    private ?string $frecuencia = null;
+    private ?string $duracion = null;
+
+    private function hidratar(array $datos): void
+    {
+        $this->id_recipe = isset($datos['id_recipe']) ? (int) $datos['id_recipe'] : null;
+        $this->id_medicamento = isset($datos['id_medicamento']) ? (int) $datos['id_medicamento'] : null;
+        $this->dosis = $datos['dosis'] ?? null;
+        $this->frecuencia = $datos['frecuencia'] ?? null;
+        $this->duracion = $datos['duracion'] ?? null;
+    }
 
     public function obtenerRecipes(int $id): array
     {
@@ -27,31 +36,35 @@ class RecipeModel extends ConexionBD
 
     public function agregarRecipe(int $id, array $datos): bool
     {
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
         $consulta = $this->getConexion()->prepare(
             "INSERT INTO recipe (id_consulta, id_medicamento, dosis, frecuencia, duracion)
              VALUES (:id_consulta, :id_medicamento, :dosis, :frecuencia, :duracion)"
         );
         return $consulta->execute([
             ':id_consulta' => $id,
-            ':id_medicamento' => $datos['id_medicamento'],
-            ':dosis' => $datos['dosis'],
-            ':frecuencia' => $datos['frecuencia'],
-            ':duracion' => $datos['duracion']
+            ':id_medicamento' => $this->id_medicamento,
+            ':dosis' => $this->dosis,
+            ':frecuencia' => $this->frecuencia,
+            ':duracion' => $this->duracion
         ]);
     }
 
-    public function editarRecipe(int $id, array $datos): bool
+    public function actualizarRecipe(int $id, array $datos): bool
     {
+        $this->id_recipe = $id;
+        $this->hidratar($datos);
         $consulta = $this->getConexion()->prepare(
             "UPDATE recipe SET id_medicamento = :id_medicamento, dosis = :dosis,
              frecuencia = :frecuencia, duracion = :duracion WHERE id_recipe = :id"
         );
         return $consulta->execute([
             ':id' => $id,
-            ':id_medicamento' => $datos['id_medicamento'],
-            ':dosis' => $datos['dosis'],
-            ':frecuencia' => $datos['frecuencia'],
-            ':duracion' => $datos['duracion']
+            ':id_medicamento' => $this->id_medicamento,
+            ':dosis' => $this->dosis,
+            ':frecuencia' => $this->frecuencia,
+            ':duracion' => $this->duracion
         ]);
     }
 }

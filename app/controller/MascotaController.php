@@ -55,7 +55,6 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         $cedula_cliente = $_POST["cedula_cliente"] ?? "";
         $procedencia = $_POST["procedencia"] ?? "";
    
-        $catalogos = $mascotaModel->obtenerCatalogos();
         $mascotaModel->clearErrors();
         
         
@@ -64,8 +63,6 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         $mascotaModel->validateInteger($edad, 'edad');
         $mascotaModel->validateInArray($sexo, 'sexo', ['Masculino', 'Femenino']);
         $mascotaModel->validateInArray($chip, 'chip', ['Si', 'No']);
-        $mascotaModel->validateInArray($id_raza, 'raza', array_column($catalogos['razas'], 'id_raza'));
-        $mascotaModel->validateInArray($cedula_cliente, 'cedula', array_column($catalogos['clientes'], 'cedula_cliente'));
         $mascotaModel->validateMinLength($nombre, 'nombre', 2);
         $mascotaModel->validateMaxLength($nombre, 'nombre', 50);
         $mascotaModel->validateMinLength($pelaje, 'pelaje', 4);

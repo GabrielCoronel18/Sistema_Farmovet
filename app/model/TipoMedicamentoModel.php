@@ -28,7 +28,9 @@ class TipoMedicamentoModel extends ConexionBD {
     public function obtenerTipoMedicamento(int $pagina, int $limitacion) {
         $offset = ($pagina * $limitacion) - $limitacion;
         $conex = $this->getConexion();
-        $sql = "SELECT * FROM tipo_medicamento LIMIT :limitacion OFFSET :offset";
+        $sql = "SELECT * FROM tipo_medicamento
+                ORDER BY id_tipo_medicamento
+                LIMIT :limitacion OFFSET :offset";
         $query = $conex->prepare($sql);
         $query->bindParam(":limitacion", $limitacion, \PDO::PARAM_INT);
         $query->bindParam(":offset", $offset, \PDO::PARAM_INT);
@@ -53,6 +55,7 @@ class TipoMedicamentoModel extends ConexionBD {
         $conex = $this->getConexion();
         $sql = "SELECT * FROM tipo_medicamento
                 WHERE estado = 1 AND nom_tipo_medicamento LIKE :busqueda
+                ORDER BY id_tipo_medicamento
                 LIMIT :limitacion OFFSET :offset";
 
         $query = $conex->prepare($sql);

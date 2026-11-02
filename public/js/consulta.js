@@ -31,6 +31,10 @@
     if (formulario) {
         const urlFormulario = formulario.action;
         const idEdicion = Number(new URLSearchParams(window.location.search).get('id_consulta') || 0);
+        const idConsultaInput = formulario.querySelector('[name="id_consulta"]');
+        if (idConsultaInput && idEdicion > 0) {
+            idConsultaInput.value = String(idEdicion);
+        }
         let catalogos = {
             patologias: [],
             medicamentos: []
@@ -110,7 +114,7 @@
             establecerValores(consulta.anamnesis);
             establecerValores(consulta.examen);
             establecerValores(consulta.laboratorio);
-            formulario.querySelector('[name="id_consulta"]').value = idEdicion;
+            if (idConsultaInput) idConsultaInput.value = String(idEdicion);
 
             const diagnosticoInicial = document.querySelector('.diagnostico-row');
             const recetaInicial = document.querySelector('.receta-row');

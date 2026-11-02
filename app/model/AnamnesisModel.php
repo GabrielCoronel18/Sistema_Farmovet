@@ -6,32 +6,47 @@ use PDO;
 
 class AnamnesisModel extends ConexionBD
 {
-    public ?int $id_anamnesis = null;
-    public ?int $id_consulta = null;
-    public ?string $motivo_consulta = null;
-    public ?string $inicio_enfermedad = null;
-    public ?string $examenes_efectuados = null;
-    public ?string $tratamientos_realizados = null;
-    public ?string $ult_desp_interna = null;
-    public ?string $ult_desp_int_producto = null;
-    public ?string $ult_desp_externa = null;
-    public ?string $ult_desp_ext_producto = null;
-    public ?string $ultima_vacunacion = null;
-    public ?string $tipo_alimentacion = null;
-    public ?string $frec_alimentacion = null;
-    public ?string $apetito = null;
-    public ?string $ingesta_agua = null;
-    public ?string $contacto_animal = null;
-    public ?string $vomito = null;
-    public ?string $heces = null;
-    public ?string $miccion = null;
-    public ?string $fch_ultimo_celo = null;
-    public ?string $prod_higiene = null;
-    public ?string $frec_higiene = null;
-    public ?string $int_ambiente = null;
-    public ?string $ext_ambiente = null;
-    public ?string $act_ectoparasitos = null;
-    public ?string $ant_ectoparasitos = null;
+    private ?int $id_anamnesis = null;
+    private ?int $id_consulta = null;
+    private ?string $motivo_consulta = null;
+    private ?string $inicio_enfermedad = null;
+    private ?string $examenes_efectuados = null;
+    private ?string $tratamientos_realizados = null;
+    private ?string $ult_desp_interna = null;
+    private ?string $ult_desp_int_producto = null;
+    private ?string $ult_desp_externa = null;
+    private ?string $ult_desp_ext_producto = null;
+    private ?string $ultima_vacunacion = null;
+    private ?string $tipo_alimentacion = null;
+    private ?string $frec_alimentacion = null;
+    private ?string $apetito = null;
+    private ?string $ingesta_agua = null;
+    private ?string $contacto_animal = null;
+    private ?string $vomito = null;
+    private ?string $heces = null;
+    private ?string $miccion = null;
+    private ?string $fch_ultimo_celo = null;
+    private ?string $prod_higiene = null;
+    private ?string $frec_higiene = null;
+    private ?string $int_ambiente = null;
+    private ?string $ext_ambiente = null;
+    private ?string $act_ectoparasitos = null;
+    private ?string $ant_ectoparasitos = null;
+
+    private const COLUMNAS = [
+        'motivo_consulta','inicio_enfermedad','examenes_efectuados','tratamientos_realizados',
+        'ult_desp_interna','ult_desp_int_producto','ult_desp_externa','ult_desp_ext_producto',
+        'ultima_vacunacion','tipo_alimentacion','frec_alimentacion','apetito','ingesta_agua',
+        'contacto_animal','vomito','heces','miccion','fch_ultimo_celo','prod_higiene','frec_higiene',
+        'int_ambiente','ext_ambiente','act_ectoparasitos','ant_ectoparasitos'
+    ];
+
+    private function hidratar(array $datos): void
+    {
+        foreach (self::COLUMNAS as $columna) {
+            $this->{$columna} = $datos[$columna] ?? null;
+        }
+    }
 
     public function obtenerAnamnesis(int $id): ?array
     {
@@ -43,40 +58,46 @@ class AnamnesisModel extends ConexionBD
 
     public function agregarAnamnesis(int $id, array $datos): bool
     {
-        $columnas = ['motivo_consulta','inicio_enfermedad','examenes_efectuados','tratamientos_realizados',
-            'ult_desp_interna','ult_desp_int_producto','ult_desp_externa','ult_desp_ext_producto',
-            'ultima_vacunacion','tipo_alimentacion','frec_alimentacion','apetito','ingesta_agua',
-            'contacto_animal','vomito','heces','miccion','fch_ultimo_celo','prod_higiene','frec_higiene',
-            'int_ambiente','ext_ambiente','act_ectoparasitos','ant_ectoparasitos'];
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
+        $columnas = self::COLUMNAS;
         $valores = [];
         foreach ($columnas as $columna) {
-            $valores[$columna] = $datos[$columna] ?? null;
+            $valores[$columna] = $this->{$columna};
         }
         $consulta = $this->getConexion()->prepare(
             "INSERT INTO anamnesis (id_consulta, " . implode(', ', $columnas) . ")
              VALUES (:id_consulta, :" . implode(', :', $columnas) . ")"
         );
-        $valores['id_consulta'] = $id;
+        $valores['id_consulta'] = $this->id_consulta;
         return $consulta->execute($valores);
     }
 
-    public function editarAnamnesis(int $id, array $datos): bool
+    public function actualizarAnamnesis(int $id, array $datos): bool
     {
-        $columnas = ['motivo_consulta','inicio_enfermedad','examenes_efectuados','tratamientos_realizados',
-            'ult_desp_interna','ult_desp_int_producto','ult_desp_externa','ult_desp_ext_producto',
-            'ultima_vacunacion','tipo_alimentacion','frec_alimentacion','apetito','ingesta_agua',
-            'contacto_animal','vomito','heces','miccion','fch_ultimo_celo','prod_higiene','frec_higiene',
-            'int_ambiente','ext_ambiente','act_ectoparasitos','ant_ectoparasitos'];
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
+        $columnas = self::COLUMNAS;
         $valores = [];
         $cambios = [];
         foreach ($columnas as $columna) {
             $cambios[] = "$columna = :$columna";
-            $valores[$columna] = $datos[$columna] ?? null;
+            $valores[$columna] = $this->{$columna};
         }
-        $valores['id_consulta'] = $id;
+        $valores['id_consulta'] = $this->id_consulta;
         $consulta = $this->getConexion()->prepare(
             "UPDATE anamnesis SET " . implode(', ', $cambios) . " WHERE id_consulta = :id_consulta"
         );
-        return $consulta->execute($valores);
+        if (!$consulta->execute($valores)) {
+            return false;
+        }
+        $existencia = $this->getConexion()->prepare(
+            "SELECT 1 FROM anamnesis WHERE id_consulta = :id_consulta"
+        );
+        $existencia->execute([':id_consulta' => $this->id_consulta]);
+        if ($existencia->fetchColumn() !== false) {
+            return true;
+        }
+        return $this->agregarAnamnesis($id, $datos);
     }
 }

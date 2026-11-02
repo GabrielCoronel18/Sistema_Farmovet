@@ -35,7 +35,7 @@ class CirugiaModel extends ConexionBD {
 		$offset = ($pagina * $limitacion) - $limitacion;
 		$conex = $this->getConexion();
 		$sql = "SELECT * FROM cirugia
-				ORDER BY nombre_cirugia
+				ORDER BY id_cirugia
 				LIMIT :limitacion OFFSET :offset";
 
 		$query = $conex->prepare($sql);
@@ -66,7 +66,7 @@ class CirugiaModel extends ConexionBD {
 				   OR nombre_cirugia LIKE :param_nombre
 				   OR gravedad LIKE :param_gravedad
 				)
-				ORDER BY nombre_cirugia
+				ORDER BY id_cirugia
 				LIMIT :limitacion OFFSET :offset";
 
 		$query = $conex->prepare($sql);

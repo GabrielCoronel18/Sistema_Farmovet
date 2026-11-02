@@ -6,10 +6,17 @@ use PDO;
 
 class DiagnosticoModel extends ConexionBD
 {
-    public ?int $id_diagnostico = null;
-    public ?int $id_consulta = null;
-    public ?int $id_patologia = null;
-    public ?string $tipo_diagnostico = null;
+    private ?int $id_diagnostico = null;
+    private ?int $id_consulta = null;
+    private ?int $id_patologia = null;
+    private ?string $tipo_diagnostico = null;
+
+    private function hidratar(array $datos): void
+    {
+        $this->id_diagnostico = isset($datos['id_diagnostico']) ? (int) $datos['id_diagnostico'] : null;
+        $this->id_patologia = isset($datos['id_patologia']) ? (int) $datos['id_patologia'] : null;
+        $this->tipo_diagnostico = $datos['tipo_diagnostico'] ?? null;
+    }
 
     public function obtenerDiagnosticos(int $id): array
     {
@@ -25,27 +32,31 @@ class DiagnosticoModel extends ConexionBD
 
     public function agregarDiagnostico(int $id, array $datos): bool
     {
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
         $consulta = $this->getConexion()->prepare(
             "INSERT INTO diagnostico (id_consulta, id_patologia, tipo_diagnostico)
              VALUES (:id_consulta, :id_patologia, :tipo_diagnostico)"
         );
         return $consulta->execute([
             ':id_consulta' => $id,
-            ':id_patologia' => $datos['id_patologia'],
-            ':tipo_diagnostico' => $datos['tipo_diagnostico']
+            ':id_patologia' => $this->id_patologia,
+            ':tipo_diagnostico' => $this->tipo_diagnostico
         ]);
     }
 
-    public function editarDiagnostico(int $id, array $datos): bool
+    public function actualizarDiagnostico(int $id, array $datos): bool
     {
+        $this->id_diagnostico = $id;
+        $this->hidratar($datos);
         $consulta = $this->getConexion()->prepare(
             "UPDATE diagnostico SET id_patologia = :id_patologia,
              tipo_diagnostico = :tipo_diagnostico WHERE id_diagnostico = :id"
         );
         return $consulta->execute([
             ':id' => $id,
-            ':id_patologia' => $datos['id_patologia'],
-            ':tipo_diagnostico' => $datos['tipo_diagnostico']
+            ':id_patologia' => $this->id_patologia,
+            ':tipo_diagnostico' => $this->tipo_diagnostico
         ]);
     }
 }

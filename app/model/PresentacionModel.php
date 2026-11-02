@@ -30,6 +30,7 @@ class PresentacionModel extends ConexionBD {
         $offset = ($pagina * $limitacion) - $limitacion;
         $conex = $this->getConexion();
         $sql = "SELECT * FROM presentacion
+                ORDER BY id_presentacion
                 LIMIT :limitacion OFFSET :offset";
 
         $query = $conex->prepare($sql);
@@ -56,6 +57,7 @@ class PresentacionModel extends ConexionBD {
         $conex = $this->getConexion();
         $sql = "SELECT * FROM presentacion
                 WHERE estado = 1 AND (nombre_presentacion LIKE :busqueda)
+                ORDER BY id_presentacion
                 LIMIT :limitacion OFFSET :offset";
 
         $query = $conex->prepare($sql);

@@ -6,17 +6,30 @@ use PDO;
 
 class ConsultaModel extends ConexionBD
 {
-    public ?int $id_consulta = null;
-    public ?string $cedula_usuario = null;
-    public ?int $id_mascota = null;
-    public ?string $fecha = null;
-    public ?int $tipo_ingreso = null;
-    public ?int $remitido = null;
-    public ?string $pronostico = null;
-    public ?string $tratamiento_consulta = null;
-    public ?string $peso_consulta = null;
-    public ?string $comentario = null;
-    public ?int $estado = null;
+    private ?int $id_consulta = null;
+    private ?string $cedula_usuario = null;
+    private ?int $id_mascota = null;
+    private ?string $fecha = null;
+    private ?int $tipo_ingreso = null;
+    private ?int $remitido = null;
+    private ?string $pronostico = null;
+    private ?string $tratamiento_consulta = null;
+    private ?string $peso_consulta = null;
+    private ?string $comentario = null;
+    private ?int $estado = null;
+
+    private function hidratar(array $datos): void
+    {
+        $this->cedula_usuario = (string) ($datos['cedula_usuario'] ?? '');
+        $this->id_mascota = isset($datos['id_mascota']) ? (int) $datos['id_mascota'] : null;
+        $this->fecha = isset($datos['fecha']) ? (string) $datos['fecha'] : null;
+        $this->tipo_ingreso = isset($datos['tipo_ingreso']) ? (int) $datos['tipo_ingreso'] : null;
+        $this->remitido = isset($datos['remitido']) ? (int) $datos['remitido'] : null;
+        $this->pronostico = $datos['pronostico'] ?? null;
+        $this->tratamiento_consulta = $datos['tratamiento_consulta'] ?? null;
+        $this->peso_consulta = $datos['peso_consulta'] ?? null;
+        $this->comentario = $datos['comentario'] ?? null;
+    }
 
     public function obtenerConsultas(): array
     {
@@ -88,6 +101,7 @@ class ConsultaModel extends ConexionBD
     public function agregarConsulta(array $datos, array $anamnesis, array $examen,
         array $laboratorio, array $diagnosticos, array $recetas): int|false
     {
+        $this->hidratar($datos);
         $conexion = $this->getConexion();
         $conexion->beginTransaction();
         try {
@@ -99,15 +113,15 @@ class ConsultaModel extends ConexionBD
                          :pronostico, :tratamiento, :peso, :comentario, 1)"
             );
             $consulta->execute([
-                ':cedula_usuario' => $datos['cedula_usuario'],
-                ':id_mascota' => $datos['id_mascota'],
-                ':fecha' => $datos['fecha'],
-                ':tipo_ingreso' => $datos['tipo_ingreso'],
-                ':remitido' => $datos['remitido'],
-                ':pronostico' => $datos['pronostico'],
-                ':tratamiento' => $datos['tratamiento_consulta'],
-                ':peso' => $datos['peso_consulta'],
-                ':comentario' => $datos['comentario']
+                ':cedula_usuario' => $this->cedula_usuario,
+                ':id_mascota' => $this->id_mascota,
+                ':fecha' => $this->fecha,
+                ':tipo_ingreso' => $this->tipo_ingreso,
+                ':remitido' => $this->remitido,
+                ':pronostico' => $this->pronostico,
+                ':tratamiento' => $this->tratamiento_consulta,
+                ':peso' => $this->peso_consulta,
+                ':comentario' => $this->comentario
             ]);
             $id = (int) $conexion->lastInsertId();
             (new AnamnesisModel($conexion))->agregarAnamnesis($id, $anamnesis);
@@ -127,9 +141,11 @@ class ConsultaModel extends ConexionBD
         }
     }
 
-    public function editarConsulta(int $id, array $datos, array $anamnesis, array $examen,
+    public function actualizarConsulta(int $id, array $datos, array $anamnesis, array $examen,
         array $laboratorio, array $diagnosticos, array $recetas): bool
     {
+        $this->id_consulta = $id;
+        $this->hidratar($datos);
         $conexion = $this->getConexion();
         $conexion->beginTransaction();
         try {
@@ -142,30 +158,44 @@ class ConsultaModel extends ConexionBD
             );
             $consulta->execute([
                 ':id' => $id,
-                ':id_mascota' => $datos['id_mascota'],
-                ':fecha' => $datos['fecha'],
-                ':tipo_ingreso' => $datos['tipo_ingreso'],
-                ':remitido' => $datos['remitido'],
-                ':pronostico' => $datos['pronostico'],
-                ':tratamiento' => $datos['tratamiento_consulta'],
-                ':peso' => $datos['peso_consulta'],
-                ':comentario' => $datos['comentario']
+                ':id_mascota' => $this->id_mascota,
+                ':fecha' => $this->fecha,
+                ':tipo_ingreso' => $this->tipo_ingreso,
+                ':remitido' => $this->remitido,
+                ':pronostico' => $this->pronostico,
+                ':tratamiento' => $this->tratamiento_consulta,
+                ':peso' => $this->peso_consulta,
+                ':comentario' => $this->comentario
             ]);
-            (new AnamnesisModel($conexion))->editarAnamnesis($id, $anamnesis);
-            (new ExamenClinicoModel($conexion))->editarExamen($id, $examen);
-            (new ResultadosLaboratorioModel($conexion))->editarResultado($id, $laboratorio);
+            if (!(new AnamnesisModel($conexion))->actualizarAnamnesis($id, $anamnesis)) {
+                throw new \PDOException('No fue posible actualizar la anamnesis.');
+            }
+            if (!(new ExamenClinicoModel($conexion))->actualizarExamen($id, $examen)) {
+                throw new \PDOException('No fue posible actualizar el examen clínico.');
+            }
+            if (!(new ResultadosLaboratorioModel($conexion))->actualizarResultado($id, $laboratorio)) {
+                throw new \PDOException('No fue posible actualizar los resultados de laboratorio.');
+            }
             foreach ($diagnosticos as $diagnostico) {
                 if (($diagnostico['id_diagnostico'] ?? 0) > 0) {
-                    (new DiagnosticoModel($conexion))->editarDiagnostico($diagnostico['id_diagnostico'], $diagnostico);
+                    $actualizado = (new DiagnosticoModel($conexion))
+                        ->actualizarDiagnostico($diagnostico['id_diagnostico'], $diagnostico);
                 } else {
-                    (new DiagnosticoModel($conexion))->agregarDiagnostico($id, $diagnostico);
+                    $actualizado = (new DiagnosticoModel($conexion))->agregarDiagnostico($id, $diagnostico);
+                }
+                if (!$actualizado) {
+                    throw new \PDOException('No fue posible actualizar los diagnósticos.');
                 }
             }
             foreach ($recetas as $receta) {
                 if (($receta['id_recipe'] ?? 0) > 0) {
-                    (new RecipeModel($conexion))->editarRecipe($receta['id_recipe'], $receta);
+                    $actualizado = (new RecipeModel($conexion))
+                        ->actualizarRecipe($receta['id_recipe'], $receta);
                 } else {
-                    (new RecipeModel($conexion))->agregarRecipe($id, $receta);
+                    $actualizado = (new RecipeModel($conexion))->agregarRecipe($id, $receta);
+                }
+                if (!$actualizado) {
+                    throw new \PDOException('No fue posible actualizar las recetas.');
                 }
             }
             $conexion->commit();
