@@ -12,7 +12,19 @@ verificarRol([1, 2, 3]);
 $consultaModel = new ConsultaModel();
 
 if (isset($_POST['obtener'])) {
-    $consultas = $consultaModel->obtenerConsultas();
+    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
+    $limitacion = (int) ($_POST["limite"] ?? 5);
+    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+
+    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $tieneFiltro = $param !== "";
+
+    $consultas = $tieneFiltro
+        ? $consultaModel->filtrarConsultas($param, $pagina, $limitacion)
+        : $consultaModel->obtenerConsultas($pagina, $limitacion);
+    $total = $consultaModel->contarConsulta($tieneFiltro ? $param : null);
+
+    
     foreach ($consultas as &$consulta) {
         $id = (int) $consulta['id_consulta'];
         $consulta['detalle'] = [
@@ -24,7 +36,7 @@ if (isset($_POST['obtener'])) {
         ];
     }
     unset($consulta);
-    echo json_encode(['status' => 'success', 'resultados' => $consultas]);
+    echo json_encode(['status' => 'success', 'resultados' => $consultas,  "hayMas" => $pagina * $limitacion < $total]);
     exit;
 }
 

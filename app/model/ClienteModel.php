@@ -116,4 +116,11 @@ public function filtrarCliente($param, int $pagina, int $limitacion){
             return $query->fetch();
 
      }
+
+      public function contarClientes(): int {
+		$conex = $this->getConexion();
+		$query = $conex->query("SELECT COUNT(*) FROM cliente WHERE estado = 1");
+		
+		return (int) $query->fetchColumn();
+	}
 }

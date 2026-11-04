@@ -51,7 +51,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Consultas</h6>
-                                <h4 class="mb-0 fw-bold text-purple">12</h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo $consultas; ?></h4>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Clientes</h6>
-                                <h4 class="mb-0 fw-bold text-purple">45</h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo $clientes; ?></h4>
                             </div>
                         </div>
                     </div>
@@ -79,7 +79,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Mascotas</h6>
-                                <h4 class="mb-0 fw-bold text-purple">8</h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo $mascotas; ?></h4>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Planes Sanitarios</h6>
-                                <h4 class="mb-0 fw-bold text-purple">10</h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo $planes; ?></h4>
                             </div>
                         </div>
                     </div>

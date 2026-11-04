@@ -1,314 +1,377 @@
-(() => {
-    'use strict';
+const formularioConsulta = document.querySelector("[data-consulta-form]");
+const tablaConsultas = document.getElementById("tabla-consultas");
+const catalogos = { patologias: [], medicamentos: [] };
+const limite = document.getElementById("limite");
+const btnAnterior = document.getElementById("btn-anterior");
+const btnSiguiente = document.getElementById("btn-siguiente");
+const infoPagina = document.getElementById("info-pagina");
+const filtrar = document.getElementById("filtrar");
+let paginaActual = 1;
 
-    const alertar = (opciones) => {
-        if (window.Swal) {
-            return window.Swal.fire(opciones);
+
+function solicitar(datos, url = window.location) {
+    return fetch(url, { method: "POST", body: datos })
+        .then(respuesta => respuesta.json());
+}
+
+function alertar(opciones) {
+    if (window.Swal) return Swal.fire(opciones);
+    return Promise.resolve();
+}
+
+function activarTomSelect(select) {
+    if (!window.TomSelect || select.tomselect) return;
+    new TomSelect(select, {
+        create: false,
+        allowEmptyOption: true,
+        placeholder: select.dataset.placeholder || "Seleccione una opción"
+    });
+}
+
+function llenarSelect(select, opciones, textoInicial) {
+    if (select.tomselect) select.tomselect.destroy();
+    select.innerHTML = `<option value="">${textoInicial}</option>`;
+    opciones.forEach(opcion => {
+        select.add(new Option(opcion.nombre, opcion.id));
+    });
+    activarTomSelect(select);
+}
+
+function cargarFila(tipo) {
+    const plantilla = document.getElementById(`${tipo}-template`);
+    const destino = document.getElementById(
+        tipo === "diagnostico" ? "diagnosticos-container" : "recetas-container"
+    );
+    if (!plantilla || !destino) return;
+
+    destino.appendChild(plantilla.content.cloneNode(true));
+    const fila = destino.lastElementChild;
+    const selector = tipo === "diagnostico"
+        ? '[name="id_patologia[]"]'
+        : '[name="id_medicamento[]"]';
+    const select = fila.querySelector(selector);
+    const opciones = tipo === "diagnostico"
+        ? catalogos.patologias
+        : catalogos.medicamentos;
+
+    if (select) llenarSelect(select, opciones, "Seleccione una opción");
+}
+
+function establecerValores(datos) {
+    Object.entries(datos || {}).forEach(([campo, valor]) => {
+        const elemento = formularioConsulta.querySelector(`[name="${campo}"]`);
+        if (!elemento || Array.isArray(valor)) return;
+        if (elemento.tomselect) {
+            elemento.tomselect.setValue(String(valor ?? ""));
+        } else {
+            elemento.value = valor ?? "";
         }
-        console.error('SweetAlert2 no está disponible.', opciones);
-        return Promise.resolve({ isConfirmed: false });
-    };
+    });
+}
 
-    const confirmar = async () => {
-        if (!window.Swal) {
-            console.error('SweetAlert2 no está disponible para confirmar la eliminación.');
-            return false;
+function cargarDiagnosticos(diagnosticos) {
+    const filas = document.querySelectorAll(".diagnostico-row");
+    diagnosticos.forEach((diagnostico, indice) => {
+        if (indice >= filas.length) cargarFila("diagnostico");
+        const fila = document.querySelectorAll(".diagnostico-row")[indice];
+        fila.querySelector('[name="id_diagnostico[]"]').value = diagnostico.id_diagnostico;
+        fila.querySelector('[name="id_patologia[]"]').tomselect
+            ?.setValue(String(diagnostico.id_patologia));
+        fila.querySelector('[name="tipo_diagnostico[]"]').value = diagnostico.tipo_diagnostico;
+    });
+}
+
+function cargarRecetas(recetas) {
+    const filas = document.querySelectorAll(".receta-row");
+    recetas.forEach((receta, indice) => {
+        if (indice >= filas.length) cargarFila("receta");
+        const fila = document.querySelectorAll(".receta-row")[indice];
+        fila.querySelector('[name="id_recipe[]"]').value = receta.id_recipe;
+        fila.querySelector('[name="id_medicamento[]"]').tomselect
+            ?.setValue(String(receta.id_medicamento));
+        fila.querySelector('[name="dosis[]"]').value = receta.dosis;
+        fila.querySelector('[name="frecuencia[]"]').value = receta.frecuencia;
+        fila.querySelector('[name="duracion[]"]').value = receta.duracion;
+    });
+}
+
+function cargarCatalogos() {
+    const datos = new FormData();
+    datos.append("obtenerCatalogos", "true");
+
+    return solicitar(datos, formularioConsulta.action).then(resultado => {
+        if (resultado.status !== "success") {
+            throw new Error("No se pudieron cargar los catálogos.");
         }
-        const resultado = await window.Swal.fire({
-            icon: 'warning',
-            title: '¿Eliminar consulta?',
-            text: 'La consulta dejará de aparecer en el historial.',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d'
-        });
-        return resultado.isConfirmed;
-    };
 
-    const formulario = document.querySelector('[data-consulta-form]');
-    if (formulario) {
-        const urlFormulario = formulario.action;
-        const idEdicion = Number(new URLSearchParams(window.location.search).get('id_consulta') || 0);
-        const idConsultaInput = formulario.querySelector('[name="id_consulta"]');
-        if (idConsultaInput && idEdicion > 0) {
-            idConsultaInput.value = String(idEdicion);
+        llenarSelect(
+            document.getElementById("buscarPaciente"),
+            resultado.mascotas.map(mascota => ({
+                id: mascota.id_mascota,
+                nombre: `${mascota.nombre} - ${mascota.nombre_cliente}`
+            })),
+            "Seleccione una mascota"
+        );
+        catalogos.patologias = resultado.patologias.map(patologia => ({
+            id: patologia.id_patologia,
+            nombre: patologia.nombre
+        }));
+        catalogos.medicamentos = resultado.medicamentos.map(medicamento => ({
+            id: medicamento.id_medicamento,
+            nombre: medicamento.nombre_medicamento
+        }));
+
+        document.querySelectorAll('[name="id_patologia[]"]').forEach(select =>
+            llenarSelect(select, catalogos.patologias, "Seleccione una opción")
+        );
+        document.querySelectorAll('[name="id_medicamento[]"]').forEach(select =>
+            llenarSelect(select, catalogos.medicamentos, "Seleccione una opción")
+        );
+    });
+}
+
+function cargarConsulta(id) {
+    const datos = new FormData();
+    datos.append("obtenerConsulta", "true");
+    datos.append("id_consulta", id);
+
+    return solicitar(datos, formularioConsulta.action).then(resultado => {
+        if (resultado.status !== "success") {
+            throw new Error("No fue posible cargar la consulta.");
         }
-        let catalogos = {
-            patologias: [],
-            medicamentos: []
-        };
+        const consulta = resultado.resultado;
+        establecerValores(consulta);
+        establecerValores({comentario_seguimiento: consulta.comentario});
+        establecerValores(consulta.anamnesis);
+        establecerValores(consulta.examen);
+        establecerValores(consulta.laboratorio);
+        formularioConsulta.querySelector('[name="id_consulta"]').value = id;
+        cargarDiagnosticos(consulta.diagnosticos || []);
+        cargarRecetas(consulta.recetas || []);
+    });
+}
 
-        const activarTomSelect = (select) => {
-            if (!window.TomSelect || select.tomselect) return;
-            new TomSelect(select, {
-                create: false,
-                allowEmptyOption: true,
-                placeholder: select.dataset.placeholder || 'Seleccione una opción'
-            });
-        };
+function prepararFormulario() {
+    const parametros = new URLSearchParams(window.location.search);
+    const id = Number(parametros.get("id_consulta") || 0);
+    const fecha = formularioConsulta.querySelector('[name="fecha"]');
 
-        const llenarSelect = (selector, opciones, valor) => {
-            document.querySelectorAll(selector).forEach((select) => {
-                if (select.tomselect) select.tomselect.destroy();
-                const textoInicial = select.options[0]?.textContent || 'Seleccione';
-                select.innerHTML = `<option value="">${textoInicial}</option>`;
-                opciones.forEach((opcion) => {
-                    const option = document.createElement('option');
-                    option.value = opcion.id;
-                    option.textContent = opcion.nombre;
-                    option.selected = String(opcion.id) === String(valor || '');
-                    select.appendChild(option);
-                });
-                activarTomSelect(select);
-            });
-        };
-
-        const establecerValores = (datos) => {
-            Object.entries(datos || {}).forEach(([campo, valor]) => {
-                const elemento = formulario.querySelector(`[name="${campo}"]`);
-                if (elemento && !Array.isArray(valor)) {
-                    if (elemento.tomselect) {
-                        elemento.tomselect.setValue(String(valor ?? ''));
-                    } else {
-                        elemento.value = valor ?? '';
-                    }
-                }
-            });
-        };
-
-        const cargarDatosFormulario = async () => {
-            const catalogosRespuesta = await fetch(urlFormulario, {
-                method: 'POST',
-                body: new URLSearchParams({ obtenerCatalogos: '1' }),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const respuestaCatalogos = await catalogosRespuesta.json();
-            if (respuestaCatalogos.status !== 'success') throw new Error('No fue posible cargar los catálogos.');
-            llenarSelect('#buscarPaciente', respuestaCatalogos.mascotas.map((item) => ({
-                id: item.id_mascota,
-                nombre: `${item.nombre} - ${item.nombre_cliente}`
-            })));
-            catalogos.patologias = respuestaCatalogos.patologias.map((item) => ({
-                id: item.id_patologia,
-                nombre: item.nombre
-            }));
-            catalogos.medicamentos = respuestaCatalogos.medicamentos.map((item) => ({
-                id: item.id_medicamento,
-                nombre: item.nombre_medicamento
-            }));
-            llenarSelect('[name="id_patologia[]"]', catalogos.patologias);
-            llenarSelect('[name="id_medicamento[]"]', catalogos.medicamentos);
-
-            if (!idEdicion) return;
-            const consultaRespuesta = await fetch(urlFormulario, {
-                method: 'POST',
-                body: new URLSearchParams({ obtenerConsulta: '1', id_consulta: idEdicion }),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const consultaResultado = await consultaRespuesta.json();
-            if (consultaResultado.status !== 'success') throw new Error('No fue posible cargar la consulta.');
-            const consulta = consultaResultado.resultado;
-            establecerValores(consulta);
-            establecerValores(consulta.anamnesis);
-            establecerValores(consulta.examen);
-            establecerValores(consulta.laboratorio);
-            if (idConsultaInput) idConsultaInput.value = String(idEdicion);
-
-            const diagnosticoInicial = document.querySelector('.diagnostico-row');
-            const recetaInicial = document.querySelector('.receta-row');
-            (consulta.diagnosticos || []).forEach((item, indice) => {
-                let fila = indice === 0 ? diagnosticoInicial : null;
-                if (!fila) {
-                    document.querySelector('[data-agregar="diagnostico"]').click();
-                    fila = document.querySelectorAll('.diagnostico-row')[indice];
-                }
-                fila.querySelector('[name="id_diagnostico[]"]').value = item.id_diagnostico;
-                fila.querySelector('[name="id_patologia[]"]').tomselect?.setValue(String(item.id_patologia));
-                fila.querySelector('[name="tipo_diagnostico[]"]').value = item.tipo_diagnostico;
-            });
-            (consulta.recetas || []).forEach((item, indice) => {
-                let fila = indice === 0 ? recetaInicial : null;
-                if (!fila) {
-                    document.querySelector('[data-agregar="receta"]').click();
-                    fila = document.querySelectorAll('.receta-row')[indice];
-                }
-                fila.querySelector('[name="id_recipe[]"]').value = item.id_recipe;
-                fila.querySelector('[name="id_medicamento[]"]').tomselect?.setValue(String(item.id_medicamento));
-                fila.querySelector('[name="dosis[]"]').value = item.dosis;
-                fila.querySelector('[name="frecuencia[]"]').value = item.frecuencia;
-                fila.querySelector('[name="duracion[]"]').value = item.duracion;
-            });
-        };
-
-        const fecha = formulario.querySelector('[name="fecha"]');
-        if (fecha && !fecha.value) {
-            fecha.value = new Date().toISOString().slice(0, 10);
-        }
-        cargarDatosFormulario().catch((error) => alertar({ icon: 'error', title: 'Error', text: error.message }));
-
-        formulario.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const boton = formulario.querySelector('button[type="submit"]');
-            if (boton) boton.disabled = true;
-            try {
-                const respuesta = await fetch(formulario.action, {
-                    method: 'POST',
-                    body: new FormData(formulario),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const resultado = await respuesta.json();
-                if (!respuesta.ok || resultado.status !== 'success') {
-                    throw new Error(resultado.mensaje || 'No fue posible guardar la consulta.');
-                }
-                await alertar({ icon: 'success', title: 'Consulta guardada', text: resultado.mensaje || 'La consulta fue guardada.' });
-                window.location.href = resultado.redirect || 'index.php?url=Consulta';
-            } catch (error) {
-                await alertar({ icon: 'error', title: 'Error', text: error.message });
-                if (boton) boton.disabled = false;
-            }
-        });
+    if (id > 0) {
+        formularioConsulta.querySelector('[name="id_consulta"]').value = id;
+    } else if (fecha && !fecha.value) {
+        fecha.value = new Date().toISOString().slice(0, 10);
     }
 
-    document.querySelectorAll('[data-agregar]').forEach((boton) => {
-        boton.addEventListener('click', () => {
-            const tipo = boton.dataset.agregar;
-            const plantilla = document.getElementById(`${tipo}-template`);
-            const destino = document.getElementById(tipo === 'diagnostico'
-                ? 'diagnosticos-container'
-                : 'recetas-container');
-            if (plantilla && destino) {
-                destino.appendChild(plantilla.content.cloneNode(true));
-                const fila = destino.lastElementChild;
-                const selector = tipo === 'diagnostico' ? '[name="id_patologia[]"]' : '[name="id_medicamento[]"]';
-                const nuevo = fila.querySelector(selector);
-                const opciones = tipo === 'diagnostico' ? catalogos.patologias : catalogos.medicamentos;
-                if (nuevo) {
-                    nuevo.innerHTML = '<option value="">Seleccione una opción</option>';
-                    opciones.forEach((opcion) => {
-                        nuevo.add(new Option(opcion.nombre, opcion.id));
-                    });
-                    activarTomSelect(nuevo);
+    cargarCatalogos()
+        .then(() => id > 0 ? cargarConsulta(id) : null)
+        .catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
+
+    formularioConsulta.addEventListener("submit", evento => {
+        evento.preventDefault();
+        const boton = formularioConsulta.querySelector('button[type="submit"]');
+        if (boton) boton.disabled = true;
+
+        solicitar(new FormData(formularioConsulta), formularioConsulta.action)
+            .then(resultado => {
+                if (resultado.status !== "success") {
+                    throw new Error(resultado.mensaje || "No fue posible guardar la consulta.");
                 }
-            }
-        });
+                return alertar({
+                    icon: "success",
+                    title: "Consulta guardada",
+                    text: resultado.mensaje || "La consulta fue guardada."
+                }).then(() => {
+                    window.location.href = resultado.redirect || "index.php?url=Consulta";
+                });
+            })
+            .catch(error => {
+                alertar({ icon: "error", title: "Error", text: error.message });
+                if (boton) boton.disabled = false;
+            });
     });
+}
 
-    document.addEventListener('click', (evento) => {
-        const boton = evento.target.closest('.quitar-fila');
-        if (boton) boton.closest('.diagnostico-row, .receta-row')?.remove();
-    });
+document.querySelectorAll("[data-agregar]").forEach(boton => {
+    boton.addEventListener("click", () => cargarFila(boton.dataset.agregar));
+});
 
-    const tabla = document.getElementById('tabla-consultas');
-    if (!tabla) return;
+document.addEventListener("click", evento => {
+    const boton = evento.target.closest(".quitar-fila");
+    if (boton) boton.closest(".diagnostico-row, .receta-row")?.remove();
+});
 
-    const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+function escapar(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
     })[caracter]);
+}
 
-    const detalle = (consulta) => {
-        const id = Number(consulta.id_consulta);
-        const modalId = `consulta-detalle-${id}`;
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.id = modalId;
-        modal.tabIndex = -1;
-        modal.innerHTML = `<div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><div><h5 class="modal-title">Consulta #${id}</h5>
-            <div class="small text-white-50">${escapar(consulta.nombre_mascota)} · ${escapar(consulta.fecha)}</div></div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
-            <div class="modal-body"><dl class="row mb-0">
-            <div class="col-md-6 mb-3"><dt>Paciente / responsable</dt><dd>${escapar(consulta.nombre_mascota)} / ${escapar(consulta.nombre_cliente)}</dd></div>
-            <div class="col-md-6 mb-3"><dt>Fecha y tipo</dt><dd>${escapar(consulta.fecha)} · ${Number(consulta.tipo_ingreso) === 1 ? 'Primera vez' : 'Sucesivo'}</dd></div>
-            <div class="col-md-6 mb-3"><dt>Remitido</dt><dd>${Number(consulta.remitido) === 1 ? 'Sí' : 'No'}</dd></div>
-            <div class="col-md-6 mb-3"><dt>Pronóstico</dt><dd>${escapar(consulta.pronostico || '—')}</dd></div>
-            <div class="col-md-6 mb-3"><dt>Tratamiento</dt><dd>${escapar(consulta.tratamiento_consulta || '—')}</dd></div>
-            <div class="col-md-6 mb-3"><dt>Peso</dt><dd>${escapar(consulta.peso_consulta || '—')}</dd></div>
-            <div class="col-12 mb-3"><dt>Seguimiento</dt><dd>${escapar(consulta.comentario || '—')}</dd></div>
-            </dl>${renderizarSeccion('Anamnesis', consulta.detalle?.anamnesis)}
-            ${renderizarSeccion('Examen clínico', consulta.detalle?.examen)}
-            ${renderizarSeccion('Laboratorio', consulta.detalle?.laboratorio)}
-            ${renderizarLista('Diagnósticos', consulta.detalle?.diagnosticos, 'patologia', 'tipo_diagnostico')}
-            ${renderizarLista('Recipe', consulta.detalle?.recetas, 'nombre_medicamento', 'dosis')}
-            </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
-        </div></div>`;
-        document.body.appendChild(modal);
-        return modalId;
-    };
+function renderizarSeccion(titulo, datos) {
+    if (!datos) {
+        return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>
+            <p class="text-muted">Sin información registrada.</p>`;
+    }
+    const contenido = Object.entries(datos)
+        .filter(([campo, valor]) => !campo.startsWith("id_") && valor !== null && valor !== "")
+        .map(([campo, valor]) =>
+            `<div class="col-md-6 mb-2"><dt>${escapar(campo.replaceAll("_", " "))}</dt>
+            <dd>${escapar(valor)}</dd></div>`
+        ).join("");
+    return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>
+        <dl class="row">${contenido || '<p class="text-muted">Sin información registrada.</p>'}</dl>`;
+}
 
-    const renderizarSeccion = (titulo, datos) => {
-        if (!datos) return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6><p class="text-muted">Sin información registrada.</p>`;
-        const contenido = Object.entries(datos).filter(([campo]) => !campo.startsWith('id_') && datos[campo] !== null && datos[campo] !== '')
-            .map(([campo, valor]) => `<div class="col-md-6 mb-2"><dt>${escapar(campo.replaceAll('_', ' '))}</dt><dd>${escapar(valor)}</dd></div>`).join('');
-        return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6><dl class="row">${contenido || '<p class="text-muted">Sin información registrada.</p>'}</dl>`;
-    };
+function renderizarLista(titulo, datos, campoPrincipal, campoSecundario) {
+    const contenido = (datos || []).map(item =>
+        `<li class="list-group-item"><strong>${escapar(item[campoPrincipal])}</strong>
+        — ${escapar(item[campoSecundario])}</li>`
+    ).join("");
+    return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>${
+        contenido ? `<ul class="list-group">${contenido}</ul>` :
+        '<p class="text-muted">Sin información registrada.</p>'
+    }`;
+}
 
-    const renderizarLista = (titulo, datos, campoPrincipal, campoSecundario) => {
-        const contenido = (datos || []).map((item) => `<li class="list-group-item"><strong>${escapar(item[campoPrincipal])}</strong> — ${escapar(item[campoSecundario])}</li>`).join('');
-        return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>${contenido ? `<ul class="list-group">${contenido}</ul>` : '<p class="text-muted">Sin información registrada.</p>'}`;
-    };
+function crearDetalle(consulta) {
+    const id = Number(consulta.id_consulta);
+    const modalId = `consulta-detalle-${id}`;
+    document.getElementById(modalId)?.remove();
+    const modal = document.createElement("div");
+    modal.className = "modal fade";
+    modal.id = modalId;
+    modal.tabIndex = -1;
+    modal.innerHTML = `<div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><div><h5 class="modal-title">Consulta #${id}</h5>
+        <div class="small text-white-50">${escapar(consulta.nombre_mascota)} · ${escapar(consulta.fecha)}</div></div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><dl class="row mb-0">
+        <div class="col-md-6 mb-3"><dt>Paciente / responsable</dt>
+        <dd>${escapar(consulta.nombre_mascota)} / ${escapar(consulta.nombre_cliente)}</dd></div>
+        <div class="col-md-6 mb-3"><dt>Fecha y tipo</dt>
+        <dd>${escapar(consulta.fecha)} · ${Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo"}</dd></div>
+        <div class="col-md-6 mb-3"><dt>Remitido</dt><dd>${Number(consulta.remitido) === 1 ? "Sí" : "No"}</dd></div>
+        <div class="col-md-6 mb-3"><dt>Pronóstico</dt><dd>${escapar(consulta.pronostico || "—")}</dd></div>
+        <div class="col-md-6 mb-3"><dt>Tratamiento</dt><dd>${escapar(consulta.tratamiento_consulta || "—")}</dd></div>
+        <div class="col-md-6 mb-3"><dt>Peso</dt><dd>${escapar(consulta.peso_consulta || "—")}</dd></div>
+        <div class="col-12 mb-3"><dt>Seguimiento</dt><dd>${escapar(consulta.comentario || "—")}</dd></div>
+        </dl>${renderizarSeccion("Anamnesis", consulta.detalle?.anamnesis)}
+        ${renderizarSeccion("Examen clínico", consulta.detalle?.examen)}
+        ${renderizarSeccion("Laboratorio", consulta.detalle?.laboratorio)}
+        ${renderizarLista("Diagnósticos", consulta.detalle?.diagnosticos, "patologia", "tipo_diagnostico")}
+        ${renderizarLista("Recipe", consulta.detalle?.recetas, "nombre_medicamento", "dosis")}
+        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        Cerrar</button></div></div></div>`;
+    document.body.appendChild(modal);
+    return modalId;
+}
 
-    const cargarConsultas = async () => {
-        const url = tabla.dataset.url || 'index.php?url=Consulta';
-        const respuesta = await fetch(url, {
-            method: 'POST',
-            body: new URLSearchParams({ obtener: '1' }),
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const resultado = await respuesta.json();
-        if (!respuesta.ok || resultado.status !== 'success') throw new Error(resultado.mensaje || 'No fue posible cargar las consultas.');
-        tabla.replaceChildren();
-        (resultado.resultados || []).forEach((consulta) => {
-            const id = Number(consulta.id_consulta);
-            const modalId = detalle(consulta);
-            const fila = document.createElement('tr');
-            fila.innerHTML = `<td>${id}</td><td>${escapar(consulta.nombre_mascota)}</td>
-                <td>${escapar(consulta.nombre_cliente)}</td><td>${escapar(consulta.fecha)}</td>
-                <td>${Number(consulta.tipo_ingreso) === 1 ? 'Primera vez' : 'Sucesivo'}</td>
-                <td>${Number(consulta.remitido) === 1 ? 'Sí' : 'No'}</td>
-                <td>${escapar(consulta.pronostico || '—')}</td><td>${escapar(consulta.tratamiento_consulta || '—')}</td>
-                <td>${escapar(consulta.peso_consulta || '—')}</td><td>${escapar(consulta.comentario || '—')}</td>
-                <td><button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#${modalId}">Ver detalle</button></td>
-                <td class="text-nowrap"><a href="index.php?url=NuevaConsulta&id_consulta=${id}" class="btn btn-sm btn-success">Actualizar</a>
-                <button type="button" class="btn btn-sm btn-danger" data-eliminar-consulta="${id}">Eliminar</button></td>`;
-            tabla.appendChild(fila);
-        });
-        if (!tabla.children.length) tabla.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">Todavía no hay consultas registradas.</td></tr>';
-    };
+function actualizarPaginacion(hayMas) {
+	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
+	btnAnterior.disabled = paginaActual === 1;
+	btnSiguiente.disabled = !hayMas;
+	infoPagina.innerText = `Página ${paginaActual}`;
+}
 
-    tabla.addEventListener('click', async (evento) => {
-        const boton = evento.target.closest('[data-eliminar-consulta]');
-        if (!boton || !(await confirmar())) return;
-        boton.disabled = true;
-        try {
-            const respuesta = await fetch(tabla.dataset.url || 'index.php?url=Consulta', {
-                method: 'POST',
-                body: new URLSearchParams({ eliminar: '1', id: boton.dataset.eliminarConsulta }),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const resultado = await respuesta.json();
-            await alertar({
-                icon: resultado.status === 'success' ? 'success' : 'error',
-                title: resultado.status === 'success' ? 'Consulta eliminada' : 'Error',
-                text: resultado.status === 'success'
-                    ? 'La consulta fue eliminada correctamente.'
-                    : 'No fue posible eliminar la consulta.'
-            });
-            if (resultado.status === 'success') {
-                cargarConsultas();
-            } else {
-                boton.disabled = false;
-            }
-        } catch (error) {
-            boton.disabled = false;
-            await alertar({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'No fue posible eliminar la consulta.'
-            });
+function obtenerConsultas(param = null, pagina = paginaActual) {
+    const datos = new FormData();
+    datos.append("obtener", "true");
+    datos.append("pagina", pagina);
+	datos.append("limite", limite.value);
+	if (param !== null) datos.append("parametro", param);
+    
+    const url = tablaConsultas.dataset.url || "index.php?url=Consulta";
+
+    solicitar(datos, url).then(resultado => {
+        if (resultado.status !== "success") {
+            throw new Error("No fue posible cargar las consultas.");
         }
-    });
+        tablaConsultas.replaceChildren();
+        (resultado.resultados || []).forEach(consulta => {
+            const id = Number(consulta.id_consulta);
+            const modalId = crearDetalle(consulta);
+            const fila = document.createElement("tr");
+            fila.innerHTML = `<td class="table-light">${id}</td><td class="table-light">${escapar(consulta.nombre_mascota)}</td>
+                <td class="table-light">${escapar(consulta.nombre_cliente)}</td><td class="table-light">${escapar(consulta.fecha)}</td>
+                <td class="table-light">${Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo"}</td>
+                <td class="table-light">${Number(consulta.remitido) === 1 ? "Sí" : "No"}</td>
+                <td class="table-light td-large">${escapar(consulta.pronostico || "—")}</td>
+                <td class="table-light td-large">${escapar(consulta.tratamiento_consulta || "—")}</td>
+                <td class="table-light">${escapar(consulta.peso_consulta || "—")}</td>
+                <td class="table-light td-large">${escapar(consulta.comentario || "—")}</td>
+                <td class="table-light"><button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                    data-bs-target="#${modalId}">Ver detalle</button></td>
+                <td class="table-light text-nowrap"><a href="index.php?url=NuevaConsulta&id_consulta=${id}"
+                    class="btn btn-sm btn-success">Actualizar</a>
+                    <button type="button" class="btn btn-sm btn-danger"
+                    data-eliminar-consulta="${id}">Eliminar</button></td>`;
+            tablaConsultas.appendChild(fila);
+            
+        });
+        if (!tablaConsultas.children.length) {
+            if (pagina > 1) {
+                obtenerConsultas(param, pagina - 1);
+                return;
+            }
+            tablaConsultas.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">' +
+                "Todavía no hay consultas registradas.</td></tr>";
+        }
+        paginaActual = pagina;
+        actualizarPaginacion(resultado.hayMas);
+    }).catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
+}
 
-    cargarConsultas().catch((error) => alertar({ icon: 'error', title: 'Error', text: error.message }));
-})();
+if (formularioConsulta) prepararFormulario();
+
+if (tablaConsultas) {
+    tablaConsultas.addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-eliminar-consulta]");
+        if (!boton) return;
+        alertar({
+            icon: "warning",
+            title: "¿Eliminar consulta?",
+            text: "La consulta dejará de aparecer en el historial.",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#dc3545"
+        }).then(confirmacion => {
+            if (!confirmacion.isConfirmed) return;
+            const datos = new FormData();
+            datos.append("eliminar", "true");
+            datos.append("id", boton.dataset.eliminarConsulta);
+            boton.disabled = true;
+            solicitar(datos, tablaConsultas.dataset.url || "index.php?url=Consulta")
+                .then(resultado => {
+                    if (resultado.status !== "success") {
+                        throw new Error("No fue posible eliminar la consulta.");
+                    }
+                    return alertar({ icon: "success", title: "Consulta eliminada" });
+                })
+                .then(() => obtenerConsultas(filtrar.value, paginaActual))
+                .catch(error => {
+                    boton.disabled = false;
+                    alertar({ icon: "error", title: "Error", text: error.message });
+                });
+        });
+    });
+    obtenerConsultas();
+
+    filtrar.addEventListener("input", () => {
+	paginaActual = 1;
+	obtenerConsultas(filtrar.value, paginaActual);
+});
+
+limite.addEventListener("change", () => {
+	paginaActual = 1;
+	obtenerConsultas(filtrar.value, paginaActual);
+});
+
+btnAnterior.addEventListener("click", () => {
+	if (paginaActual > 1) obtenerConsultas(filtrar.value, paginaActual - 1);
+});
+
+btnSiguiente.addEventListener("click", () => {
+	if (!btnSiguiente.disabled) obtenerConsultas(filtrar.value, paginaActual + 1);
+});
+
+}

@@ -31,10 +31,11 @@ class ConsultaModel extends ConexionBD
         $this->comentario = $datos['comentario'] ?? null;
     }
 
-    public function obtenerConsultas(): array
-    {
-        $consulta = $this->getConexion()->query(
-            "SELECT consulta.id_consulta, consulta.fecha, consulta.tipo_ingreso, consulta.remitido,
+    public function obtenerConsultas(int $pagina, int $limitacion): array{
+        $offset = ($pagina * $limitacion) - $limitacion;
+
+        $conex = $this->getConexion();
+        $sql= "SELECT consulta.id_consulta, consulta.fecha, consulta.tipo_ingreso, consulta.remitido,
                     consulta.pronostico, consulta.`tratamiento_consulta`,
                     consulta.`peso_trat-consulta` AS peso_consulta,
                     consulta.comentario_seguimientoo AS comentario,
@@ -44,9 +45,53 @@ class ConsultaModel extends ConexionBD
              INNER JOIN mascota ON mascota.id_mascota = consulta.id_mascota
              INNER JOIN cliente ON cliente.cedula_cliente = mascota.cedula_cliente
              WHERE consulta.estado = 1
-             ORDER BY consulta.fecha DESC, consulta.id_consulta DESC"
-        );
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+             ORDER BY consulta.fecha DESC, consulta.id_consulta DESC
+             LIMIT :limitacion OFFSET :offset";
+        $query = $conex->prepare($sql);
+		$query->bindParam(":limitacion", $limitacion, \PDO::PARAM_INT);
+		$query->bindParam(":offset", $offset, \PDO::PARAM_INT);
+		$query->execute();
+        
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function filtrarConsultas(string $param, int $pagina, int $limitacion): array
+    {
+       $offset = ($pagina * $limitacion) - $limitacion;
+       $busqueda = $param . "%";
+       
+        $conex = $this->getConexion();
+        $sql= "SELECT consulta.id_consulta, consulta.fecha, consulta.tipo_ingreso, consulta.remitido,
+                    consulta.pronostico, consulta.`tratamiento_consulta`,
+                    consulta.`peso_trat-consulta` AS peso_consulta,
+                    consulta.comentario_seguimientoo AS comentario,
+                    mascota.nombre AS nombre_mascota,
+                    CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_cliente
+             FROM consulta
+             INNER JOIN mascota ON mascota.id_mascota = consulta.id_mascota
+             INNER JOIN cliente ON cliente.cedula_cliente = mascota.cedula_cliente
+             WHERE consulta.estado = 1 AND (
+                   CAST(consulta.id_consulta AS CHAR) LIKE :param
+				   OR consulta.fecha LIKE :param
+				   OR consulta.tipo_ingreso LIKE :param
+                   OR consulta.remitido LIKE :param
+                   OR consulta.pronostico LIKE :param
+                   OR consulta.`tratamiento_consulta` LIKE :param
+                   OR consulta.`peso_trat-consulta` LIKE :param
+                   OR consulta.comentario_seguimientoo LIKE :param
+                   OR mascota.nombre LIKE :param
+                   OR cliente.nombre LIKE :param
+                   OR cliente.apellido LIKE :param
+             )
+             ORDER BY consulta.fecha DESC, consulta.id_consulta DESC
+             LIMIT :limitacion OFFSET :offset";
+        
+        $query = $conex->prepare($sql);
+		$query->bindParam(":limitacion", $limitacion, \PDO::PARAM_INT);
+		$query->bindParam(":offset", $offset, \PDO::PARAM_INT);
+        $query->bindParam(":param", $busqueda);
+		$query->execute();
+        
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function obtenerConsultaPorId(int $id): ?array
@@ -176,6 +221,10 @@ class ConsultaModel extends ConexionBD
             if (!(new ResultadosLaboratorioModel($conexion))->actualizarResultado($id, $laboratorio)) {
                 throw new \PDOException('No fue posible actualizar los resultados de laboratorio.');
             }
+            $idsDiagnosticos = array_column($diagnosticos, 'id_diagnostico');
+            if (!(new DiagnosticoModel($conexion))->eliminarNoIncluidos($id, $idsDiagnosticos)) {
+                throw new \PDOException('No fue posible eliminar los diagnósticos quitados.');
+            }
             foreach ($diagnosticos as $diagnostico) {
                 if (($diagnostico['id_diagnostico'] ?? 0) > 0) {
                     $actualizado = (new DiagnosticoModel($conexion))
@@ -186,6 +235,10 @@ class ConsultaModel extends ConexionBD
                 if (!$actualizado) {
                     throw new \PDOException('No fue posible actualizar los diagnósticos.');
                 }
+            }
+            $idsRecetas = array_column($recetas, 'id_recipe');
+            if (!(new RecipeModel($conexion))->eliminarNoIncluidos($id, $idsRecetas)) {
+                throw new \PDOException('No fue posible eliminar las recetas quitadas.');
             }
             foreach ($recetas as $receta) {
                 if (($receta['id_recipe'] ?? 0) > 0) {
@@ -224,4 +277,34 @@ class ConsultaModel extends ConexionBD
             return false;
         }
     }
+    	public function contarConsulta(?string $param = null): int {
+		$conex = $this->getConexion();
+		if ($param === null) {
+			$query = $conex->query("SELECT COUNT(*) FROM consulta WHERE estado = 1");
+		} else {
+			$query = $conex->prepare("SELECT COUNT(*) FROM consulta
+                INNER JOIN mascota ON mascota.id_mascota = consulta.id_mascota
+                INNER JOIN cliente ON cliente.cedula_cliente = mascota.cedula_cliente
+				WHERE consulta.estado = 1 AND (
+                    CAST(consulta.id_consulta AS CHAR) LIKE :param
+				   OR consulta.fecha LIKE :param
+				   OR consulta.tipo_ingreso LIKE :param
+                   OR consulta.remitido LIKE :param
+                   OR consulta.pronostico LIKE :param
+                   OR consulta.`tratamiento_consulta` LIKE :param
+                   OR consulta.`peso_trat-consulta` LIKE :param
+                   OR consulta.comentario_seguimientoo LIKE :param
+                   OR mascota.nombre LIKE :param
+                   OR cliente.nombre LIKE :param
+                   OR cliente.apellido LIKE :param
+                )");
+			
+            $busqueda = $param . "%";
+			$query->bindValue(":param", $busqueda);
+			
+			$query->execute();
+		}
+
+		return (int) $query->fetchColumn();
+	}
 }

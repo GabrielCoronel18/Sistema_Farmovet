@@ -163,7 +163,7 @@ CREATE TABLE `consulta` (
   `fecha` date NOT NULL,
   `tipo_ingreso` tinyint(1) NOT NULL,
   `remitido` tinyint(1) NOT NULL,
-  `pronostico` varchar(100) NOT NULL,
+  `pronostico` varchar(100)NOT NULL,
   `tratamiento_consulta` varchar(80) NOT NULL,
   `peso_trat-consulta` varchar(80) NOT NULL,
   `comentario_seguimientoo` varchar(200) NOT NULL,

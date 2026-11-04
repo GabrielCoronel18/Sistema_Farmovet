@@ -162,10 +162,26 @@ body {
              
         }
         
-        .td-large{
-            text-wrap:initial;
-           min-width: 250px; 
-           max-width: 250px;
+        .consultas-tabla .td-large{
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .mascotas-tabla .td-large{
+            width: 250px;
+            min-width: 250px;
+            max-width: 250px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .mascotas-acciones {
+            white-space: nowrap;
         }
 
         .consultas-tabla-contenedor {
@@ -176,7 +192,7 @@ body {
 
         .consultas-tabla {
             width: 100%;
-            min-width: 1100px;
+            min-width: 1600px;
             table-layout: fixed;
         }
 

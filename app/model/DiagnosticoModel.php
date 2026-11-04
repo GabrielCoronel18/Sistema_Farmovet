@@ -59,4 +59,26 @@ class DiagnosticoModel extends ConexionBD
             ':tipo_diagnostico' => $this->tipo_diagnostico
         ]);
     }
+
+    public function eliminarNoIncluidos(int $idConsulta, array $ids): bool
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids), fn (int $id): bool => $id > 0));
+        $parametros = [':id_consulta' => $idConsulta];
+        $condicion = '';
+
+        if ($ids) {
+            $marcadores = [];
+            foreach ($ids as $indice => $id) {
+                $marcador = ':id_' . $indice;
+                $marcadores[] = $marcador;
+                $parametros[$marcador] = $id;
+            }
+            $condicion = ' AND id_diagnostico NOT IN (' . implode(', ', $marcadores) . ')';
+        }
+
+        $consulta = $this->getConexion()->prepare(
+            'DELETE FROM diagnostico WHERE id_consulta = :id_consulta' . $condicion
+        );
+        return $consulta->execute($parametros);
+    }
 }

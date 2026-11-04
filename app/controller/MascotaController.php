@@ -22,21 +22,21 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
 
     if(isset( $_POST["obtener"])){
-        $pagina = $_POST["pagina"] ?? 1;
-        $limitacion = $_POST["limite"] ?? 5;
+    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
+    $limitacion = (int) ($_POST["limite"] ?? 5);
+    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+
+    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $tieneFiltro = $param !== "";
+
+    $resultados = $tieneFiltro
+        ? $mascotaModel->filtrarMascota($param, $pagina, $limitacion)
+        : $mascotaModel->obtenerMascotas($pagina, $limitacion);
+    $total = $mascotaModel->contarMascota($tieneFiltro ? $param : null);
         
-        
-        if(isset($_POST["parametro"])){
-          
-        $param = $_POST["parametro"];
-          $resultados = $mascotaModel->filtrarMascota($param,$pagina,$limitacion);
-        }
-        else{
-          $resultados = $mascotaModel->obtenerMascotas($pagina,$limitacion);
-        }
 
         if($resultados){
-           echo json_encode(["status"=>"success","resultados" => $resultados]);
+           echo json_encode(["status"=>"success","resultados" => $resultados,"hayMas" => $pagina * $limitacion < $total]);
         }
         else{
            echo json_encode(["status"=>"error","resultados" => []]);

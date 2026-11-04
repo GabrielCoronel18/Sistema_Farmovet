@@ -205,4 +205,35 @@ class MascotaModel extends ConexionBD{
           ];
      }
 
+     public function contarMascota(?string $param = null): int {
+		$conex = $this->getConexion();
+		if($param === null){
+                $query = $conex->query("SELECT COUNT(*) FROM mascota WHERE estado = 1");
+		}
+                else {
+			$query = $conex->prepare("SELECT COUNT(*) FROM mascota
+                INNER JOIN cliente ON mascota.cedula_cliente = cliente.cedula_cliente
+                INNER JOIN raza ON mascota.id_raza = raza.id_raza
+				WHERE mascota.estado = 1 AND (
+                    mascota.id_mascota LIKE :param
+                            OR mascota.nombre LIKE :param
+                            OR edad LIKE :param
+                            OR sexo LIKE :param
+                            OR procedencia LIKE :param
+                            OR raza.nombre_raza LIKE :param
+                            OR pelaje LIKE :param
+                            OR mascota.cedula_cliente LIKE :param
+                            OR cliente.nombre LIKE :param
+                            OR cliente.apellido LIKE :param
+                )");
+			$busqueda = $param . "%";
+			$query->bindValue(":param", $busqueda);
+
+			$query->execute();
+		}
+
+
+		return (int) $query->fetchColumn();
+	}
+
 }

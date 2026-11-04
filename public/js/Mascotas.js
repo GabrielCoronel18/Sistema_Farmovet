@@ -3,6 +3,10 @@ let TablaMascotas = document.getElementById("TablaMascotas");
 let TituloModal = document.getElementById("TituloModalMascotas");
 let btnAgregar = document.getElementById("btnAgregar");
 let filtrar = document.getElementById("filtrar");
+let limite = document.getElementById("limite");
+let btnAnterior = document.getElementById("btn-anterior");
+let btnSiguiente = document.getElementById("btn-siguiente");
+let infoPagina = document.getElementById("info-pagina");
 let selectRaza = document.getElementById("id_raza");
 let selectCliente = document.getElementById("cedula_cliente");
 const camposValidacion = [
@@ -16,11 +20,12 @@ const camposValidacion = [
     { error: "cedula", campo: "cedula_cliente", mensaje: "error-cedula_cliente" },
     { error: "procedencia", campo: "procedencia", mensaje: "error-procedencia" }
 ];
-
+let paginaActual = 1;
 
 let selectAlergias;
 let selectEnfermedades;
 let selectCirugias;
+
 
 function limpiarErroresValidacion() {
     camposValidacion.forEach(({ campo, mensaje }) => {
@@ -93,21 +98,38 @@ function cargarCatalogos() {
         });
 }
 
-function obtenerDatos(param = null){
+function actualizarPaginacion(hayMas) {
+	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
+	btnAnterior.disabled = paginaActual === 1;
+	btnSiguiente.disabled = !hayMas;
+	infoPagina.innerText = `Página ${paginaActual}`;
+}
+
+function obtenerDatos(param = null, pagina = paginaActual){
     let datos = new FormData();
     datos.append("obtener", true);
+    datos.append("pagina", pagina);
+	datos.append("limite", limite.value);
+	if (param !== null) datos.append("parametro", param);
 
-    if(param != null){
-        datos.append("parametro", param);
-    }
+
 
     fetch(window.location, {method: "post", body: datos})
     .then(resultados => resultados.json())
     .then(result => {
-        if (result.status === "success") {
-            TablaMascotas.innerHTML = "";
+        if (result.status !== "success") {
+			TablaMascotas.innerHTML = "<tr><td colspan='14' class='text-center text-muted py-4'>No hay mascotas registradas</td></tr>";
+			paginaActual = pagina;
+				actualizarPaginacion(0);
+			return;
+		}
             
-            result.resultados.forEach(function(mascota){
+            if (result.resultados.length === 0 && pagina > 1) {
+			obtenerDatos(param, pagina - 1);
+			return;
+		}
+		TablaMascotas.innerHTML = "";
+		result.resultados.forEach(function(mascota){
                 let alergiasBadge = mascota.alergias 
                     ? `<span class="badge bg-success">${mascota.alergias}</span>` 
                     : `<span class="badge bg-secondary">Ninguna</span>`;
@@ -135,17 +157,18 @@ function obtenerDatos(param = null){
                     <td class="table-light">${alergiasBadge}</td>
                     <td class="table-light">${enfermedadesBadge}</td>
                     <td class="table-light">${cirugiasBadge}</td>
-                    <td class="table-light">
+                    <td class="table-light text-nowrap mascotas-acciones">
                         <button class="btn btn-sm btn-success btn-actualizar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button> 
                         <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota}">Eliminar</button>
                     </td>
                 </tr>`;
             });
-        } else if(result.status === "error"){
-             TablaMascotas.innerHTML = "<tr> <td colspan='14'> Error al obtener los registros</td></tr>";
-        }
+        paginaActual = pagina;
+		actualizarPaginacion(result.hayMas);
+
     });
 }
+
 
 cargarCatalogos().then(obtenerDatos);
 
@@ -236,6 +259,7 @@ formularioMascotas.addEventListener("submit", function(e){
                  
                 let modalInstance = bootstrap.Modal.getInstance(document.getElementById("ModalAgregar"));
                 modalInstance.hide();
+                obtenerDatos(filtrar.value, paginaActual);
 
                 obtenerDatos();
             } else if(resultado.status === "error"){
@@ -252,11 +276,24 @@ TablaMascotas.addEventListener("click", function(e) {
         let datos = new FormData();
         datos.append("eliminar", true);
         datos.append("id", id);
-        alertEliminar("post", datos, obtenerDatos);
+        alertEliminar("post", datos, obtenerDatos(filtrar.value, paginaActual));
     }
 });
 
-filtrar.addEventListener("input", function(){
-      let param = this.value;
-      obtenerDatos(param);
+filtrar.addEventListener("input", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+limite.addEventListener("change", () => {
+	paginaActual = 1;
+	obtenerDatos(filtrar.value, paginaActual);
+});
+
+btnAnterior.addEventListener("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+});
+
+btnSiguiente.addEventListener("click", () => {
+	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
 });

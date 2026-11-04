@@ -71,4 +71,11 @@ class PlanSanitarioModel extends ConexionBD {
             return false;
         }
     }
+
+     public function contarPlanesSanitarios(): int {
+		$conex = $this->getConexion();
+		$query = $conex->query("SELECT COUNT(*) FROM plan_sanitario WHERE estado = 1");
+		
+		return (int) $query->fetchColumn();
+	}
 }
