@@ -3,21 +3,21 @@ namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 
-class AlergiaController {
+//class AlergiaController {
 
-    private $modelo;
+    //private $modelo;
 
-    public function __construct() {
-        $this->modelo = new AlergiaModel();
-    }
+    //public function __construct() {
+        $modelo = new AlergiaModel();
+    //}
 
-    public function index() {
+    //public function index() {
         $accion = $_GET['accion'] ?? 'vista';
 
         switch ($accion) {
             case 'listar':
                 header('Content-Type: application/json');
-                echo json_encode($this->modelo->obtenerTodas());
+                echo json_encode($modelo->registrarAlergia());
                 exit;
 
             case 'guardar':
@@ -32,10 +32,10 @@ class AlergiaController {
                 }
 
                 if (!empty($id)) {
-                    $resultado = $this->modelo->actualizar($id, $nombre, $tipo);
+                    $resultado = $modelo->actualizarAlergia($id, $nombre, $tipo);
                     $mensaje = "Alergia actualizada correctamente.";
                 } else {
-                    $resultado = $this->modelo->guardar($nombre, $tipo);
+                    $resultado = $modelo->registrarAlergia($nombre, $tipo);
                     $mensaje = "Alergia registrada correctamente.";
                 }
 
@@ -49,7 +49,7 @@ class AlergiaController {
             case 'eliminar':
                 header('Content-Type: application/json');
                 $id = $_POST['id_alergia'] ?? null;
-                if ($id && $this->modelo->eliminar($id)) {
+                if ($id && $modelo->eliminarAlergia($id)) {
                     echo json_encode(['status' => 'success', 'message' => 'Alergia eliminada correctamente.']);
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'No se pudo eliminar la alergia.']);
@@ -57,8 +57,8 @@ class AlergiaController {
                 exit;
 
             default:
-    require_once __DIR__ . "app/view/AlergiaView.php";
+    require_once "app/view/AlergiaView.php";
     break;
         }
-    }
-}
+    //}
+//}
