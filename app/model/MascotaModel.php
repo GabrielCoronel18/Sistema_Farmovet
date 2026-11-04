@@ -111,23 +111,30 @@ class MascotaModel extends ConexionBD{
                     LEFT JOIN patologia ON enfermedades_padecidas.id_patologia = patologia.id_patologia
                     LEFT JOIN cirugia_mascota ON mascota.id_mascota = cirugia_mascota.id_mascota
                     LEFT JOIN cirugia ON cirugia_mascota.id_cirugia = cirugia.id_cirugia
-                    WHERE mascota.estado = 1 
-                            AND (mascota.id_mascota LIKE :param
-                            OR mascota.nombre LIKE :param
-                            OR edad LIKE :param
-                            OR sexo LIKE :param
-                            OR procedencia LIKE :param
-                            OR raza.nombre_raza LIKE :param
-                            OR pelaje LIKE :param
-                            OR mascota.cedula_cliente LIKE :param
-                            OR cliente.nombre LIKE :param)
+                    WHERE mascota.estado = 1
+                            AND (mascota.id_mascota LIKE :param_id
+                            OR mascota.nombre LIKE :param_nombre
+                            OR edad LIKE :param_edad
+                            OR sexo LIKE :param_sexo
+                            OR procedencia LIKE :param_procedencia
+                            OR raza.nombre_raza LIKE :param_raza
+                            OR pelaje LIKE :param_pelaje
+                            OR mascota.cedula_cliente LIKE :param_cedula
+                            OR cliente.nombre LIKE :param_nombre_cliente
+                            OR cliente.apellido LIKE :param_apellido_cliente)
                     GROUP BY mascota.id_mascota
                     LIMIT :limitacion OFFSET :offset";
                 
             $query = $conex->prepare($sql);
-            $query->bindParam(":param",$busqueda);
-            $query->bindParam(":limitacion",$limitacion,\PDO::PARAM_INT);
-            $query->bindParam(":offset",$offset,\PDO::PARAM_INT);
+            foreach ([
+                'param_id', 'param_nombre', 'param_edad', 'param_sexo',
+                'param_procedencia', 'param_raza', 'param_pelaje',
+                'param_cedula', 'param_nombre_cliente', 'param_apellido_cliente'
+            ] as $nombreParametro) {
+                $query->bindValue(":{$nombreParametro}", $busqueda, \PDO::PARAM_STR);
+            }
+            $query->bindValue(":limitacion", $limitacion, \PDO::PARAM_INT);
+            $query->bindValue(":offset", $offset, \PDO::PARAM_INT);
             $query->execute();
              
             return $query->fetchAll();
@@ -215,21 +222,26 @@ class MascotaModel extends ConexionBD{
                 INNER JOIN cliente ON mascota.cedula_cliente = cliente.cedula_cliente
                 INNER JOIN raza ON mascota.id_raza = raza.id_raza
 				WHERE mascota.estado = 1 AND (
-                    mascota.id_mascota LIKE :param
-                            OR mascota.nombre LIKE :param
-                            OR edad LIKE :param
-                            OR sexo LIKE :param
-                            OR procedencia LIKE :param
-                            OR raza.nombre_raza LIKE :param
-                            OR pelaje LIKE :param
-                            OR mascota.cedula_cliente LIKE :param
-                            OR cliente.nombre LIKE :param
-                            OR cliente.apellido LIKE :param
+                    mascota.id_mascota LIKE :param_id
+                            OR mascota.nombre LIKE :param_nombre
+                            OR edad LIKE :param_edad
+                            OR sexo LIKE :param_sexo
+                            OR procedencia LIKE :param_procedencia
+                            OR raza.nombre_raza LIKE :param_raza
+                            OR pelaje LIKE :param_pelaje
+                            OR mascota.cedula_cliente LIKE :param_cedula
+                            OR cliente.nombre LIKE :param_nombre_cliente
+                            OR cliente.apellido LIKE :param_apellido_cliente
                 )");
 			$busqueda = $param . "%";
-			$query->bindValue(":param", $busqueda);
-
-			$query->execute();
+            foreach ([
+                'param_id', 'param_nombre', 'param_edad', 'param_sexo',
+                'param_procedencia', 'param_raza', 'param_pelaje',
+                'param_cedula', 'param_nombre_cliente', 'param_apellido_cliente'
+            ] as $nombreParametro) {
+                $query->bindValue(":{$nombreParametro}", $busqueda, \PDO::PARAM_STR);
+            }
+            $query->execute();
 		}
 
 

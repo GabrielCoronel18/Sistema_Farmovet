@@ -7,6 +7,10 @@ use Gabriel\SistemaFarmovet\model\AlergiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\CirugiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\EnfermedadesPadecidasModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
+use function Gabriel\SistemaFarmovet\helpers\codificarId;
+use function Gabriel\SistemaFarmovet\helpers\decodificarId;
+
+require_once __DIR__ . '/../helpers/hash.php';
 
 verificarRol([1, 2, 3]);
 
@@ -27,6 +31,10 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
     $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
 
     $param = trim((string) ($_POST["parametro"] ?? ""));
+    $idFiltrado = $param !== "" ? decodificarId($param) : null;
+    if ($idFiltrado !== null) {
+        $param = (string) $idFiltrado;
+    }
     $tieneFiltro = $param !== "";
 
     $resultados = $tieneFiltro
@@ -36,6 +44,11 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         
 
         if($resultados){
+           foreach ($resultados as &$mascota) {
+               $mascota['id_mascota_hash'] = codificarId((int) $mascota['id_mascota']);
+               unset($mascota['id_mascota']);
+           }
+           unset($mascota);
            echo json_encode(["status"=>"success","resultados" => $resultados,"hayMas" => $pagina * $limitacion < $total]);
         }
         else{
@@ -108,12 +121,18 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
     if(isset($_POST["obtenerMascota"]) && isset($_POST["id"])){
         
-        $id = $_POST["id"];
+        $id = decodificarId((string) $_POST["id"]);
+        if ($id === null) {
+            echo json_encode(["status" => "error", "mensaje" => "Identificador de mascota inválido."]);
+            exit;
+        }
 
         $resultado = $mascotaModel->obtenerMascotaPorId($id);
 
 
             if($resultado){
+            $resultado['id_mascota_hash'] = codificarId((int) $resultado['id_mascota']);
+            unset($resultado['id_mascota']);
             echo json_encode(["status"=>"success","resultado" => $resultado]);
             }
             else{
@@ -126,7 +145,11 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
      if(isset($_POST["actualizar"])){
         
      
-        $id = $_POST["id"];
+        $id = decodificarId((string) $_POST["id"]);
+        if ($id === null) {
+            echo json_encode(["status" => "error", "mensaje" => "Identificador de mascota inválido."]);
+            exit;
+        }
         $nombre = $_POST["nombre"] ?? "";
         $edad = $_POST["edad"]  ?? 0;
         $fch_nacimiento = $_POST["fch_nacimiento"] ?? "";
@@ -167,7 +190,11 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
       if(isset($_POST["eliminar"]) && isset($_POST["id"])){
         
-        $id = $_POST["id"];
+        $id = decodificarId((string) $_POST["id"]);
+        if ($id === null) {
+            echo json_encode(["status" => "error", "mensaje" => "Identificador de mascota inválido."]);
+            exit;
+        }
 
            if($mascotaModel->eliminarMascota($id)){
             echo json_encode(["status"=>"success"]);
@@ -184,7 +211,11 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
     if(isset($_POST["obtenerAntecedentes"]) && isset($_POST["id"])){
         
-        $id = $_POST["id"];
+        $id = decodificarId((string) $_POST["id"]);
+        if ($id === null) {
+            echo json_encode(["status" => "error", "mensaje" => "Identificador de mascota inválido."]);
+            exit;
+        }
 
         $alergias = $AlergiaMascotaModel->obtenerAlergiasAsociadas($id);
         $cirugias = $CirgsPreviasModel->obtenerCirugiasPrevias($id);

@@ -6,5 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Hashids\\' => array($vendorDir . '/hashids/hashids/src'),
     'Gabriel\\SistemaFarmovet\\' => array($baseDir . '/app'),
 );

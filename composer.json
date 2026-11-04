@@ -11,5 +11,7 @@
             "email": "gjcoronel18@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "hashids/hashids": "^5.0"
+    }
 }

@@ -144,7 +144,7 @@ function obtenerDatos(param = null, pagina = paginaActual){
 
                 TablaMascotas.innerHTML += 
                 `<tr>
-                    <td class="table-light">${mascota.id_mascota}</td>
+                    <td class="table-light">${mascota.id_mascota_hash}</td>
                     <td class="table-light">${mascota.nombre}</td>
                     <td class="table-light">${mascota.edad}</td>
                     <td class="table-light">${mascota.sexo}</td>
@@ -158,8 +158,8 @@ function obtenerDatos(param = null, pagina = paginaActual){
                     <td class="table-light">${enfermedadesBadge}</td>
                     <td class="table-light">${cirugiasBadge}</td>
                     <td class="table-light text-nowrap mascotas-acciones">
-                        <button class="btn btn-sm btn-success btn-actualizar" value="${mascota.id_mascota}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button> 
-                        <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota}">Eliminar</button>
+                        <button class="btn btn-sm btn-success btn-actualizar" value="${mascota.id_mascota_hash}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button> 
+                        <button class="btn btn-sm btn-danger btn-eliminar" value="${mascota.id_mascota_hash}">Eliminar</button>
                     </td>
                 </tr>`;
             });
@@ -203,7 +203,7 @@ TablaMascotas.addEventListener("click", function(e) {
             let result = resultado.resultado;
 
             if(resultado.status === "success"){
-                document.getElementById("id_mascota").value = result.id_mascota;
+                document.getElementById("id_mascota").value = result.id_mascota_hash;
                 document.getElementById("nombre").value = result.nombre;
                 document.getElementById("edad").value = result.edad;
                 document.getElementById("sexo").value = result.sexo;
@@ -213,7 +213,7 @@ TablaMascotas.addEventListener("click", function(e) {
                 document.getElementById("pelaje").value = result.pelaje;
                 document.getElementById("cedula_cliente").value = result.cedula_cliente;
                 document.getElementById("procedencia").value = result.procedencia;
-                cargarAntecedentesEnFormulario(result.id_mascota);
+                cargarAntecedentesEnFormulario(result.id_mascota_hash);
 
             } else if(resultado.status === "error"){
                 Swal.fire({title: "Error", text: "Error al obtener el registro", icon: "error"});
