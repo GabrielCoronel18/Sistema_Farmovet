@@ -2,6 +2,8 @@ let formularioEspecie = document.querySelector(".EspeciesForm");
 let TablaEspecies = document.getElementById("TablaEspecies");
 let TituloModal = document.getElementById("exampleModalLabel");
 let btnAgregar = document.getElementById("btnAgregar");
+let campoNombre = document.getElementById("nombre_especie");
+let errorNombre = document.getElementById("error-nombre_especie");
 let dataTableInstance = null;
 
 function obtenerDatos(param = null) {
@@ -138,6 +140,7 @@ if (btnAgregar) {
 if (formularioEspecie) {
     formularioEspecie.addEventListener("submit", function (e) {
         e.preventDefault();
+        if (!validarEspecie()) { return; } 
         let datos = new FormData(formularioEspecie);
         let is_update = document.getElementById("is_update").value;
 
@@ -172,6 +175,11 @@ if (formularioEspecie) {
                         title: 'Error',
                         text: res.message || 'Error al realizar la operación'
                     });
+                    
+                    if (res.errors && res.errors.nombre) {
+                        campoNombre.classList.add("is-invalid");
+                        errorNombre.innerText = res.errors.nombre;
+                    }
                 }
             })
             .catch(err => console.error("Error al enviar formulario:", err));

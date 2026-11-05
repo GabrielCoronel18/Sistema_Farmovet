@@ -206,6 +206,77 @@ function escapar(valor) {
     })[caracter]);
 }
 
+const etiquetasCampos = {
+    motivo_consulta: "Motivo de consulta",
+    inicio_enfermedad: "Inicio de la enfermedad",
+    examenes_efectuados: "Exámenes efectuados",
+    tratamientos_realizados: "Tratamientos realizados",
+    ult_desp_interna: "Última desparasitación interna",
+    ult_desp_int_producto: "Producto interno",
+    ult_desp_externa: "Última desparasitación externa",
+    ult_desp_ext_producto: "Producto externo",
+    ultima_vacunacion: "Última vacunación",
+    ant_ectoparasitos: "Antecedente de ectoparásitos",
+    act_ectoparasitos: "Ectoparásitos actualmente",
+    tipo_alimentacion: "Tipo de alimentación",
+    frec_alimentacion: "Frecuencia de alimentación",
+    apetito: "Apetito",
+    ingesta_agua: "Ingesta de agua",
+    contacto_animal: "Contacto con animales",
+    vomito: "Vómito",
+    heces: "Heces",
+    miccion: "Micción",
+    fch_ultimo_celo: "Fecha del último celo",
+    prod_higiene: "Producto de higiene",
+    frec_higiene: "Frecuencia de higiene",
+    int_ambiente: "Ambiente interno",
+    ext_ambiente: "Ambiente externo",
+    peso: "Peso",
+    cc: "Condición corporal",
+    temp_celsius: "Temperatura",
+    pulso_yugular: "Pulso yugular",
+    fr_rpm: "Frecuencia respiratoria",
+    fc_lpm: "Frecuencia cardíaca",
+    pulso_ppm: "Pulso periférico",
+    tlc_seg: "Tiempo de llenado capilar",
+    tpc_seg: "Tiempo de perfusión capilar",
+    pas: "Presión arterial sistólica",
+    pad: "Presión arterial diastólica",
+    prcnt_deshidratacion: "Porcentaje de deshidratación",
+    gangliios_palpables: "Ganglios palpables",
+    mucosas_visibles: "Mucosas visibles",
+    ectoparasitos: "Ectoparásitos",
+    actitud: "Actitud",
+    hallazgos: "Hallazgos",
+    hematologia_completa: "Hematología completa",
+    coprologia: "Coprología",
+    quimica_sanguinea: "Química sanguínea",
+    uro_sangre: "Orina: sangre",
+    uro_urob: "Orina: urobilinógeno",
+    uro_bli: "Orina: bilirrubina",
+    uro_prot: "Orina: proteínas",
+    uro_nitritos: "Orina: nitritos",
+    uro_cetona: "Orina: cetonas",
+    uro_glucosa: "Orina: glucosa",
+    uro_ph: "Orina: pH",
+    uro_leu: "Orina: leucocitos",
+    uro_densidad: "Orina: densidad",
+    uro_microorganismos: "Orina: microorganismos",
+    uro_celulas: "Orina: células",
+    uro_cilindros: "Orina: cilindros",
+    uro_cristales: "Orina: cristales",
+    descarte: "Pruebas de descarte",
+    piel_otros: "Piel / otros",
+    snap: "Prueba SNAP",
+    observaciones: "Observaciones"
+};
+
+function obtenerEtiquetaCampo(campo) {
+    return etiquetasCampos[campo] || campo
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, letra => letra.toUpperCase());
+}
+
 function renderizarSeccion(titulo, datos) {
     if (!datos) {
         return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>
@@ -214,7 +285,7 @@ function renderizarSeccion(titulo, datos) {
     const contenido = Object.entries(datos)
         .filter(([campo, valor]) => !campo.startsWith("id_") && valor !== null && valor !== "")
         .map(([campo, valor]) =>
-            `<div class="col-md-6 mb-2"><dt>${escapar(campo.replaceAll("_", " "))}</dt>
+            `<div class="col-md-6 mb-2"><dt>${escapar(obtenerEtiquetaCampo(campo))}</dt>
             <dd>${escapar(valor)}</dd></div>`
         ).join("");
     return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>

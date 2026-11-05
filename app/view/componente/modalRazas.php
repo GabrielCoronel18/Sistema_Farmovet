@@ -15,7 +15,8 @@
           <div class="row g-3">
             <div class="col-md-12">
               <label for="nombre_raza" class="form-label">Nombre de la Raza</label>
-              <input type="text" class="form-control" id="nombre_raza" name="nombre_raza" placeholder="Ej: Poodle, Labrador, Persa" required>
+              <input type="text" class="form-control" id="nombre_raza" name="nombre_raza" maxlength="50" placeholder="Ej: Poodle, Labrador, Persa" required>
+              <div class="invalid-feedback" id="error-nombre-raza"></div>
             </div>
 
             <div class="col-md-12">
@@ -30,6 +31,7 @@
                   <?php endforeach; ?>
                 <?php endif; ?>
               </select>
+              <div class="invalid-feedback">Seleccione una especie.</div>
             </div>
           </div>
         </div>

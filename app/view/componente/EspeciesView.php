@@ -89,6 +89,8 @@
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
     <script src="public/js/especies.js"></script>
+    <script src="public/js/Validate/EspeciesValidation.js"></script>
+
     <?php if (isset($mensajeAlerta)) {
         echo "<script>{$mensajeAlerta}</script>";
     } ?>

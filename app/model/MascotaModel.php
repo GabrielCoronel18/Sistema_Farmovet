@@ -1,6 +1,7 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\MascotaValidation;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use PDO;
 
@@ -17,6 +18,7 @@ class MascotaModel extends ConexionBD{
      private string $cliente;
       
      use Validation;
+     use MascotaValidation;
 
 
      public function agregarMascota(string $nombre, int $edad, string $sexo, string $chip, string $procedencia, string $fecha_nacimiento, int $raza, string $pelaje, string $cliente){

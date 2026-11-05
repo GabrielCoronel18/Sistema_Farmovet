@@ -2,11 +2,13 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\ClienteValidation;
 use PDO;
 
 class ClienteModel extends ConexionBD {
     
    use Validation;
+   use ClienteValidation;
 
     public function obtenerClientesActivos(): array {
         $sql = "SELECT cedula_cliente, nombre, apellido

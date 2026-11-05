@@ -240,6 +240,7 @@ function cargarAntecedentesEnFormulario(id) {
 
 formularioMascotas.addEventListener("submit", function(e){
        e.preventDefault();
+       if (!validarMascota()) return;
        limpiarErroresValidacion();
        let datos = new FormData(formularioMascotas);
        let id = document.getElementById("id_mascota").value;

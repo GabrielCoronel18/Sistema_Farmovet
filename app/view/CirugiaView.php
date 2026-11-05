@@ -112,6 +112,7 @@
 	<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 	<script src="public/js/sweetalert2.min.js"></script>
 	<script src="public/js/alerts.js"></script>
+	<script src="public/js/Validate/CirugiaValidation.js"></script>
 	<script src="public/js/cirugia.js"></script>
 </body>
 </html>

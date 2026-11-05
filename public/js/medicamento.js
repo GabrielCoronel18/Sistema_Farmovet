@@ -133,6 +133,7 @@ tablaMedicamentos.addEventListener("click", event => {
 
 formularioMedicamento.addEventListener("submit", event => {
 	event.preventDefault();
+	if (!validarMedicamento()) return;
 	const datos = new FormData(formularioMedicamento);
 	const id = document.getElementById("id_medicamento").value;
 	datos.append(id === "" ? "agregar" : "actualizar", "true");

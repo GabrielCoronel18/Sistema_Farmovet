@@ -3,10 +3,12 @@ namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\CirugiaValidation;
 
 class CirugiaModel extends ConexionBD {
 	
     use Validation;
+    use CirugiaValidation;
 
 	private int $id;
 	private string $nombre;

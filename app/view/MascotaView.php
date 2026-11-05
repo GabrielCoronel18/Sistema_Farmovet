@@ -199,6 +199,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
+    <script src="public/js/Validate/MascotaValidation.js"></script>
     <script src="public/js/Mascotas.js"></script>
 </body>
 </html>

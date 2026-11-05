@@ -83,6 +83,8 @@ TablaPatologias.addEventListener("click", function (e) {
 
 formularioPatologia.addEventListener("submit", function (e) {
     e.preventDefault();
+     if (!validarPatologia()) return;
+     
     let datos = new FormData(formularioPatologia);
     let id = document.getElementById("id_patologia").value;
 
@@ -93,6 +95,7 @@ formularioPatologia.addEventListener("submit", function (e) {
         datos.append("id", id);
     }
 
+  
     fetch(window.location, { method: "post", body: datos })
         .then(respuesta => respuesta.json())
         .then(resultado => {
@@ -102,6 +105,7 @@ formularioPatologia.addEventListener("submit", function (e) {
                 ModalAgregar.hide();
                 obtenerDatos();
             } else if (resultado.status === "error") {
+                
 
                 if(resultado.errors) {
 				if(resultado.errors.nombre) {

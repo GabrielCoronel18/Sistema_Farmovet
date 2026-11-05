@@ -75,7 +75,7 @@
 						<input type="hidden" id="id_tipo_medicamento" name="id_tipo_medicamento">
 						<div class="mb-3">
 							<label for="nombre" class="form-label">Nombre</label>
-							<input type="text" class="form-control" id="nombre" name="nombre" maxlength="120" required>
+							<input type="text" class="form-control" id="nombre" name="nombre" maxlength="50" required>
 							<div class="invalid-feedback" id="error-nombre"></div>
 						</div>
 						<?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
@@ -101,6 +101,7 @@
 	<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 	<script src="public/js/sweetalert2.min.js"></script>
 	<script src="public/js/alerts.js"></script>
+	<script src="public/js/Validate/TipoMediacamentoValidation.js"></script>
 	<script src="public/js/tipo_medicamento.js"></script>
 </body>
 </html>

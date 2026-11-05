@@ -102,6 +102,7 @@
 	<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 	<script src="public/js/sweetalert2.min.js"></script>
 	<script src="public/js/alerts.js"></script>
+	<script src="public/js/Validate/PresentacionValidation.js"></script>
 	<script src="public/js/presentacion.js"></script>
 </body>
 </html>

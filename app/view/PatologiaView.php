@@ -60,17 +60,17 @@
                         <input type="hidden" id="id_patologia" name="id_patologia">
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="50" required>
                             <div class="invalid-feedback" id="error-nombre"></div>
                         </div>
                         <div class="mb-3">
                             <label for="tipo" class="form-label">Tipo</label>
-                            <input type="text" class="form-control" id="tipo" name="tipo" required>
+                            <input type="text" class="form-control" id="tipo" name="tipo" maxlength="50" required>
                             <div class="invalid-feedback" id="error-tipo"></div>
                         </div>
                         <div class="mb-3">
                             <label for="sintomas" class="form-label">Síntomas</label>
-                            <textarea class="form-control" id="sintomas" name="sintomas" rows="3" required></textarea>
+                            <textarea class="form-control" id="sintomas" name="sintomas" maxlength="200" rows="3" required></textarea>
                             <div class="invalid-feedback" id="error-sintomas"></div>
                         </div>
                         <?php if ((int) ($_SESSION["usuario"]["id_rol"] ?? 0) === 1): ?>
@@ -96,6 +96,7 @@
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
-    <script src="public/js/Patologia.js"></script>
+    <script src="public/js/patologia.js"></script>
+    <script src="public/js/Validate/PatologiaValidation.js"></script>
 </body>
 </html>

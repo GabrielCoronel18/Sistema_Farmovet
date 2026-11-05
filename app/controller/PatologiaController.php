@@ -41,12 +41,15 @@ if (isset($_POST["agregar"])) {
 	
 	$patologiaModel->validateMinLength($nombre, 'nombre', 5);
 	$patologiaModel->validateMaxLength($nombre, 'nombre', 50);
-	
+    $patologiaModel->validateNombrePatologia($nombre);
+
     $patologiaModel->validateMinLength($tipo, 'tipo', 5);
 	$patologiaModel->validateMaxLength($tipo, 'tipo', 50);
+    $patologiaModel->validateTipoPatologia($tipo);
     
     $patologiaModel->validateMinLength($sintomas, 'sintomas', 5);
-	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 50);
+	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 200);
+    $patologiaModel->validateSintomasPatologia($sintomas);
 	
 	if ($estado !== 0 && $estado !== 1) {
 		$patologiaModel->addError('estado', 'Debe ser activo o inactivo.');
@@ -96,12 +99,14 @@ if (isset($_POST["actualizar"])) {
 	
 	$patologiaModel->validateMinLength($nombre, 'nombre', 5);
 	$patologiaModel->validateMaxLength($nombre, 'nombre', 50);
-	
+	$patologiaModel->validateNombrePatologia($nombre);
     $patologiaModel->validateMinLength($tipo, 'tipo', 5);
 	$patologiaModel->validateMaxLength($tipo, 'tipo', 50);
+    $patologiaModel->validateTipoPatologia($tipo);
     
     $patologiaModel->validateMinLength($sintomas, 'sintomas', 5);
-	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 50);
+	$patologiaModel->validateMaxLength($sintomas, 'sintomas', 200);
+    $patologiaModel->validateSintomasPatologia($sintomas);
 	
 	if ($estado !== 0 && $estado !== 1) {
 		$patologiaModel->addError('estado', 'Debe ser activo o inactivo.');

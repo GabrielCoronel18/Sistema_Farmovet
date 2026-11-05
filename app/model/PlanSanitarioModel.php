@@ -9,7 +9,6 @@ use Exception;
 require_once __DIR__ . '/../config/ConexionBD.php'; // linea de mas //
 
 class PlanSanitarioModel extends ConexionBD {
-
     public function registrarPlan($datos) {
         try {
             $db = $this->getConexion(); 

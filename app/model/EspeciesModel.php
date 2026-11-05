@@ -3,12 +3,14 @@ namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\EspeciesValidation;
 use PDO;
 
 
 class EspeciesModel extends ConexionBD {
 
     use Validation;
+    use EspeciesValidation;
 
     public function registrar($nombre) {
         $sql = "INSERT INTO especie (nombre_especie, estado) VALUES (:nombre, 1)";

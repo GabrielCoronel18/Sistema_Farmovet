@@ -14,7 +14,6 @@ class UsuarioModel extends ConexionBD
     private int $rol;
     private int $estado;
 
-
     public function autenticarUsuario(string $correo, string $contraseña): ?array
     {
         $conex = $this->getConexion();

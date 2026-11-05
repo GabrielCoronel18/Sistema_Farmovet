@@ -9,6 +9,24 @@ $mensajeAlerta = "";
     // 1. AGREGAR
     if(isset($_POST["agregar"])){
         $nombre = trim($_POST["nombre_especie"] ?? $_POST["nombre"] ?? "");
+        
+        $especies->errors = []; 
+        $especies->validateRequired(['nombre' => $nombre], ['nombre']);
+        $especies->validateMinLength($nombre, 'nombre', 3);
+        $especies->validateMaxLength($nombre, 'nombre', 50);
+        $especies->validateNombreEspecie($nombre);
+
+        $errors = $especies->getErrors();
+
+    if (!empty($errors)) {
+        echo json_encode([
+            'status' => 'error',
+            'errors' => $errors
+        ]);
+        exit;
+    }
+       
+
 
         if (!empty($nombre)) {
             if (count($especies->validarEspecies($nombre)) == 0) {

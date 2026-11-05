@@ -2,6 +2,7 @@
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+USE Gabriel\SistemaFarmovet\helpers\traits\PatologiaValidation;
 
 class PatologiaModel extends ConexionBD {
     private int $id;
@@ -10,6 +11,7 @@ class PatologiaModel extends ConexionBD {
     private string $sintomas;
 
     use Validation;
+    use PatologiaValidation;
 
     public function agregarPatologia(string $nombre, string $tipo, string $sintomas, int $estado = 1) {
         $this->nombre = $nombre;

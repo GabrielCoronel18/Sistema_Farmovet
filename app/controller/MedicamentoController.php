@@ -46,6 +46,7 @@ if (isset($_POST["agregar"])) {
     $medicamentoModel->validateRequired(['nombre' => $nombre, 'tipo' => $tipo, 'presentacion' => $presentacion, 'estado' => $estado], ['nombre', 'tipo', 'presentacion', 'estado']);
     $medicamentoModel->validateMinLength($nombre, 'nombre', 5);
     $medicamentoModel->validateMaxLength($nombre, 'nombre', 50);
+    $medicamentoModel->validateNombreMedicamento($nombre);
     $medicamentoModel->validateInArray($tipo, 'tipo', array_column($tiposDisponibles, 'id_tipo_medicamento'));  
     $medicamentoModel->validateInArray($presentacion, 'presentacion', array_column($presentacionesDisponibles, 'id_presentacion'));
     
@@ -89,6 +90,7 @@ if (isset($_POST["actualizar"], $_POST["id"])) {
     $medicamentoModel->validateRequired(['nombre' => $nombre, 'tipo' => $tipo, 'presentacion' => $presentacion, 'estado' => $estado], ['nombre', 'tipo', 'presentacion', 'estado']);
     $medicamentoModel->validateMinLength($nombre, 'nombre', 3);
     $medicamentoModel->validateMaxLength($nombre, 'nombre', 50);
+    $medicamentoModel->validateNombreMedicamento($nombre);
     $medicamentoModel->validateInArray($tipo, 'tipo', array_column($tiposDisponibles, 'id_tipo_medicamento'));  
     $medicamentoModel->validateInArray($presentacion, 'presentacion', array_column($presentacionesDisponibles, 'id_presentacion'));
 

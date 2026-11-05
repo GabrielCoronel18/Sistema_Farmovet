@@ -2,12 +2,18 @@
 namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\UsuarioModel;
 use Gabriel\SistemaFarmovet\model\RolModel;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\UsuarioValidation;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 verificarRol([1]);
 
 $usuarioModel = new UsuarioModel();
 $rolModel = new RolModel();
+$validador = new class {
+    use Validation;
+    use UsuarioValidation;
+};
 
 if (isset($_POST['obtener'])) {
     $pagina = (int)($_POST['pagina'] ?? 1);
@@ -46,16 +52,35 @@ if (isset($_POST['obtenerRoles'])) {
 }
 
 if (isset($_POST['agregar'])) {
-    $cedula = $_POST['cedula'] ?? '';
-    $nombre = $_POST['nombre'] ?? '';
-    $apellido = $_POST['apellido'] ?? '';
-    $telefono = $_POST['telefono'] ?? '';
-    $correo = $_POST['correo'] ?? '';
+    $cedula = strtoupper(trim($_POST['cedula'] ?? ''));
+    $nombre = trim($_POST['nombre'] ?? '');
+    $apellido = trim($_POST['apellido'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
+    $correo = trim($_POST['correo'] ?? '');
     $contraseña = $_POST['contraseña'] ?? '';
     $rol = (int)($_POST['rol'] ?? 0);
 
-    if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || empty($contraseña) || $rol <= 0) {
-        echo json_encode(["status" => "error", "mensaje" => "Complete todos los campos obligatorios."]);
+    $validador->clearErrors();
+    $validador->validateRequired(
+        compact('cedula', 'nombre', 'apellido', 'correo'),
+        ['cedula', 'nombre', 'apellido', 'correo']
+    );
+    $validador->validateMinLength($nombre, 'nombre', 2);
+    $validador->validateMaxLength($nombre, 'nombre', 30);
+    $validador->validateNombreUsuario($nombre, 'nombre');
+    $validador->validateMinLength($apellido, 'apellido', 2);
+    $validador->validateMaxLength($apellido, 'apellido', 30);
+    $validador->validateNombreUsuario($apellido, 'apellido');
+    $validador->validateCedulaUsuario($cedula);
+    $validador->validateTelefonoUsuario($telefono);
+    $validador->validateCorreoUsuario($correo);
+    $validador->validateContraseñaUsuario($contraseña, true);
+    if ($rol <= 0) {
+        $validador->addError('rol', 'Seleccione un rol válido.');
+    }
+
+    if (!empty($validador->getErrors())) {
+        echo json_encode(["status" => "error", "errors" => $validador->getErrors()]);
         exit;
     }
 
@@ -76,16 +101,35 @@ if (isset($_POST['actualizar'])) {
         exit;
     }
 
-    $cedula = $_POST['cedula'] ?? '';
-    $nombre = $_POST['nombre'] ?? '';
-    $apellido = $_POST['apellido'] ?? '';
-    $telefono = $_POST['telefono'] ?? '';
-    $correo = $_POST['correo'] ?? '';
+    $cedula = strtoupper(trim($_POST['cedula'] ?? ''));
+    $nombre = trim($_POST['nombre'] ?? '');
+    $apellido = trim($_POST['apellido'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
+    $correo = trim($_POST['correo'] ?? '');
     $rol = (int)($_POST['rol'] ?? 0);
     $contraseña = $_POST['contraseña'] ?? '';
 
-    if (empty($cedula) || empty($nombre) || empty($apellido) || empty($correo) || $rol <= 0) {
-        echo json_encode(["status" => "error", "mensaje" => "Complete todos los campos obligatorios."]);
+    $validador->clearErrors();
+    $validador->validateRequired(
+        compact('cedula', 'nombre', 'apellido', 'correo'),
+        ['cedula', 'nombre', 'apellido', 'correo']
+    );
+    $validador->validateMinLength($nombre, 'nombre', 2);
+    $validador->validateMaxLength($nombre, 'nombre', 30);
+    $validador->validateNombreUsuario($nombre, 'nombre');
+    $validador->validateMinLength($apellido, 'apellido', 2);
+    $validador->validateMaxLength($apellido, 'apellido', 30);
+    $validador->validateNombreUsuario($apellido, 'apellido');
+    $validador->validateCedulaUsuario($cedula);
+    $validador->validateTelefonoUsuario($telefono);
+    $validador->validateCorreoUsuario($correo);
+    $validador->validateContraseñaUsuario($contraseña, false);
+    if ($rol <= 0) {
+        $validador->addError('rol', 'Seleccione un rol válido.');
+    }
+
+    if (!empty($validador->getErrors())) {
+        echo json_encode(["status" => "error", "errors" => $validador->getErrors()]);
         exit;
     }
 

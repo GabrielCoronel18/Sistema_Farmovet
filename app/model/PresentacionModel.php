@@ -3,6 +3,7 @@ namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\PresentacionValidation;
 
 class PresentacionModel extends ConexionBD {
     private int $id;
@@ -10,6 +11,7 @@ class PresentacionModel extends ConexionBD {
     private int $estado;
 
     use Validation;
+    use PresentacionValidation;
 
     public function agregarPresentacion(string $nombre, int $estado = 1) {
         $this->nombre = $nombre;
