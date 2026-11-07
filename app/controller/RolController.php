@@ -39,6 +39,20 @@ if (isset($_POST['obtenerRol']) && isset($_POST['id'])) {
 
 if (isset($_POST['agregar'])) {
     $nombre = trim($_POST['nombre'] ?? '');
+     
+    $rolModel->clearErrors();
+    $rolModel->validateRequired(['nombre' => $nombre],['nombre']);
+    $rolModel->validateMinLength($nombre, 'nombre', 3);
+    $rolModel->validateMaxLength($nombre, 'nombre', 30);
+    $rolModel->validateNombreRol($nombre);
+
+    $errors = $rolModel->getErrors();
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "errors" => $errors]);
+        exit;
+    }
+
+
     if (empty($nombre)) {
         echo json_encode(["status" => "error", "mensaje" => "El nombre es obligatorio."]);
         exit;

@@ -16,6 +16,15 @@ if(isset($_POST["agregar"])){
     $nombre_raza = trim($_POST["nombre_raza"] ?? $_POST["nombre"] ?? "");
     $id_especie = trim($_POST["id_especie"] ?? $_POST["especie"] ?? "");
 
+    $raza->clearErrors();
+    $raza->validateRequired(['nombre_raza' => $nombre_raza, 'id_especie' => $id_especie], ['nombre_raza', 'id_especie']);
+    $raza->validateMinLength($nombre_raza, 'nombre_raza', 2);
+    $raza->validateMaxLength($nombre_raza, 'nombre_raza', 50);
+    $raza->validateNombreRaza($nombre_raza);
+    if (!empty($raza->getErrors())) {
+        echo json_encode(["status" => "error", "errors" => $raza->getErrors()]);
+        exit;
+    }
     if (!empty($nombre_raza) && !empty($id_especie)) {
         if (count($raza->validarRaza($nombre_raza, $id_especie)) == 0) {
             if($raza->registrar($nombre_raza, $id_especie)){
@@ -38,6 +47,15 @@ if(isset($_POST["actualizar"])){
     $nombre_raza = trim($_POST["nombre_raza"] ?? $_POST["nombre"] ?? "");
     $id_especie = trim($_POST["id_especie"] ?? $_POST["especie"] ?? "");
 
+    $raza->clearErrors();
+    $raza->validateRequired(['nombre_raza' => $nombre_raza, 'id_especie' => $id_especie], ['nombre_raza', 'id_especie']);
+    $raza->validateMinLength($nombre_raza, 'nombre_raza', 2);
+    $raza->validateMaxLength($nombre_raza, 'nombre_raza', 50);
+    $raza->validateNombreRaza($nombre_raza);
+    if (!empty($raza->getErrors())) {
+        echo json_encode(["status" => "error", "errors" => $raza->getErrors()]);
+        exit;
+    }
     if(!empty($id_raza) && !empty($nombre_raza) && !empty($id_especie)){
         if($raza->modificarRaza($id_raza, $nombre_raza, $id_especie)){
             echo json_encode(["status"=>"success"]);

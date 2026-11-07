@@ -3,6 +3,7 @@ namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\MedicamentoValidation;
 
 class MedicamentoModel extends ConexionBD {
 
@@ -13,6 +14,7 @@ class MedicamentoModel extends ConexionBD {
     private int $estado;
 
 	use Validation;
+	use MedicamentoValidation;
 	public function agregarMedicamento(string $nombre,int $tipo, int $presentacion, int $estado = 1) {
 		$this->nombre = $nombre;
         $this->tipo = $tipo;

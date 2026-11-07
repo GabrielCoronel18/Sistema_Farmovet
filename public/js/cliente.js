@@ -139,6 +139,7 @@ TablaCliente.addEventListener("click", function (e) {
 
 formularioCliente.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (!validarCliente()) return;
     [campoCedula, campoNombre, campoApellido, campoTelefono, campoCorreo, campoDireccion]
         .forEach(campo => campo.classList.remove("is-invalid"));
 

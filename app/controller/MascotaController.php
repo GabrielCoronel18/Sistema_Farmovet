@@ -78,10 +78,13 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         $mascotaModel->validateInArray($chip, 'chip', ['Si', 'No']);
         $mascotaModel->validateMinLength($nombre, 'nombre', 2);
         $mascotaModel->validateMaxLength($nombre, 'nombre', 50);
+        $mascotaModel->validateNombreMascota($nombre);
         $mascotaModel->validateMinLength($pelaje, 'pelaje', 4);
         $mascotaModel->validateMaxLength($pelaje, 'pelaje', 50);
+        $mascotaModel->validatePelajeMascota($pelaje);
         $mascotaModel->validateMinLength($procedencia, 'procedencia', 5);
         $mascotaModel->validateMaxLength($procedencia, 'procedencia', 200);
+        $mascotaModel->validateProcedenciaMascota($procedencia);
         
         
 		$errors = $mascotaModel->getErrors();
@@ -159,6 +162,33 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         $pelaje = $_POST["pelaje"] ?? "";
         $cedula_cliente = $_POST["cedula_cliente"] ?? "";
         $procedencia = $_POST["procedencia"] ?? "";
+
+        $mascotaModel->clearErrors();
+        $mascotaModel->validateRequired(
+            ['nombre' => $nombre, 'edad' => $edad, 'sexo' => $sexo, 'chip' => $chip,
+             'procedencia' => $procedencia, 'fch_nacimiento' => $fch_nacimiento,
+             'raza' => $id_raza, 'pelaje' => $pelaje, 'cedula' => $cedula_cliente],
+            ['nombre', 'edad', 'sexo', 'chip', 'procedencia', 'fch_nacimiento',
+             'raza', 'pelaje', 'cedula']
+        );
+        $mascotaModel->validateMinLength($nombre, 'nombre', 2);
+        $mascotaModel->validateMaxLength($nombre, 'nombre', 50);
+        $mascotaModel->validateNombreMascota($nombre);
+        $mascotaModel->validateMinLength($pelaje, 'pelaje', 4);
+        $mascotaModel->validateMaxLength($pelaje, 'pelaje', 50);
+        $mascotaModel->validatePelajeMascota($pelaje);
+        $mascotaModel->validateMinLength($procedencia, 'procedencia', 5);
+        $mascotaModel->validateMaxLength($procedencia, 'procedencia', 200);
+        $mascotaModel->validateProcedenciaMascota($procedencia);
+        $mascotaModel->validateDateFormat($fch_nacimiento, 'Y-m-d', 'fch_nacimiento');
+        $mascotaModel->validateInteger($edad, 'edad');
+        $mascotaModel->validateInArray($sexo, 'sexo', ['Masculino', 'Femenino']);
+        $mascotaModel->validateInArray($chip, 'chip', ['Si', 'No']);
+        $errors = $mascotaModel->getErrors();
+        if (!empty($errors)) {
+            echo json_encode(["status" => "error", "errors" => $errors]);
+            exit;
+        }
  
 
         if($mascotaModel->actualizarMascota($id,$nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente)){

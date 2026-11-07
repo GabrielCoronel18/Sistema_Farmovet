@@ -13,7 +13,7 @@ $mensajeAlerta = "";
     if(isset($_POST["agregar"])){
         $nombre = trim($_POST["nombre"] ?? "");
         $apellido = trim($_POST["apellido"] ?? "");
-        $cedula = trim($_POST["cedula_cliente"] ?? "");
+        $cedula = strtoupper(trim($_POST["cedula_cliente"] ?? ""));
         $telefono = trim($_POST["telefono"] ?? "");
         $correo = trim($_POST["correo"] ?? "");
         $direccion = trim($_POST["direccion"] ?? "");
@@ -22,25 +22,30 @@ $mensajeAlerta = "";
 	
 	$cliente->validateRequired(['nombre' => $nombre, 'apellido' => $apellido, 'cedula' => $cedula, 'telefono' => $telefono, 'correo' => $correo, 'direccion' => $direccion], ['nombre', 'apellido', 'cedula','telefono','correo','direccion']);
 	
-	$cliente->validateMinLength($nombre, 'nombre', 5);
+	$cliente->validateMinLength($nombre, 'nombre', 3);
 	$cliente->validateMaxLength($nombre, 'nombre', 30);
+	$cliente->validateNombreCliente($nombre, 'nombre');
     
-    $cliente->validateMinLength($apellido, 'apellido', 5);
+    $cliente->validateMinLength($apellido, 'apellido', 3);
 	$cliente->validateMaxLength($apellido, 'apellido', 30);
+    $cliente->validateNombreCliente($apellido, 'apellido');
 
-    $cliente->validateMinLength($cedula, 'cedula', 10);
+    $cliente->validateMinLength($cedula, 'cedula', 8);
 	$cliente->validateMaxLength($cedula, 'cedula', 12);
+    $cliente->validateCedulaCliente($cedula);
     
     $cliente->validateMinLength($telefono, 'telefono', 9);
 	$cliente->validateMaxLength($telefono, 'telefono', 11);
     $cliente->validateNumeric($telefono, 'telefono');
+    $cliente->validateTelefonoCliente($telefono);
 
     $cliente->validateMinLength($correo, 'correo', 5);
 	$cliente->validateMaxLength($correo, 'correo', 60);
-    $cliente->validateEmail($correo, 'correo');
+    $cliente->validateCorreoCliente($correo);
 
     $cliente->validateMinLength($direccion, 'direccion', 10);
 	$cliente->validateMaxLength($direccion, 'direccion', 50);
+    $cliente->validateDireccionCliente($direccion);
 	
 	
 	$errors = $cliente->getErrors();
@@ -68,7 +73,7 @@ $mensajeAlerta = "";
         $id = trim($_POST["id"] ?? ""); // cedula_cliente passed as id
         $nombre = trim($_POST["nombre"] ?? "");
         $apellido = trim($_POST["apellido"] ?? "");
-        $cedula = trim($_POST["cedula_cliente"] ?? $id);
+        $cedula = strtoupper(trim($_POST["cedula_cliente"] ?? $id));
         $telefono = trim($_POST["telefono"] ?? "");
         $correo = trim($_POST["correo"] ?? "");
         $direccion = trim($_POST["direccion"] ?? "");
@@ -86,20 +91,25 @@ $mensajeAlerta = "";
             ['nombre', 'apellido', 'cedula', 'telefono', 'correo', 'direccion']
         );
 
-        $cliente->validateMinLength($nombre, 'nombre', 5);
+        $cliente->validateMinLength($nombre, 'nombre', 3);
         $cliente->validateMaxLength($nombre, 'nombre', 30);
-        $cliente->validateMinLength($apellido, 'apellido', 5);
+        $cliente->validateNombreCliente($nombre, 'nombre');
+        $cliente->validateMinLength($apellido, 'apellido', 3);
         $cliente->validateMaxLength($apellido, 'apellido', 30);
-        $cliente->validateMinLength($cedula, 'cedula', 10);
+        $cliente->validateNombreCliente($apellido, 'apellido');
+        $cliente->validateMinLength($cedula, 'cedula', 8);
         $cliente->validateMaxLength($cedula, 'cedula', 12);
+        $cliente->validateCedulaCliente($cedula);
         $cliente->validateMinLength($telefono, 'telefono', 9);
         $cliente->validateMaxLength($telefono, 'telefono', 11);
         $cliente->validateNumeric($telefono, 'telefono');
+        $cliente->validateTelefonoCliente($telefono);
         $cliente->validateMinLength($correo, 'correo', 5);
         $cliente->validateMaxLength($correo, 'correo', 60);
-        $cliente->validateEmail($correo, 'correo');
+        $cliente->validateCorreoCliente($correo);
         $cliente->validateMinLength($direccion, 'direccion', 10);
         $cliente->validateMaxLength($direccion, 'direccion', 50);
+        $cliente->validateDireccionCliente($direccion);
 
         $errors = $cliente->getErrors();
         if(!empty($errors)) {

@@ -30,6 +30,7 @@
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre del Rol</label>
                         <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        <div class="invalid-feedback" id="error-nombre"></div>
                     </div>
 
                     <div class="d-flex justify-content-end">
@@ -46,53 +47,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const accion = urlParams.get('accion') || 'crear';
-    const id = urlParams.get('id');
-
-    if (accion === 'editar' && id) {
-        document.getElementById('titulo-form').textContent = 'Editar Rol';
-        document.getElementById('btn-submit').innerHTML = '<i class="bi bi-save"></i> Actualizar';
-        const fd = new FormData();
-        fd.append('obtenerRol', '1');
-        fd.append('id', id);
-        fetch('?url=Rol', { method: 'POST', body: fd })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('id').value = data.resultado.id_rol;
-                    document.getElementById('nombre').value = data.resultado.nombre_rol;
-                } else {
-                    Swal.fire('Error', 'No se encontró el rol', 'error').then(() => window.location.href = '?url=Rol');
-                }
-            });
-    }
-
-    document.getElementById('form-rol').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        if (accion === 'editar') {
-            formData.append('actualizar', '1');
-        } else {
-            formData.append('agregar', '1');
-        }
-
-        fetch('?url=Rol', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: accion === 'crear' ? '¡Rol creado!' : '¡Rol actualizado!',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => window.location.href = '?url=Rol');
-                } else {
-                    Swal.fire('Error', data.mensaje || 'Operación fallida', 'error');
-                }
-            });
-    });
-</script>
+<script src="public/js/rol.js"></script>
+<script src="public/js/Validate/RolValidation.js"></script>
 </body>
 </html>

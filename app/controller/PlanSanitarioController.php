@@ -2,11 +2,15 @@
 namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\PlanSanitarioModel;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\PlanSanitarioValidation;
 
 require_once __DIR__ . '/../model/PlanSanitarioModel.php';
 
 class PlanSanitarioController {
-    
+    use Validation;
+    use PlanSanitarioValidation;
+
     private $modelo;
 
     public function __construct() {
@@ -25,14 +29,54 @@ class PlanSanitarioController {
             }
 
             if (isset($_POST['action_form']) && $_POST['action_form'] === 'registrar') {
+                $idMascota = $_POST['id_mascota'] ?? '';
+                $idMedicamento = $_POST['id_medicamento'] ?? '';
+                $fechaAplicacion = trim($_POST['fecha_aplicacion'] ?? '');
+                $proximoRefuerzo = trim($_POST['proximo_refuerzo'] ?? '');
+
+                $this->clearErrors();
+                $this->validateIdPlanSanitario($idMascota, 'id_mascota');
+                $this->validateIdPlanSanitario($idMedicamento, 'id_medicamento');
+                $this->validateFechaPlanSanitario($fechaAplicacion, 'fecha_aplicacion');
+                $this->validateFechaPlanSanitario($proximoRefuerzo, 'proximo_refuerzo');
+                $this->validateRangoFechasPlanSanitario($fechaAplicacion, $proximoRefuerzo);
+
+                if (!empty($this->getErrors())) {
+                    echo json_encode(["status" => "error", "errors" => $this->getErrors()]);
+                    exit;
+                }
                 $res = $this->modelo->registrarPlan($_POST);
-                echo json_encode(["status" => $res ? "success" : "error"]);
+                echo json_encode([
+                    "status" => $res ? "success" : "error",
+                    "mensaje" => $res ? "" : "No se pudo guardar el plan sanitario."
+                ]);
                 exit;
             }
 
             if (isset($_POST['action_form']) && $_POST['action_form'] === 'actualizar') {
+                $idPlan = $_POST['id_plan'] ?? '';
+                $idMascota = $_POST['id_mascota'] ?? '';
+                $idMedicamento = $_POST['id_medicamento'] ?? '';
+                $fechaAplicacion = trim($_POST['fecha_aplicacion'] ?? '');
+                $proximoRefuerzo = trim($_POST['proximo_refuerzo'] ?? '');
+
+                $this->clearErrors();
+                $this->validateIdPlanSanitario($idPlan, 'id_plan');
+                $this->validateIdPlanSanitario($idMascota, 'id_mascota');
+                $this->validateIdPlanSanitario($idMedicamento, 'id_medicamento');
+                $this->validateFechaPlanSanitario($fechaAplicacion, 'fecha_aplicacion');
+                $this->validateFechaPlanSanitario($proximoRefuerzo, 'proximo_refuerzo');
+                $this->validateRangoFechasPlanSanitario($fechaAplicacion, $proximoRefuerzo);
+
+                if (!empty($this->getErrors())) {
+                    echo json_encode(["status" => "error", "errors" => $this->getErrors()]);
+                    exit;
+                }
                 $res = $this->modelo->actualizarPlan($_POST);
-                echo json_encode(["status" => $res ? "success" : "error"]);
+                echo json_encode([
+                    "status" => $res ? "success" : "error",
+                    "mensaje" => $res ? "" : "No se pudo actualizar el plan sanitario."
+                ]);
                 exit;
             }
 

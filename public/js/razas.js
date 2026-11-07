@@ -141,6 +141,7 @@ if (btnAgregar) {
 if (formularioRaza) {
     formularioRaza.addEventListener("submit", function (e) {
         e.preventDefault();
+        if (!validarRaza()) return;
         let datos = new FormData(formularioRaza);
         let is_update = document.getElementById("is_update").value;
 

@@ -93,6 +93,7 @@
 
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
+    <script src="public/js/Validate/RazaValidation.js"></script>
     <script src="public/js/razas.js"></script>
     <?php if (isset($mensajeAlerta)) {
         echo "<script>{$mensajeAlerta}</script>";

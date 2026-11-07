@@ -47,6 +47,7 @@ if (isset($_POST["agregar"])) {
         $PresentacionModel->validateRequired(['nombre' => $nombre], ['nombre']);
         $PresentacionModel->validateMinLength($nombre, 'nombre', 5);
         $PresentacionModel->validateMaxLength($nombre, 'nombre', 50);
+        $PresentacionModel->validateNombrePresentacion($nombre);
 
         if ($estado !== 0 && $estado !== 1) {
             $PresentacionModel->addError(
@@ -91,6 +92,7 @@ if (isset($_POST["actualizar"])) {
         $PresentacionModel->validateRequired(['nombre' => $nombre], ['nombre']);
         $PresentacionModel->validateMinLength($nombre, 'nombre', 5);
         $PresentacionModel->validateMaxLength($nombre, 'nombre', 50);
+        $PresentacionModel->validateNombrePresentacion($nombre);
 
         if ($estado !== 0 && $estado !== 1) {
             $PresentacionModel->addError(

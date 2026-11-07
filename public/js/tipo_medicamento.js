@@ -97,6 +97,7 @@ tablaTipoMedicamentos.addEventListener("click", event => {
 
  formularioTipoMedicamento.addEventListener("submit", event => {
 	event.preventDefault();
+	if (!validarTipoMedicamento()) return;
 	const datos = new FormData(formularioTipoMedicamento);
 	const id = document.getElementById("id_tipo_medicamento").value;
 	datos.append(id === "" ? "agregar" : "actualizar", "true");

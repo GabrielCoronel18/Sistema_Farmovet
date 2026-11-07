@@ -45,6 +45,7 @@ if (isset($_POST["agregar"])) {
 	
 	$cirugiaModel->validateMinLength($nombre, 'nombre', 5);
 	$cirugiaModel->validateMaxLength($nombre, 'nombre', 50);
+	$cirugiaModel->validateNombreCirugia($nombre);
 
 	$cirugiaModel->validateInArray($gravedad, 'gravedad', ['Leve', 'Moderada', 'Grave']);
 	
@@ -89,6 +90,7 @@ if (isset($_POST["actualizar"], $_POST["id"])) {
 	
 	$cirugiaModel->validateMinLength($nombre, 'nombre', 5);
 	$cirugiaModel->validateMaxLength($nombre, 'nombre', 50);
+	$cirugiaModel->validateNombreCirugia($nombre);
 	
 	$cirugiaModel->validateInArray($gravedad, 'gravedad', ['Leve', 'Moderada', 'Grave']);
 	if ($estado !== 0 && $estado !== 1) {

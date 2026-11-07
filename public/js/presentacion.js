@@ -95,6 +95,7 @@ tablaPresentaciones.addEventListener("click", event => {
 
  formularioPresentacion.addEventListener("submit", event => {
 	event.preventDefault();
+	if (!validarPresentacion()) return;
 	campoNombre.classList.remove("is-invalid");
 	errorNombre.textContent = "";
 	if (campoEstado) {

@@ -144,18 +144,22 @@
                         <div class="col-md-2">
                             <label class="form-label fw-semibold" style="color: #673ab7;">ID Mascota</label>
                             <input type="number" name="id_mascota" id="id_mascota_edit" class="form-control" required>
+                            <div class="invalid-feedback">Ingrese un ID de mascota válido.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold" style="color: #673ab7;">ID Medicamento</label>
                             <input type="number" name="id_medicamento" id="id_medicamento_edit" class="form-control" required>
+                            <div class="invalid-feedback">Ingrese un ID de medicamento válido.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold" style="color: #673ab7;">Fecha Aplicación</label>
                             <input type="date" name="fecha_aplicacion" id="fecha_aplicacion_edit" class="form-control" required>
+                            <div class="invalid-feedback">Ingrese una fecha válida.</div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-semibold" style="color: #673ab7;">Próximo Refuerzo</label>
                             <input type="date" name="proximo_refuerzo" id="proximo_refuerzo_edit" class="form-control" required>
+                            <div class="invalid-feedback">El refuerzo debe ser igual o posterior a la aplicación.</div>
                         </div>
                         <div class="col-md-2 d-flex gap-2">
                             <button type="submit" class="btn btn-success w-100 fw-semibold">
@@ -214,18 +218,22 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold" style="color: #673ab7;">ID Mascota</label>
                     <input type="number" name="id_mascota" class="form-control" placeholder="ID registrado de la mascota" required>
+                    <div class="invalid-feedback">Ingrese un ID de mascota válido.</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" style="color: #673ab7;">ID Medicamento</label>
                     <input type="number" name="id_medicamento" class="form-control" placeholder="ID registrado del medicamento" required>
+                    <div class="invalid-feedback">Ingrese un ID de medicamento válido.</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" style="color: #673ab7;">Fecha Aplicación</label>
                     <input type="date" name="fecha_aplicacion" class="form-control" required>
+                    <div class="invalid-feedback">Ingrese una fecha válida.</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" style="color: #673ab7;">Próximo Refuerzo</label>
                     <input type="date" name="proximo_refuerzo" class="form-control" required>
+                    <div class="invalid-feedback">El refuerzo debe ser igual o posterior a la aplicación.</div>
                 </div>
           </div>
           <div class="modal-footer">
@@ -241,9 +249,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/js/Validate/PlanSanitarioValidation.js"></script>
 
 <script>
     let registrosLocales = [];
+    let campoIdMascotaEdit = document.getElementById('id_mascota_edit');
+    let campoIdMedicamentoEdit = document.getElementById('id_medicamento_edit');
 
     function cargarPlanesSanitarios() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -365,11 +376,13 @@
 
     document.getElementById('form-modal-plan').addEventListener('submit', function(e) {
         e.preventDefault();
+        if (!validarPlanSanitario(this)) return;
         enviarFormulario(new FormData(this), true);
     });
 
     document.getElementById('form-edicion-plan').addEventListener('submit', function(e) {
         e.preventDefault();
+        if (!validarPlanSanitario(this)) return;
         enviarFormulario(new FormData(this), false);
     });
 
@@ -394,10 +407,21 @@
 
                 cargarPlanesSanitarios();
             } else {
+                if (data.errors) {
+                    Object.entries(data.errors).forEach(([campo, mensaje]) => {
+                        const elemento = document.querySelector(
+                            `#form-modal-plan [name="${campo}"], #form-edicion-plan [name="${campo}"]`
+                        );
+                        if (!elemento) return;
+                        elemento.classList.add('is-invalid');
+                        const feedback = elemento.parentElement.querySelector('.invalid-feedback');
+                        if (feedback) feedback.textContent = mensaje;
+                    });
+                }
                 Swal.fire({ 
                     icon: 'error', 
                     title: 'Error de inserción', 
-                    text: data.mensaje || 'Verifica que el ID de la Mascota y Medicamento existan previamente.' 
+                    text: data.mensaje || 'Verifica los datos ingresados.' 
                 });
             }
         });

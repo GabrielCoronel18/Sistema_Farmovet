@@ -2,9 +2,13 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\RazaValidation;
 use PDO;
 
 class RazasModel extends ConexionBD {
+    use Validation;
+    use RazaValidation;
 
     public function obtenerRazasActivas(): array {
         $sql = "SELECT id_raza, nombre_raza

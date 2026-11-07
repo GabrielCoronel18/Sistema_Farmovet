@@ -99,6 +99,7 @@ tablaCirugias.addEventListener("click", event => {
 
 formularioCirugia.addEventListener("submit", event => {
 	event.preventDefault();
+	if (!validarCirugia()) return;
 	const datos = new FormData(formularioCirugia);
 	const id = document.getElementById("id_cirugia").value;
 	datos.append(id === "" ? "agregar" : "actualizar", "true");

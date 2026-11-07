@@ -30,33 +30,40 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="cedula" class="form-label">Cédula</label>
-                            <input type="text" class="form-control" id="cedula" name="cedula" required>
+                            <input type="text" class="form-control" id="cedula" name="cedula" maxlength="12" placeholder="V-12345678" required>
+                            <div class="invalid-feedback">Use una cédula numérica o el formato V-12345678.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="30" required>
+                            <div class="invalid-feedback">Ingrese un nombre válido.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="apellido" class="form-label">Apellido</label>
-                            <input type="text" class="form-control" id="apellido" name="apellido" required>
+                            <input type="text" class="form-control" id="apellido" name="apellido" maxlength="30" required>
+                            <div class="invalid-feedback">Ingrese un apellido válido.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="telefono" class="form-label">Teléfono</label>
-                            <input type="text" class="form-control" id="telefono" name="telefono">
+                            <input type="text" class="form-control" id="telefono" name="telefono" maxlength="11">
+                            <div class="invalid-feedback">El teléfono debe contener entre 9 y 11 números.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="correo" class="form-label">Correo</label>
                             <input type="email" class="form-control" id="correo" name="correo" required>
+                            <div class="invalid-feedback">Ingrese un correo electrónico válido.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="contraseña" class="form-label">Contraseña</label>
                             <input type="password" class="form-control" id="contraseña" name="contraseña" required>
+                            <div class="invalid-feedback">Debe tener mayúscula, minúscula, número y símbolo.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="rol" class="form-label">Rol</label>
                             <select class="form-select" id="rol" name="rol" required>
                                 <option value="">Seleccione...</option>
                             </select>
+                            <div class="invalid-feedback">Seleccione un rol.</div>
                         </div>
                     </div>
 
@@ -74,6 +81,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/js/Validate/UsuarioValidation.js"></script>
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const accion = urlParams.get('accion') || 'crear';
@@ -129,6 +137,7 @@
 
     document.getElementById('form-usuario').addEventListener('submit', function(e) {
         e.preventDefault();
+        if (!validarUsuario()) return;
         const formData = new FormData(this);
         if (accion === 'editar') {
             formData.append('actualizar', '1');
@@ -150,6 +159,15 @@
                     showConfirmButton: false
                 }).then(() => window.location.href = '?url=Usuario');
             } else {
+                if (data.errors) {
+                    Object.entries(data.errors).forEach(([campo, mensaje]) => {
+                        const elemento = document.getElementById(campo);
+                        if (!elemento) return;
+                        elemento.classList.add('is-invalid');
+                        const feedback = elemento.parentElement.querySelector('.invalid-feedback');
+                        if (feedback) feedback.textContent = mensaje;
+                    });
+                }
                 Swal.fire('Error', data.mensaje || 'Error en la operación.', 'error');
             }
         });

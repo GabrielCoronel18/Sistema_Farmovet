@@ -1,11 +1,16 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\RolValidation;
 
 class RolModel extends ConexionBD
 {
     private string $nombre;
     private int $estado;
+
+    use Validation;
+    use RolValidation;
 
     public function agregarRol(string $nombre): bool
     {

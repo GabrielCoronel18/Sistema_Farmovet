@@ -46,6 +46,7 @@ if(isset($_POST["agregar"])){
     
     $TipoMedicamentoModel->validateMinLength($nombre, 'nombre', 5);
     $TipoMedicamentoModel->validateMaxLength($nombre, 'nombre', 50);
+    $TipoMedicamentoModel->validateNombreTipoMedicamento($nombre);
 
     if ($estado !== 0 && $estado !== 1) {
         $TipoMedicamentoModel->addError(
@@ -91,6 +92,7 @@ if(isset($_POST["actualizar"])){
     
     $TipoMedicamentoModel->validateMinLength($nombre, 'nombre', 5);
     $TipoMedicamentoModel->validateMaxLength($nombre, 'nombre', 50);
+    $TipoMedicamentoModel->validateNombreTipoMedicamento($nombre);
 
     if ($estado !== 0 && $estado !== 1) {
         $TipoMedicamentoModel->addError(
