@@ -14,14 +14,14 @@ class AlergiaModel extends ConexionBD {
      * RF 5.6.1 Registrar Alergia
      * Registra una nueva alergia con estado activo (1).
      */
-    public function registrarAlergia($datos) {
+    public function registrarAlergia($nombre, $tipo) {
         try {
             $db = $this->getConexion(); 
             $sql = "INSERT INTO alergia (nombre_alergia, tipo, estado) VALUES (?, ?, 1)";
             $stmt = $db->prepare($sql);
             return $stmt->execute([
-                $datos['nombre_alergia'],
-                $datos['tipo']
+                $nombre['nombre_alergia'],
+                $tipo['tipo']
             ]);
         } catch (Exception $e) {
             return false;
@@ -67,15 +67,15 @@ class AlergiaModel extends ConexionBD {
      * RF 5.6.2.1 Actualizar Alergia
      * Modifica los datos de una alergia existente.
      */
-    public function actualizarAlergia($datos) {
+    public function actualizarAlergia($id,$nombre,$tipo) {
         try {
             $db = $this->getConexion();
             $sql = "UPDATE alergia SET nombre_alergia = ?, tipo = ? WHERE id_alergia = ?";
             $stmt = $db->prepare($sql);
             return $stmt->execute([
-                $datos['nombre_alergia'],
-                $datos['tipo'],
-                $datos['id_alergia']
+                $nombre['nombre_alergia'],
+                $tipo['tipo'],
+                $id['id_alergia']
             ]);
         } catch (Exception $e) {
             return false;

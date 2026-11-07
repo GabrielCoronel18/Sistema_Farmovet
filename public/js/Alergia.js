@@ -94,7 +94,7 @@ function listarAlergias() {
                     <tr>
                         <td>${item.id_alergia}</td>
                         <td>${item.nombre_alergia}</td>
-                        <td>${item.tipo_alergia}</td>
+                        <td>${item.tipo}</td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="editarAlergia(${item.id_alergia}, '${item.nombre_alergia}', '${item.tipo_alergia}')">
                                 <i class="bi bi-pencil"></i>
