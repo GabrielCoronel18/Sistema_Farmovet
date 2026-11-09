@@ -83,14 +83,30 @@
         </main>
     </div>
 
+    <!-- jQuery principal sin candados de integrity -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.js" integrity="sha384-1rFATsUr0XuIonb0gHkZHfQsWDvjIDbM3VLnsBS+sNTHWo71J7FkrBG2n93tytfI" crossorigin="anonymous"></script>
 
     <script src="public/js/sweetalert2.min.js"></script>
+
     <script src="public/js/alerts.js"></script>
-    <script src="public/js/especies.js"></script>
+
+    <!-- El plugin de validación -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    
+        <!-- 1. AQUÍ PRESENTAMOS EL ARCHIVO AJAX (NUEVO) -->
+    <script src="public/js/ajax.js"></script>
+
+
     <script src="public/js/Validate/EspeciesValidation.js"></script>
 
+
+    <script src="public/js/especies.js"></script>
+    
     <?php if (isset($mensajeAlerta)) {
         echo "<script>{$mensajeAlerta}</script>";
     } ?>

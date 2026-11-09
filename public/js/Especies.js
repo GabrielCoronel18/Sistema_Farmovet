@@ -1,64 +1,76 @@
+// =============================================
+// especies.js  -  Lógica del módulo Especies
+// DOM: vanilla JS  |  AJAX: jQuery (peticionAjax)
+// =============================================
+
 let formularioEspecie = document.querySelector(".EspeciesForm");
 let TablaEspecies = document.getElementById("TablaEspecies");
 let TituloModal = document.getElementById("exampleModalLabel");
 let btnAgregar = document.getElementById("btnAgregar");
-let campoNombre = document.getElementById("nombre_especie");
-let errorNombre = document.getElementById("error-nombre_especie");
 let dataTableInstance = null;
 
+// =============================================
+// 1. OBTENER DATOS Y PINTAR LA TABLA
+// =============================================
 function obtenerDatos(param = null) {
+
     let datos = new FormData();
     datos.append("obtener", true);
     if (param != null) datos.append("parametro", param);
 
-    fetch(window.location, { method: "post", body: datos })
-        .then(res => res.json())
-        .then(result => {
-            if (dataTableInstance !== null) {
-                dataTableInstance.destroy();
-            }
+    // ✅ AJAX con jQuery → peticionAjax() de ajax.js
+    peticionAjax(datos, function (result) {
 
-            let tbody = TablaEspecies.querySelector("tbody") || TablaEspecies;
+        if (dataTableInstance !== null) {
+            dataTableInstance.destroy();
+        }
 
-            if (result.status === "success" && result.resultados && result.resultados.length > 0) {
-                tbody.innerHTML = "";
-                result.resultados.forEach(function (especie) {
-                    let id = especie.id_especie;
-                    let nombre = especie.nombre_especie;
+        let tbody = TablaEspecies.querySelector("tbody") || TablaEspecies;
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="table-light">${id}</td>
-                            <td class="table-light">${nombre}</td>
-                            <td class="table-light">
-                                <button class="btn btn-sm btn-success" onclick="cargarEspecie('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
-                                <button class="btn btn-sm btn-danger" onclick="eliminarEspecie('${id}')">Eliminar</button>
-                            </td>
-                        </tr>`;
-                });
-            } else {
-                tbody.innerHTML = `<tr class='table-light text-center'><td colspan="3">No hay registros de especies</td></tr>`;
-            }
+        if (result.status === "success" && result.resultados && result.resultados.length > 0) {
 
-            dataTableInstance = new DataTable('#TablaEspecies', {
-                scrollX: true,
-                searching: true,
-                lengthChange: false,
-                language: {
-                    search: "Buscar:",
-                    zeroRecords: "No se encontraron resultados",
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                    paginate: { previous: "Anterior", next: "Siguiente" }
-                }
+            tbody.innerHTML = "";
+
+            result.resultados.forEach(function (especie) {
+                let id = especie.id_especie;
+                let nombre = especie.nombre_especie;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="table-light">${id}</td>
+                        <td class="table-light">${nombre}</td>
+                        <td class="table-light">
+                            <button class="btn btn-sm btn-success" onclick="cargarEspecie('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarEspecie('${id}')">Eliminar</button>
+                        </td>
+                    </tr>`;
             });
-        })
-        .catch(err => console.error("Error al obtener lista:", err));
+
+        } else {
+            tbody.innerHTML = `<tr class='table-light text-center'><td colspan="3">No hay registros de especies</td></tr>`;
+        }
+
+        dataTableInstance = new DataTable('#TablaEspecies', {
+            scrollX: true,
+            searching: true,
+            lengthChange: false,
+            language: {
+                search: "Buscar:",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                paginate: { previous: "Anterior", next: "Siguiente" }
+            }
+        });
+    });
 }
 
 obtenerDatos();
 
-// CARGAR DATOS EN EL MODAL AL PRESIONAR ACTUALIZAR
-window.cargarEspecie = function(id) {
+// =============================================
+// 2. CARGAR ESPECIE EN EL MODAL (ACTUALIZAR)
+// =============================================
+window.cargarEspecie = function (id) {
+
     if (TituloModal) TituloModal.innerText = "Actualizar Especie";
     document.getElementById("is_update").value = "1";
 
@@ -66,26 +78,27 @@ window.cargarEspecie = function(id) {
     datos.append("obtenerEspecie", true);
     datos.append("id_especie", id);
 
-    fetch(window.location, { method: "post", body: datos })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === "success" && res.resultado) {
-                let data = res.resultado;
-                document.getElementById("id_especie").value = data.id_especie;
-                document.getElementById("nombre_especie").value = data.nombre_especie;
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo obtener la información de la especie'
-                });
-            }
-        })
-        .catch(err => console.error("Error al consultar especie:", err));
+    // ✅ AJAX con jQuery
+    peticionAjax(datos, function (res) {
+
+        if (res.status === "success" && res.resultado) {
+            document.getElementById("id_especie").value = res.resultado.id_especie;
+            document.getElementById("nombre_especie").value = res.resultado.nombre_especie;
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener la información de la especie'
+            });
+        }
+    });
 };
 
-// ELIMINAR ESPECIE CON VENTANA FLOTANTE DE CONFIRMACIÓN
-window.eliminarEspecie = function(id) {
+// =============================================
+// 3. ELIMINAR ESPECIE (con confirmación)
+// =============================================
+window.eliminarEspecie = function (id) {
+
     Swal.fire({
         title: '¿Estás seguro?',
         text: "Esta especie será eliminada del sistema.",
@@ -96,51 +109,66 @@ window.eliminarEspecie = function(id) {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
+
         if (result.isConfirmed) {
+
             let datos = new FormData();
             datos.append("eliminar", true);
             datos.append("id_especie", id);
 
-            fetch(window.location, { method: "post", body: datos })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status === "success") {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Eliminado!',
-                            text: 'Especie eliminada con éxito.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        obtenerDatos();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: res.message || 'No se pudo eliminar la especie'
-                        });
-                    }
-                })
-                .catch(err => console.error("Error al eliminar:", err));
+            // ✅ AJAX con jQuery
+            peticionAjax(datos, function (res) {
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'Especie eliminada con éxito.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    obtenerDatos();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: res.message || 'No se pudo eliminar la especie'
+                    });
+                }
+            });
         }
     });
 };
 
-// BOTÓN REGISTRAR (LIMPIAR MODAL)
+// =============================================
+// 4. BOTÓN REGISTRAR (LIMPIAR MODAL) — vanilla
+// =============================================
 if (btnAgregar) {
     btnAgregar.addEventListener("click", function () {
         if (formularioEspecie) formularioEspecie.reset();
         if (TituloModal) TituloModal.innerText = "Registrar Especie";
         document.getElementById("is_update").value = "0";
         document.getElementById("id_especie").value = "";
+
+        // Limpiar errores del plugin (validación = jQuery)
+        let validator = $("#formularioEspecie").validate();
+        validator.resetForm();
+        $("#nombre_especie").removeClass("is-invalid is-valid");
     });
 }
 
-// GUARDAR / ACTUALIZAR FORMULARIO CON SweetAlert2
+// =============================================
+// 5. GUARDAR / ACTUALIZAR FORMULARIO (con AJAX y validación)
+// =============================================
 if (formularioEspecie) {
     formularioEspecie.addEventListener("submit", function (e) {
         e.preventDefault();
-        if (!validarEspecie()) { return; } 
+        
+        // Freno de mano del plugin: si hay errores, frena el envío
+        if (!$("#formularioEspecie").valid()) {  
+            return; 
+        } 
+
         let datos = new FormData(formularioEspecie);
         let is_update = document.getElementById("is_update").value;
 
@@ -150,38 +178,30 @@ if (formularioEspecie) {
             datos.append("actualizar", true);
         }
 
-        fetch(window.location, { method: "post", body: datos })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status === "success") {
-                    let msj = is_update === "0" ? "Especie registrada exitosamente" : "Especie actualizada exitosamente";
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: msj,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+        peticionAjax(datos, function (res) {
+            if (res.status === "success") {
+                let msj = is_update === "0" ? "Especie registrada exitosamente" : "Especie actualizada exitosamente";
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: msj,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
 
-                    let modalElement = document.getElementById("exampleModal");
-                    let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    if (modalInstance) modalInstance.hide();
+                let modalElement = document.getElementById("exampleModal");
+                let modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
 
-                    obtenerDatos();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: res.message || 'Error al realizar la operación'
-                    });
-                    
-                    if (res.errors && res.errors.nombre) {
-                        campoNombre.classList.add("is-invalid");
-                        errorNombre.innerText = res.errors.nombre;
-                    }
-                }
-            })
-            .catch(err => console.error("Error al enviar formulario:", err));
+                obtenerDatos();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: res.message || 'Error al realizar la operación'
+                });
+            }
+        });
     });
 }

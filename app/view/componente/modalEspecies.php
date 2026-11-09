@@ -6,15 +6,15 @@
         <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar Especie</h1>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post" class="EspeciesForm">
+      <form method="post" class="EspeciesForm" id="formularioEspecie">
         <input type="hidden" id="is_update" name="is_update" value="0">
         <input type="hidden" id="id_especie" name="id_especie" value="">
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-12">
               <label for="nombre_especie" class="form-label">Nombre de la Especie</label>
-              <input type="text" class="form-control" id="nombre_especie" name="nombre_especie" placeholder="Ej. Canino, Felino, Ave..." required>
-              <div class="invalid-feedback" id="error-nombre_especie"></div>
+              <input type="text" class="form-control" id="nombre_especie" name="nombre_especie" placeholder="Ej. Canino, Felino..." required>
+             <!-- <div class="invalid-feedback" id="error-nombre_especie"></div>-->
             </div>
           </div>
         </div>
