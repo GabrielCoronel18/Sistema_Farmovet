@@ -14,7 +14,7 @@
  */
 function peticionAjax(datos, onSuccess, onError, url) {
 
-    $.ajax({
+    return $.ajax({
         url: url || window.location,
         type: "POST",
         data: datos,

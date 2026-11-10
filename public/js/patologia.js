@@ -83,7 +83,7 @@ TablaPatologias.addEventListener("click", function (e) {
 
 formularioPatologia.addEventListener("submit", function (e) {
     e.preventDefault();
-     if (!validarPatologia()) return;
+     if (!$(formularioPatologia).valid()) return;
      
     let datos = new FormData(formularioPatologia);
     let id = document.getElementById("id_patologia").value;

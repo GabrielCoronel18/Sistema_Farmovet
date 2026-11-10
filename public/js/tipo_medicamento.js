@@ -1,147 +1,144 @@
-const formularioTipoMedicamento = document.querySelector(".TipoMedicamentoForm");
-const tablaTipoMedicamentos = document.getElementById("TablaTipoMedicamentos");
-const tituloModal = document.getElementById("TituloModalTipoMedicamento");
-const btnAgregar = document.getElementById("btnAgregar");
-const filtrar = document.getElementById("filtrar");
-const limite = document.getElementById("limite");
-const btnAnterior = document.getElementById("btn-anterior");
-const btnSiguiente = document.getElementById("btn-siguiente");
-const infoPagina = document.getElementById("info-pagina");
-const campoNombre = document.getElementById("nombre");
-const errorNombre = document.getElementById("error-nombre");
-const campoEstado = document.getElementById("estado_tipo_medicamento");
-const errorEstado = document.getElementById("error-estado_tipo_medicamento");
-
-
+const formularioTipoMedicamento = $(".TipoMedicamentoForm");
+const tablaTipoMedicamentos = $("#TablaTipoMedicamentos");
+const tituloModal = $("#TituloModalTipoMedicamento");
+const btnAgregar = $("#btnAgregar");
+const filtrar = $("#filtrar");
+const limite = $("#limite");
+const btnAnterior = $("#btn-anterior");
+const btnSiguiente = $("#btn-siguiente");
+const infoPagina = $("#info-pagina");
+const campoNombre = $("#nombre");
+const errorNombre = $("#error-nombre");
+const campoEstado = $("#estado_tipo_medicamento");
+const errorEstado = $("#error-estado_tipo_medicamento");
 let paginaActual = 1;
 
 function obtenerDatos(param = null, pagina = paginaActual) {
 	const datos = new FormData();
 	datos.append("obtener", "true");
 	datos.append("pagina", pagina);
-	datos.append("limite", limite.value);
+	datos.append("limite", limite.val());
 	if (param !== null) datos.append("parametro", param);
 
-	fetch(window.location, { method: "POST", body: datos })
-		.then(respuesta => respuesta.json())
-		.then(resultado => {
-			tablaTipoMedicamentos.innerHTML = "";
-			if (resultado.status !== "success") {
-				tablaTipoMedicamentos.innerHTML = "<tr><td colspan='3'>No hay tipos de medicamentos registrados</td></tr>";
-				paginaActual = pagina;
-				actualizarPaginacion(0);
-				return;
-			}
-			if (resultado.resultados.length === 0 && pagina > 1) {
-				obtenerDatos(param, pagina - 1);
-				return;
-			}
-
-			resultado.resultados.forEach(tipoMedicamento => {
-				tablaTipoMedicamentos.innerHTML += `<tr>
-					<td class="table-light">${tipoMedicamento.id_tipo_medicamento}</td>
-					<td class="table-light">${tipoMedicamento.nom_tipo_medicamento}</td>
-					<td class="table-light">${tipoMedicamento.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
-					<td class="table-light">
-						<button class="btn btn-sm btn-success btn-actualizar" value="${tipoMedicamento.id_tipo_medicamento}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
-						<button class="btn btn-sm btn-danger btn-eliminar" value="${tipoMedicamento.id_tipo_medicamento}">Eliminar</button>
-					</td>
-				</tr>`;
-			});
+	peticionAjax(datos).then(resultado => {
+		tablaTipoMedicamentos.empty();
+		if (resultado.status !== "success") {
+			tablaTipoMedicamentos.append(
+				$("<tr>").append($("<td>").attr("colspan", 4).text("No hay tipos de medicamentos registrados"))
+			);
 			paginaActual = pagina;
-			actualizarPaginacion(resultado.hayMas);
+			actualizarPaginacion(false);
+			return;
+		}
+		if (resultado.resultados.length === 0 && pagina > 1) {
+			obtenerDatos(param, pagina - 1);
+			return;
+		}
+
+		resultado.resultados.forEach(tipoMedicamento => {
+			const fila = $("<tr>");
+			fila.append($("<td>").addClass("table-light").text(tipoMedicamento.id_tipo_medicamento));
+			fila.append($("<td>").addClass("table-light").text(tipoMedicamento.nom_tipo_medicamento));
+			fila.append(
+				$("<td>").addClass("table-light").append(
+					$("<span>")
+						.addClass(tipoMedicamento.estado == 1 ? "badge bg-success" : "badge bg-secondary")
+						.text(tipoMedicamento.estado == 1 ? "Activo" : "Inactivo")
+				)
+			);
+			const actualizar = $("<button>").addClass("btn btn-sm btn-success btn-actualizar")
+				.val(tipoMedicamento.id_tipo_medicamento).attr("data-bs-toggle", "modal")
+				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
+			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
+				.val(tipoMedicamento.id_tipo_medicamento).text("Eliminar");
+			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
+			tablaTipoMedicamentos.append(fila);
 		});
+		paginaActual = pagina;
+		actualizarPaginacion(resultado.hayMas);
+	});
 }
 
 function actualizarPaginacion(hayMas) {
-	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
-	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = !hayMas;
-	infoPagina.innerText = `Página ${paginaActual}`;
+	btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
+	btnAnterior.prop("disabled", paginaActual === 1);
+	btnSiguiente.prop("disabled", !hayMas);
+	infoPagina.text(`Página ${paginaActual}`);
 }
 
 obtenerDatos();
 
-btnAgregar.addEventListener("click", () => {
-	formularioTipoMedicamento.reset();
-	document.getElementById("id_tipo_medicamento").value = "";
-	tituloModal.innerText = "Agregar Nuevo Tipo de Medicamento";
+btnAgregar.on("click", () => {
+	formularioTipoMedicamento[0].reset();
+	$("#id_tipo_medicamento").val("");
+	tituloModal.text("Agregar Nuevo Tipo de Medicamento");
 });
 
-tablaTipoMedicamentos.addEventListener("click", event => {
-	if (event.target.classList.contains("btn-actualizar")) {
-		const datos = new FormData();
-		datos.append("obtenerTipoMedicamento", "true");
-		datos.append("id", event.target.value);
+tablaTipoMedicamentos.on("click", ".btn-actualizar", function () {
+	const datos = new FormData();
+	datos.append("obtenerTipoMedicamento", "true");
+	datos.append("id", $(this).val());
 
-		fetch(window.location, { method: "POST", body: datos })
-			.then(respuesta => respuesta.json())
-			.then(resultado => {
-				if (resultado.status !== "success") return;
-				const tipoMedicamento = resultado.resultado;
-				document.getElementById("id_tipo_medicamento").value = tipoMedicamento.id_tipo_medicamento;
-				document.getElementById("nombre").value = tipoMedicamento.nom_tipo_medicamento;
-				const estadoInput = document.getElementById("estado_tipo_medicamento");
-				if (estadoInput) estadoInput.value = tipoMedicamento.estado;
-				tituloModal.innerText = "Actualizar Tipo de Medicamento";
-			});
-	}
-
-	if (event.target.classList.contains("btn-eliminar")) {
-		const datos = new FormData();
-		datos.append("eliminar", "true");
-		datos.append("id", event.target.value);
-		alertEliminar("post", datos, () => obtenerDatos(filtrar.value, paginaActual));
-	}
+	peticionAjax(datos).then(resultado => {
+		if (resultado.status !== "success") return;
+		const tipoMedicamento = resultado.resultado;
+		$("#id_tipo_medicamento").val(tipoMedicamento.id_tipo_medicamento);
+		campoNombre.val(tipoMedicamento.nom_tipo_medicamento);
+		campoEstado.val(tipoMedicamento.estado);
+		tituloModal.text("Actualizar Tipo de Medicamento");
+	});
 });
 
- formularioTipoMedicamento.addEventListener("submit", event => {
+tablaTipoMedicamentos.on("click", ".btn-eliminar", function () {
+	const datos = new FormData();
+	datos.append("eliminar", "true");
+	datos.append("id", $(this).val());
+	alertEliminar("post", datos, () => obtenerDatos(filtrar.val(), paginaActual));
+});
+
+formularioTipoMedicamento.on("submit", event => {
 	event.preventDefault();
-	if (!validarTipoMedicamento()) return;
-	const datos = new FormData(formularioTipoMedicamento);
-	const id = document.getElementById("id_tipo_medicamento").value;
+	if (!formularioTipoMedicamento.valid()) return;
+	const datos = new FormData(formularioTipoMedicamento[0]);
+	const id = $("#id_tipo_medicamento").val();
 	datos.append(id === "" ? "agregar" : "actualizar", "true");
 	if (id !== "") datos.append("id", id);
 
-	fetch(window.location, { method: "POST", body: datos })
-		.then(respuesta => respuesta.json())
-		.then(resultado => {
-			if (resultado.status !== "success") {
-				if(resultado.errors) {
-					if(resultado.errors.nombre) {
-						campoNombre.classList.add("is-invalid");
-						errorNombre.innerText = resultado.errors.nombre;
-					}
-					
-					if(resultado.errors.estado_tipo_medicamento) {
-						campoEstado.classList.add("is-invalid");
-						errorEstado.innerText = resultado.errors.estado_tipo_medicamento;
-					}
-					
+	peticionAjax(datos).then(resultado => {
+		if (resultado.status !== "success") {
+			if (resultado.errors) {
+				if (resultado.errors.nombre) {
+					campoNombre.addClass("is-invalid");
+					errorNombre.text(resultado.errors.nombre);
 				}
-				Swal.fire({ title: "Error", text: "No se pudo guardar el tipo de medicamento", icon: "error" });
-				return;
+				if (resultado.errors.estado_tipo_medicamento) {
+					campoEstado.addClass("is-invalid");
+					errorEstado.text(resultado.errors.estado_tipo_medicamento);
+				}
 			}
-			id === "" ? alertAgregar("success") : alertActualizar("success");
-			bootstrap.Modal.getInstance(document.getElementById("ModalAgregar")).hide();
-			obtenerDatos(filtrar.value, paginaActual);
-		});
+			Swal.fire({ title: "Error", text: "No se pudo guardar el tipo de medicamento", icon: "error" });
+			return;
+		}
+		id === "" ? alertAgregar("success") : alertActualizar("success");
+		bootstrap.Modal.getInstance($("#ModalAgregar")[0]).hide();
+		obtenerDatos(filtrar.val(), paginaActual);
+	});
 });
 
-filtrar.addEventListener("input", () => {
+filtrar.on("input", () => {
 	paginaActual = 1;
-	obtenerDatos(filtrar.value, paginaActual);
+	obtenerDatos(filtrar.val(), paginaActual);
 });
 
-limite.addEventListener("change", () => {
+limite.on("change", () => {
 	paginaActual = 1;
-	obtenerDatos(filtrar.value, paginaActual);
+	obtenerDatos(filtrar.val(), paginaActual);
 });
 
-btnAnterior.addEventListener("click", () => {
-	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+btnAnterior.on("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.val(), paginaActual - 1);
 });
 
-btnSiguiente.addEventListener("click", () => {
-	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
+btnSiguiente.on("click", () => {
+	if (!btnSiguiente.prop("disabled")) obtenerDatos(filtrar.val(), paginaActual + 1);
 });

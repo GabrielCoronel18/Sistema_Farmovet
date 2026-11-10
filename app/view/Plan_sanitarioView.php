@@ -247,6 +247,8 @@
   </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="public/js/Validate/PlanSanitarioValidation.js"></script>
@@ -376,13 +378,13 @@
 
     document.getElementById('form-modal-plan').addEventListener('submit', function(e) {
         e.preventDefault();
-        if (!validarPlanSanitario(this)) return;
+        if (!$(this).valid()) return;
         enviarFormulario(new FormData(this), true);
     });
 
     document.getElementById('form-edicion-plan').addEventListener('submit', function(e) {
         e.preventDefault();
-        if (!validarPlanSanitario(this)) return;
+        if (!$(this).valid()) return;
         enviarFormulario(new FormData(this), false);
     });
 

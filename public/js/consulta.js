@@ -1,22 +1,37 @@
-const formularioConsulta = document.querySelector("[data-consulta-form]");
-const tablaConsultas = document.getElementById("tabla-consultas");
+const formularioConsulta = $("[data-consulta-form]");
+const tablaConsultas = $("#tabla-consultas");
 const catalogos = { patologias: [], medicamentos: [] };
-const limite = document.getElementById("limite");
-const btnAnterior = document.getElementById("btn-anterior");
-const btnSiguiente = document.getElementById("btn-siguiente");
-const infoPagina = document.getElementById("info-pagina");
-const filtrar = document.getElementById("filtrar");
+const limite = $("#limite");
+const btnAnterior = $("#btn-anterior");
+const btnSiguiente = $("#btn-siguiente");
+const infoPagina = $("#info-pagina");
+const filtrar = $("#filtrar");
 let paginaActual = 1;
 
 
-function solicitar(datos, url = window.location) {
-    return fetch(url, { method: "POST", body: datos })
-        .then(respuesta => respuesta.json());
+function normalizarErrorAjax(xhr, estado, error) {
+    if (xhr instanceof Error) throw xhr;
+    throw new Error(xhr.responseJSON?.mensaje || error || estado || "No fue posible completar la solicitud.");
 }
 
 function alertar(opciones) {
     if (window.Swal) return Swal.fire(opciones);
     return Promise.resolve();
+}
+
+function mostrarErroresConsulta(errores) {
+    Object.entries(errores || {}).forEach(([nombre, mensaje]) => {
+        const campo = formularioConsulta.find("[name]").filter(function () {
+            return this.name === nombre;
+        });
+        if (!campo.length) return;
+        campo.addClass("is-invalid");
+        let error = campo.parent().find(".invalid-feedback").first();
+        if (!error.length) {
+            error = $("<div>").addClass("invalid-feedback").appendTo(campo.parent());
+        }
+        error.text(mensaje);
+    });
 }
 
 function activarTomSelect(select) {
@@ -28,28 +43,27 @@ function activarTomSelect(select) {
     });
 }
 
-function llenarSelect(select, opciones, textoInicial) {
-    if (select.tomselect) select.tomselect.destroy();
-    select.innerHTML = `<option value="">${textoInicial}</option>`;
+function llenarSelect(elemento, opciones, textoInicial) {
+    if (elemento.tomselect) elemento.tomselect.destroy();
+    const select = $(elemento).empty()
+        .append($("<option>").val("").text(textoInicial));
     opciones.forEach(opcion => {
-        select.add(new Option(opcion.nombre, opcion.id));
+        select.append($("<option>").val(opcion.id).text(opcion.nombre));
     });
-    activarTomSelect(select);
+    activarTomSelect(elemento);
 }
 
 function cargarFila(tipo) {
-    const plantilla = document.getElementById(`${tipo}-template`);
-    const destino = document.getElementById(
-        tipo === "diagnostico" ? "diagnosticos-container" : "recetas-container"
-    );
-    if (!plantilla || !destino) return;
+    const plantilla = $(`#${tipo}-template`)[0];
+    const destino = $(tipo === "diagnostico" ? "#diagnosticos-container" : "#recetas-container");
+    if (!plantilla || !destino.length) return;
 
-    destino.appendChild(plantilla.content.cloneNode(true));
-    const fila = destino.lastElementChild;
+    destino.append(plantilla.content.cloneNode(true));
+    const fila = destino.children().last();
     const selector = tipo === "diagnostico"
         ? '[name="id_patologia[]"]'
         : '[name="id_medicamento[]"]';
-    const select = fila.querySelector(selector);
+    const select = fila.find(selector)[0];
     const opciones = tipo === "diagnostico"
         ? catalogos.patologias
         : catalogos.medicamentos;
@@ -59,39 +73,41 @@ function cargarFila(tipo) {
 
 function establecerValores(datos) {
     Object.entries(datos || {}).forEach(([campo, valor]) => {
-        const elemento = formularioConsulta.querySelector(`[name="${campo}"]`);
-        if (!elemento || Array.isArray(valor)) return;
-        if (elemento.tomselect) {
-            elemento.tomselect.setValue(String(valor ?? ""));
+        const elemento = formularioConsulta.find("[name]").filter(function () {
+            return this.name === campo;
+        }).first();
+        if (!elemento.length || Array.isArray(valor)) return;
+        if (elemento[0].tomselect) {
+            elemento[0].tomselect.setValue(String(valor ?? ""));
         } else {
-            elemento.value = valor ?? "";
+            elemento.val(valor ?? "");
         }
     });
 }
 
 function cargarDiagnosticos(diagnosticos) {
-    const filas = document.querySelectorAll(".diagnostico-row");
     diagnosticos.forEach((diagnostico, indice) => {
+        let filas = $(".diagnostico-row");
         if (indice >= filas.length) cargarFila("diagnostico");
-        const fila = document.querySelectorAll(".diagnostico-row")[indice];
-        fila.querySelector('[name="id_diagnostico[]"]').value = diagnostico.id_diagnostico;
-        fila.querySelector('[name="id_patologia[]"]').tomselect
+        const fila = $(".diagnostico-row").eq(indice);
+        fila.find('[name="id_diagnostico[]"]').val(diagnostico.id_diagnostico);
+        fila.find('[name="id_patologia[]"]')[0].tomselect
             ?.setValue(String(diagnostico.id_patologia));
-        fila.querySelector('[name="tipo_diagnostico[]"]').value = diagnostico.tipo_diagnostico;
+        fila.find('[name="tipo_diagnostico[]"]').val(diagnostico.tipo_diagnostico);
     });
 }
 
 function cargarRecetas(recetas) {
-    const filas = document.querySelectorAll(".receta-row");
     recetas.forEach((receta, indice) => {
+        let filas = $(".receta-row");
         if (indice >= filas.length) cargarFila("receta");
-        const fila = document.querySelectorAll(".receta-row")[indice];
-        fila.querySelector('[name="id_recipe[]"]').value = receta.id_recipe;
-        fila.querySelector('[name="id_medicamento[]"]').tomselect
+        const fila = $(".receta-row").eq(indice);
+        fila.find('[name="id_recipe[]"]').val(receta.id_recipe);
+        fila.find('[name="id_medicamento[]"]')[0].tomselect
             ?.setValue(String(receta.id_medicamento));
-        fila.querySelector('[name="dosis[]"]').value = receta.dosis;
-        fila.querySelector('[name="frecuencia[]"]').value = receta.frecuencia;
-        fila.querySelector('[name="duracion[]"]').value = receta.duracion;
+        fila.find('[name="dosis[]"]').val(receta.dosis);
+        fila.find('[name="frecuencia[]"]').val(receta.frecuencia);
+        fila.find('[name="duracion[]"]').val(receta.duracion);
     });
 }
 
@@ -99,13 +115,14 @@ function cargarCatalogos() {
     const datos = new FormData();
     datos.append("obtenerCatalogos", "true");
 
-    return solicitar(datos, formularioConsulta.action).then(resultado => {
+    return peticionAjax(datos, null, () => {}, formularioConsulta.attr("action"))
+        .then(resultado => {
         if (resultado.status !== "success") {
             throw new Error("No se pudieron cargar los catálogos.");
         }
 
         llenarSelect(
-            document.getElementById("buscarPaciente"),
+            $("#buscarPaciente")[0],
             resultado.mascotas.map(mascota => ({
                 id: mascota.id_mascota,
                 nombre: `${mascota.nombre} - ${mascota.nombre_cliente}`
@@ -121,13 +138,14 @@ function cargarCatalogos() {
             nombre: medicamento.nombre_medicamento
         }));
 
-        document.querySelectorAll('[name="id_patologia[]"]').forEach(select =>
+        $('[name="id_patologia[]"]').each((_, select) =>
             llenarSelect(select, catalogos.patologias, "Seleccione una opción")
         );
-        document.querySelectorAll('[name="id_medicamento[]"]').forEach(select =>
+        $('[name="id_medicamento[]"]').each((_, select) =>
             llenarSelect(select, catalogos.medicamentos, "Seleccione una opción")
         );
-    });
+        })
+        .catch(normalizarErrorAjax);
 }
 
 function cargarConsulta(id) {
@@ -135,7 +153,8 @@ function cargarConsulta(id) {
     datos.append("obtenerConsulta", "true");
     datos.append("id_consulta", id);
 
-    return solicitar(datos, formularioConsulta.action).then(resultado => {
+    return peticionAjax(datos, null, () => {}, formularioConsulta.attr("action"))
+        .then(resultado => {
         if (resultado.status !== "success") {
             throw new Error("No fue posible cargar la consulta.");
         }
@@ -145,35 +164,38 @@ function cargarConsulta(id) {
         establecerValores(consulta.anamnesis);
         establecerValores(consulta.examen);
         establecerValores(consulta.laboratorio);
-        formularioConsulta.querySelector('[name="id_consulta"]').value = id;
+        formularioConsulta.find('[name="id_consulta"]').val(id);
         cargarDiagnosticos(consulta.diagnosticos || []);
         cargarRecetas(consulta.recetas || []);
-    });
+        })
+        .catch(normalizarErrorAjax);
 }
 
 function prepararFormulario() {
     const parametros = new URLSearchParams(window.location.search);
     const id = Number(parametros.get("id_consulta") || 0);
-    const fecha = formularioConsulta.querySelector('[name="fecha"]');
+    const fecha = formularioConsulta.find('[name="fecha"]');
 
     if (id > 0) {
-        formularioConsulta.querySelector('[name="id_consulta"]').value = id;
-    } else if (fecha && !fecha.value) {
-        fecha.value = new Date().toISOString().slice(0, 10);
+        formularioConsulta.find('[name="id_consulta"]').val(id);
+    } else if (fecha.length && !fecha.val()) {
+        fecha.val(new Date().toISOString().slice(0, 10));
     }
 
     cargarCatalogos()
         .then(() => id > 0 ? cargarConsulta(id) : null)
         .catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
 
-    formularioConsulta.addEventListener("submit", evento => {
+    formularioConsulta.on("submit", evento => {
         evento.preventDefault();
-        const boton = formularioConsulta.querySelector('button[type="submit"]');
-        if (boton) boton.disabled = true;
+        if (!formularioConsulta.valid()) return;
+        const boton = formularioConsulta.find('button[type="submit"]');
+        boton.prop("disabled", true);
 
-        solicitar(new FormData(formularioConsulta), formularioConsulta.action)
+        peticionAjax(new FormData(formularioConsulta[0]), null, () => {}, formularioConsulta.attr("action"))
             .then(resultado => {
                 if (resultado.status !== "success") {
+                    mostrarErroresConsulta(resultado.errors);
                     throw new Error(resultado.mensaje || "No fue posible guardar la consulta.");
                 }
                 return alertar({
@@ -184,27 +206,21 @@ function prepararFormulario() {
                     window.location.href = resultado.redirect || "index.php?url=Consulta";
                 });
             })
+            .catch(normalizarErrorAjax)
             .catch(error => {
                 alertar({ icon: "error", title: "Error", text: error.message });
-                if (boton) boton.disabled = false;
+                boton.prop("disabled", false);
             });
     });
 }
 
-document.querySelectorAll("[data-agregar]").forEach(boton => {
-    boton.addEventListener("click", () => cargarFila(boton.dataset.agregar));
+$("[data-agregar]").on("click", function () {
+    cargarFila(this.dataset.agregar);
 });
 
-document.addEventListener("click", evento => {
-    const boton = evento.target.closest(".quitar-fila");
-    if (boton) boton.closest(".diagnostico-row, .receta-row")?.remove();
+$(document).on("click", ".quitar-fila", function () {
+    $(this).closest(".diagnostico-row, .receta-row").remove();
 });
-
-function escapar(valor) {
-    return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-    })[caracter]);
-}
 
 const etiquetasCampos = {
     motivo_consulta: "Motivo de consulta",
@@ -278,125 +294,175 @@ function obtenerEtiquetaCampo(campo) {
 }
 
 function renderizarSeccion(titulo, datos) {
+    const seccion = $("<section>");
+    seccion.append($("<h6>").addClass("border-bottom pb-2 mt-3").text(titulo));
     if (!datos) {
-        return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>
-            <p class="text-muted">Sin información registrada.</p>`;
+        return seccion.append($("<p>").addClass("text-muted").text("Sin información registrada."));
     }
-    const contenido = Object.entries(datos)
+    const lista = $("<dl>").addClass("row");
+    Object.entries(datos)
         .filter(([campo, valor]) => !campo.startsWith("id_") && valor !== null && valor !== "")
-        .map(([campo, valor]) =>
-            `<div class="col-md-6 mb-2"><dt>${escapar(obtenerEtiquetaCampo(campo))}</dt>
-            <dd>${escapar(valor)}</dd></div>`
-        ).join("");
-    return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>
-        <dl class="row">${contenido || '<p class="text-muted">Sin información registrada.</p>'}</dl>`;
+        .forEach(([campo, valor]) => {
+            const elemento = $("<div>").addClass("col-md-6 mb-2");
+            elemento.append($("<dt>").text(obtenerEtiquetaCampo(campo)));
+            elemento.append($("<dd>").text(valor));
+            lista.append(elemento);
+        });
+    if (!lista.children().length) {
+        return seccion.append($("<p>").addClass("text-muted").text("Sin información registrada."));
+    }
+    return seccion.append(lista);
 }
 
 function renderizarLista(titulo, datos, campoPrincipal, campoSecundario) {
-    const contenido = (datos || []).map(item =>
-        `<li class="list-group-item"><strong>${escapar(item[campoPrincipal])}</strong>
-        — ${escapar(item[campoSecundario])}</li>`
-    ).join("");
-    return `<h6 class="border-bottom pb-2 mt-3">${titulo}</h6>${
-        contenido ? `<ul class="list-group">${contenido}</ul>` :
-        '<p class="text-muted">Sin información registrada.</p>'
-    }`;
+    const seccion = $("<section>");
+    seccion.append($("<h6>").addClass("border-bottom pb-2 mt-3").text(titulo));
+    if (!datos || !datos.length) {
+        return seccion.append($("<p>").addClass("text-muted").text("Sin información registrada."));
+    }
+    const lista = $("<ul>").addClass("list-group");
+    datos.forEach(item => {
+        const contenido = $("<li>").addClass("list-group-item");
+        contenido.append($("<strong>").text(item[campoPrincipal]));
+        contenido.append($("<span>").text(` — ${item[campoSecundario] ?? ""}`));
+        lista.append(contenido);
+    });
+    return seccion.append(lista);
+}
+
+function agregarDetalle(contenedor, etiqueta, valor, clases = "col-md-6 mb-3") {
+    const campo = $("<div>").addClass(clases);
+    campo.append($("<dt>").text(etiqueta));
+    campo.append($("<dd>").text(valor ?? "—"));
+    contenedor.append(campo);
 }
 
 function crearDetalle(consulta) {
     const id = Number(consulta.id_consulta);
     const modalId = `consulta-detalle-${id}`;
-    document.getElementById(modalId)?.remove();
-    const modal = document.createElement("div");
-    modal.className = "modal fade";
-    modal.id = modalId;
-    modal.tabIndex = -1;
-    modal.innerHTML = `<div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-        <div class="modal-header"><div><h5 class="modal-title">Consulta #${id}</h5>
-        <div class="small text-white-50">${escapar(consulta.nombre_mascota)} · ${escapar(consulta.fecha)}</div></div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body"><dl class="row mb-0">
-        <div class="col-md-6 mb-3"><dt>Paciente / responsable</dt>
-        <dd>${escapar(consulta.nombre_mascota)} / ${escapar(consulta.nombre_cliente)}</dd></div>
-        <div class="col-md-6 mb-3"><dt>Fecha y tipo</dt>
-        <dd>${escapar(consulta.fecha)} · ${Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo"}</dd></div>
-        <div class="col-md-6 mb-3"><dt>Remitido</dt><dd>${Number(consulta.remitido) === 1 ? "Sí" : "No"}</dd></div>
-        <div class="col-md-6 mb-3"><dt>Pronóstico</dt><dd>${escapar(consulta.pronostico || "—")}</dd></div>
-        <div class="col-md-6 mb-3"><dt>Tratamiento</dt><dd>${escapar(consulta.tratamiento_consulta || "—")}</dd></div>
-        <div class="col-md-6 mb-3"><dt>Peso</dt><dd>${escapar(consulta.peso_consulta || "—")}</dd></div>
-        <div class="col-12 mb-3"><dt>Seguimiento</dt><dd>${escapar(consulta.comentario || "—")}</dd></div>
-        </dl>${renderizarSeccion("Anamnesis", consulta.detalle?.anamnesis)}
-        ${renderizarSeccion("Examen clínico", consulta.detalle?.examen)}
-        ${renderizarSeccion("Laboratorio", consulta.detalle?.laboratorio)}
-        ${renderizarLista("Diagnósticos", consulta.detalle?.diagnosticos, "patologia", "tipo_diagnostico")}
-        ${renderizarLista("Recipe", consulta.detalle?.recetas, "nombre_medicamento", "dosis")}
-        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-        Cerrar</button></div></div></div>`;
-    document.body.appendChild(modal);
+    $(`#${modalId}`).remove();
+    const modal = $("<div>").addClass("modal fade").attr({ id: modalId, tabindex: "-1" });
+    const contenido = $("<div>").addClass("modal-content");
+    const encabezado = $("<div>").addClass("modal-header");
+    const titulo = $("<div>");
+    titulo.append($("<h5>").addClass("modal-title").text(`Consulta #${id}`));
+    titulo.append(
+        $("<div>").addClass("small text-white-50")
+            .text(`${consulta.nombre_mascota ?? ""} · ${consulta.fecha ?? ""}`)
+    );
+    encabezado.append(titulo);
+    encabezado.append(
+        $("<button>").attr({
+            type: "button",
+            "data-bs-dismiss": "modal",
+            "aria-label": "Cerrar"
+        }).addClass("btn-close btn-close-white")
+    );
+
+    const cuerpo = $("<div>").addClass("modal-body");
+    const resumen = $("<dl>").addClass("row mb-0");
+    agregarDetalle(resumen, "Paciente / responsable",
+        `${consulta.nombre_mascota ?? ""} / ${consulta.nombre_cliente ?? ""}`);
+    agregarDetalle(resumen, "Fecha y tipo",
+        `${consulta.fecha ?? ""} · ${Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo"}`);
+    agregarDetalle(resumen, "Remitido", Number(consulta.remitido) === 1 ? "Sí" : "No");
+    agregarDetalle(resumen, "Pronóstico", consulta.pronostico || "—");
+    agregarDetalle(resumen, "Tratamiento", consulta.tratamiento_consulta || "—");
+    agregarDetalle(resumen, "Peso", consulta.peso_consulta || "—");
+    agregarDetalle(resumen, "Seguimiento", consulta.comentario || "—", "col-12 mb-3");
+    cuerpo.append(resumen);
+    cuerpo.append(renderizarSeccion("Anamnesis", consulta.detalle?.anamnesis));
+    cuerpo.append(renderizarSeccion("Examen clínico", consulta.detalle?.examen));
+    cuerpo.append(renderizarSeccion("Laboratorio", consulta.detalle?.laboratorio));
+    cuerpo.append(renderizarLista("Diagnósticos", consulta.detalle?.diagnosticos, "patologia", "tipo_diagnostico"));
+    cuerpo.append(renderizarLista("Recipe", consulta.detalle?.recetas, "nombre_medicamento", "dosis"));
+
+    const pie = $("<div>").addClass("modal-footer").append(
+        $("<button>").attr({ type: "button", "data-bs-dismiss": "modal" })
+            .addClass("btn btn-secondary").text("Cerrar")
+    );
+    contenido.append(encabezado, cuerpo, pie);
+    modal.append($("<div>").addClass("modal-dialog modal-xl modal-dialog-scrollable").append(contenido));
+    $("body").append(modal);
     return modalId;
 }
 
 function actualizarPaginacion(hayMas) {
-	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
-	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = !hayMas;
-	infoPagina.innerText = `Página ${paginaActual}`;
+    btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
+    btnAnterior.prop("disabled", paginaActual === 1);
+    btnSiguiente.prop("disabled", !hayMas);
+    infoPagina.text(`Página ${paginaActual}`);
 }
 
 function obtenerConsultas(param = null, pagina = paginaActual) {
     const datos = new FormData();
     datos.append("obtener", "true");
     datos.append("pagina", pagina);
-	datos.append("limite", limite.value);
-	if (param !== null) datos.append("parametro", param);
-    
-    const url = tablaConsultas.dataset.url || "index.php?url=Consulta";
+    datos.append("limite", limite.val());
+    if (param !== null) datos.append("parametro", param);
 
-    solicitar(datos, url).then(resultado => {
+    const url = tablaConsultas.data("url") || "index.php?url=Consulta";
+
+    peticionAjax(datos, null, () => {}, url).then(resultado => {
         if (resultado.status !== "success") {
             throw new Error("No fue posible cargar las consultas.");
         }
-        tablaConsultas.replaceChildren();
+        tablaConsultas.empty();
         (resultado.resultados || []).forEach(consulta => {
             const id = Number(consulta.id_consulta);
             const modalId = crearDetalle(consulta);
-            const fila = document.createElement("tr");
-            fila.innerHTML = `<td class="table-light">${id}</td><td class="table-light">${escapar(consulta.nombre_mascota)}</td>
-                <td class="table-light">${escapar(consulta.nombre_cliente)}</td><td class="table-light">${escapar(consulta.fecha)}</td>
-                <td class="table-light">${Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo"}</td>
-                <td class="table-light">${Number(consulta.remitido) === 1 ? "Sí" : "No"}</td>
-                <td class="table-light td-large">${escapar(consulta.pronostico || "—")}</td>
-                <td class="table-light td-large">${escapar(consulta.tratamiento_consulta || "—")}</td>
-                <td class="table-light">${escapar(consulta.peso_consulta || "—")}</td>
-                <td class="table-light td-large">${escapar(consulta.comentario || "—")}</td>
-                <td class="table-light"><button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
-                    data-bs-target="#${modalId}">Ver detalle</button></td>
-                <td class="table-light text-nowrap"><a href="index.php?url=NuevaConsulta&id_consulta=${id}"
-                    class="btn btn-sm btn-success">Actualizar</a>
-                    <button type="button" class="btn btn-sm btn-danger"
-                    data-eliminar-consulta="${id}">Eliminar</button></td>`;
-            tablaConsultas.appendChild(fila);
-            
+            const fila = $("<tr>");
+            const agregarCelda = (valor, clases = "table-light") =>
+                fila.append($("<td>").addClass(clases).text(valor ?? ""));
+            agregarCelda(id);
+            agregarCelda(consulta.nombre_mascota);
+            agregarCelda(consulta.nombre_cliente);
+            agregarCelda(consulta.fecha);
+            agregarCelda(Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo");
+            agregarCelda(Number(consulta.remitido) === 1 ? "Sí" : "No");
+            agregarCelda(consulta.pronostico || "—", "table-light td-large");
+            agregarCelda(consulta.tratamiento_consulta || "—", "table-light td-large");
+            agregarCelda(consulta.peso_consulta || "—");
+            agregarCelda(consulta.comentario || "—", "table-light td-large");
+
+            const verDetalle = $("<button>").attr({
+                type: "button",
+                "data-bs-toggle": "modal",
+                "data-bs-target": `#${modalId}`
+            }).addClass("btn btn-sm btn-success").text("Ver detalle");
+            fila.append($("<td>").addClass("table-light").append(verDetalle));
+            const actualizar = $("<a>").attr("href", `index.php?url=NuevaConsulta&id_consulta=${id}`)
+                .addClass("btn btn-sm btn-success").text("Actualizar");
+            const eliminar = $("<button>").attr({
+                type: "button",
+                "data-eliminar-consulta": id
+            }).addClass("btn btn-sm btn-danger").text("Eliminar");
+            fila.append($("<td>").addClass("table-light text-nowrap").append(actualizar, " ", eliminar));
+            tablaConsultas.append(fila);
         });
-        if (!tablaConsultas.children.length) {
+        if (!tablaConsultas.children().length) {
             if (pagina > 1) {
                 obtenerConsultas(param, pagina - 1);
                 return;
             }
-            tablaConsultas.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">' +
-                "Todavía no hay consultas registradas.</td></tr>";
+            tablaConsultas.append(
+                $("<tr>").append(
+                    $("<td>").attr("colspan", 12).addClass("text-center text-muted py-4")
+                        .text("Todavía no hay consultas registradas.")
+                )
+            );
         }
         paginaActual = pagina;
         actualizarPaginacion(resultado.hayMas);
-    }).catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
+    }).catch(normalizarErrorAjax)
+        .catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
 }
 
-if (formularioConsulta) prepararFormulario();
+if (formularioConsulta.length) prepararFormulario();
 
-if (tablaConsultas) {
-    tablaConsultas.addEventListener("click", evento => {
-        const boton = evento.target.closest("[data-eliminar-consulta]");
-        if (!boton) return;
+if (tablaConsultas.length) {
+    tablaConsultas.on("click", "[data-eliminar-consulta]", function () {
+        const boton = $(this);
         alertar({
             icon: "warning",
             title: "¿Eliminar consulta?",
@@ -409,40 +475,41 @@ if (tablaConsultas) {
             if (!confirmacion.isConfirmed) return;
             const datos = new FormData();
             datos.append("eliminar", "true");
-            datos.append("id", boton.dataset.eliminarConsulta);
-            boton.disabled = true;
-            solicitar(datos, tablaConsultas.dataset.url || "index.php?url=Consulta")
+            datos.append("id", boton.attr("data-eliminar-consulta"));
+            boton.prop("disabled", true);
+            peticionAjax(datos, null, () => {}, tablaConsultas.data("url") || "index.php?url=Consulta")
                 .then(resultado => {
                     if (resultado.status !== "success") {
                         throw new Error("No fue posible eliminar la consulta.");
                     }
                     return alertar({ icon: "success", title: "Consulta eliminada" });
                 })
-                .then(() => obtenerConsultas(filtrar.value, paginaActual))
+                .then(() => obtenerConsultas(filtrar.val(), paginaActual))
+                .catch(normalizarErrorAjax)
                 .catch(error => {
-                    boton.disabled = false;
+                    boton.prop("disabled", false);
                     alertar({ icon: "error", title: "Error", text: error.message });
                 });
         });
     });
     obtenerConsultas();
 
-    filtrar.addEventListener("input", () => {
-	paginaActual = 1;
-	obtenerConsultas(filtrar.value, paginaActual);
-});
+    filtrar.on("input", () => {
+        paginaActual = 1;
+        obtenerConsultas(filtrar.val(), paginaActual);
+    });
 
-limite.addEventListener("change", () => {
-	paginaActual = 1;
-	obtenerConsultas(filtrar.value, paginaActual);
-});
+    limite.on("change", () => {
+        paginaActual = 1;
+        obtenerConsultas(filtrar.val(), paginaActual);
+    });
 
-btnAnterior.addEventListener("click", () => {
-	if (paginaActual > 1) obtenerConsultas(filtrar.value, paginaActual - 1);
-});
+    btnAnterior.on("click", () => {
+        if (paginaActual > 1) obtenerConsultas(filtrar.val(), paginaActual - 1);
+    });
 
-btnSiguiente.addEventListener("click", () => {
-	if (!btnSiguiente.disabled) obtenerConsultas(filtrar.value, paginaActual + 1);
-});
+    btnSiguiente.on("click", () => {
+        if (!btnSiguiente.prop("disabled")) obtenerConsultas(filtrar.val(), paginaActual + 1);
+    });
 
 }

@@ -36,7 +36,7 @@ if(isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
-    verificarRol([1]);
+    verificarRol([1, 2]);
 
     $nombre = trim((string) ($_POST["nombre"] ?? ""));
     $estado = (int) ($_POST["estado_presentacion"] ?? 1);
@@ -81,7 +81,7 @@ if(isset($_POST["obtenerPresentacion"], $_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"])) {
-    verificarRol([1]);
+    verificarRol([1, 2]);
 
     $id = (int) ($_POST["id"] ?? 0);
     $nombre = trim((string) ($_POST["nombre"] ?? ""));
@@ -116,7 +116,7 @@ if (isset($_POST["actualizar"])) {
 }
 
 if (isset($_POST["eliminar"])) {
-    verificarRol([1]);
+    verificarRol([1 , 2]);
 
     $id = $_POST["id"] ?? 0;
     $resultado = $PresentacionModel->eliminarPresentacion($id);

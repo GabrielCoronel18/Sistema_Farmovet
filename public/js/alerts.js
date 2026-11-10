@@ -46,7 +46,7 @@ function alertActualizar(status){
   }
 }
 
-function alertEliminar(method, data, callback){
+function alertEliminar(method,data, callback){
 
   Swal.fire({
   title: "Confirmar Eliminacion",
@@ -61,9 +61,7 @@ function alertEliminar(method, data, callback){
 }).then((result) => {
   if (result.isConfirmed) {
       
-      fetch(window.location,{method: method, body: data })
-      .then(resultado => resultado.json())
-      .then(eliminar => {
+      peticionAjax(data, function(eliminar) {
 
         if(eliminar.status === "success"){
           Swal.fire({

@@ -1,31 +1,26 @@
-const formularioMedicamento = document.querySelector(".MedicamentoForm");
-const tablaMedicamentos = document.getElementById("TablaMedicamentos");
-const tituloModal = document.getElementById("TituloModalMedicamento");
-const btnAgregar = document.getElementById("btnAgregar");
-const filtrar = document.getElementById("filtrar");
-const selectTipoMedicamento = document.getElementById("tipo");
-const selectPresentacion = document.getElementById("presentacion");
-const limite = document.getElementById("limite");
-const btnAnterior = document.getElementById("btn-anterior");
-const btnSiguiente = document.getElementById("btn-siguiente");
-const infoPagina = document.getElementById("info-pagina");
-const campoNombre = document.getElementById("nombre");
-const campoEstado = document.getElementById("estado_medicamento");
-const errorNombre = document.getElementById("error-nombre");
-const errorTipo = document.getElementById("error-tipo");
-const errorPresentacion = document.getElementById("error-presentacion");
-const errorEstado = document.getElementById("error-estado");
+const formularioMedicamento = $(".MedicamentoForm");
+const tablaMedicamentos = $("#TablaMedicamentos");
+const tituloModal = $("#TituloModalMedicamento");
+const btnAgregar = $("#btnAgregar");
+const filtrar = $("#filtrar");
+const selectTipoMedicamento = $("#tipo");
+const selectPresentacion = $("#presentacion");
+const limite = $("#limite");
+const btnAnterior = $("#btn-anterior");
+const btnSiguiente = $("#btn-siguiente");
+const infoPagina = $("#info-pagina");
+const campoNombre = $("#nombre");
+const campoEstado = $("#estado_medicamento");
+const errorNombre = $("#error-nombre");
+const errorTipo = $("#error-tipo");
+const errorPresentacion = $("#error-presentacion");
+const errorEstado = $("#error-estado");
 let paginaActual = 1;
 
-function solicitar(datos) {
-	return fetch(window.location, { method: "POST", body: datos })
-		.then(respuesta => respuesta.json());
-}
-
 function cargarSelect(select, opciones, id, nombre, textoInicial) {
-	select.innerHTML = `<option value="">${textoInicial}</option>`;
+	select.empty().append($("<option>").val("").text(textoInicial));
 	opciones.forEach(opcion => {
-		select.insertAdjacentHTML("beforeend", `<option value="${opcion[id]}">${opcion[nombre]}</option>`);
+		select.append($("<option>").val(opcion[id]).text(opcion[nombre]));
 	});
 }
 
@@ -35,7 +30,7 @@ function cargarCatalogos() {
 	const presentaciones = new FormData();
 	presentaciones.append("obtenerPresentaciones", "true");
 
-	return Promise.all([solicitar(tipos), solicitar(presentaciones)])
+	return Promise.all([peticionAjax(tipos), peticionAjax(presentaciones)])
 		.then(([resultadoTipos, resultadoPresentaciones]) => {
 			if (resultadoTipos.status !== "success" || resultadoPresentaciones.status !== "success") {
 				throw new Error("No se pudieron cargar los catálogos");
@@ -52,12 +47,14 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 	datos.append("limite", limite.value);
 	if (param !== null) datos.append("parametro", param);
 
-	solicitar(datos).then(resultado => {
-		tablaMedicamentos.innerHTML = "";
+	peticionAjax(datos).then(resultado => {
+		tablaMedicamentos.empty();
 		if (resultado.status !== "success") {
-			tablaMedicamentos.innerHTML = "<tr><td colspan='5'>No hay medicamentos registrados</td></tr>";
+			tablaMedicamentos.append(
+				$("<tr>").append($("<td>").attr("colspan", 6).text("No hay medicamentos registrados"))
+			);
 			paginaActual = pagina;
-				actualizarPaginacion(0);
+			actualizarPaginacion(false);
 			return;
 		}
 		if (resultado.resultados.length === 0 && pagina > 1) {
@@ -66,27 +63,42 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 		}
 
 		resultado.resultados.forEach(medicamento => {
-			tablaMedicamentos.innerHTML += `<tr>
-				<td class="table-light">${medicamento.id_medicamento}</td>
-				<td class="table-light">${medicamento.nombre_medicamento}</td>
-				<td class="table-light">${medicamento.nom_tipo_medicamento}</td>
-				<td class="table-light">${medicamento.nombre_presentacion}</td>
-				<td class="table-light">${medicamento.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
-				<td class="table-light">
-					<button class="btn btn-sm btn-success btn-actualizar" value="${medicamento.id_medicamento}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
-					<button class="btn btn-sm btn-danger btn-eliminar" value="${medicamento.id_medicamento}">Eliminar</button>
-				</td>
-			</tr>`;
+			const id = medicamento.id_medicamento;
+			const fila = $("<tr>");
+			fila.append($("<td>").addClass("table-light").text(id));
+			fila.append($("<td>").addClass("table-light").text(medicamento.nombre_medicamento));
+			fila.append($("<td>").addClass("table-light").text(medicamento.nom_tipo_medicamento));
+			fila.append($("<td>").addClass("table-light").text(medicamento.nombre_presentacion));
+			fila.append(
+				$("<td>").addClass("table-light").append(
+					$("<span>")
+						.addClass(medicamento.estado_medicamento == 1 ? "badge bg-success" : "badge bg-secondary")
+						.text(medicamento.estado_medicamento == 1 ? "Activo" : "Inactivo")
+				)
+			);
+
+			const actualizar = $("<button>")
+				.addClass("btn btn-sm btn-success btn-actualizar")
+				.val(id)
+				.attr("data-bs-toggle", "modal")
+				.attr("data-bs-target", "#ModalAgregar")
+				.text("Actualizar");
+			const eliminar = $("<button>")
+				.addClass("btn btn-sm btn-danger btn-eliminar")
+				.val(id)
+				.text("Eliminar");
+			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
+			tablaMedicamentos.append(fila);
 		});
 		paginaActual = pagina;
 		actualizarPaginacion(resultado.hayMas);
 	});
 }
 function actualizarPaginacion(hayMas) {
-	btnAnterior.parentElement.classList.toggle("disabled", paginaActual === 1);
-	btnAnterior.disabled = paginaActual === 1;
-	btnSiguiente.disabled = !hayMas;
-	infoPagina.innerText = `Página ${paginaActual}`;
+	btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
+	btnAnterior.prop("disabled", paginaActual === 1);
+	btnSiguiente.prop("disabled", !hayMas);
+	infoPagina.text(`Página ${paginaActual}`);
 }
 
 
@@ -97,93 +109,87 @@ cargarCatalogos().catch(() => {
 
 obtenerDatos();
 
-
-btnAgregar.addEventListener("click", () => {
-	formularioMedicamento.reset();
-	document.getElementById("id_medicamento").value = "";
-	tituloModal.innerText = "Agregar Nuevo Medicamento";
+btnAgregar.on("click", () => {
+	formularioMedicamento[0].reset();
+	$("#id_medicamento").val("");
+	tituloModal.text("Agregar Nuevo Medicamento");
 });
 
-tablaMedicamentos.addEventListener("click", event => {
-	if (event.target.classList.contains("btn-actualizar")) {
-		const datos = new FormData();
-		datos.append("obtenerMedicamento", "true");
-		datos.append("id", event.target.value);
+tablaMedicamentos.on("click", ".btn-actualizar", function () {
+	const datos = new FormData();
+	datos.append("obtenerMedicamento", "true");
+	datos.append("id", $(this).val());
 
-		solicitar(datos).then(resultado => {
-			if (resultado.status !== "success") return;
-			const medicamento = resultado.resultado;
-			document.getElementById("id_medicamento").value = medicamento.id_medicamento;
-			document.getElementById("nombre").value = medicamento.nombre_medicamento;
-			selectTipoMedicamento.value = medicamento.id_tipo_medicamento;
-			selectPresentacion.value = medicamento.id_presentacion;
-			const estadoInput = document.getElementById("estado_medicamento");
-			if (estadoInput) estadoInput.value = medicamento.estado;
-			tituloModal.innerText = "Actualizar Medicamento";
-		});
-	}
-
-	if (event.target.classList.contains("btn-eliminar")) {
-		const datos = new FormData();
-		datos.append("eliminar", "true");
-		datos.append("id", event.target.value);
-		alertEliminar("post", datos, () => obtenerDatos(filtrar.value, paginaActual));
-	}
+	peticionAjax(datos).then(resultado => {
+		if (resultado.status !== "success") return;
+		const medicamento = resultado.resultado;
+		$("#id_medicamento").val(medicamento.id_medicamento);
+		campoNombre.val(medicamento.nombre_medicamento);
+		selectTipoMedicamento.val(medicamento.id_tipo_medicamento);
+		selectPresentacion.val(medicamento.id_presentacion);
+		campoEstado.val(medicamento.estado_medicamento);
+		tituloModal.text("Actualizar Medicamento");
+	});
 });
 
-formularioMedicamento.addEventListener("submit", event => {
+tablaMedicamentos.on("click", ".btn-eliminar", function () {
+	const datos = new FormData();
+	datos.append("eliminar", "true");
+	datos.append("id", $(this).val());
+	alertEliminar("post", datos, () => obtenerDatos(filtrar.val(), paginaActual));
+});
+
+formularioMedicamento.on("submit", event => {
 	event.preventDefault();
-	if (!validarMedicamento()) return;
-	const datos = new FormData(formularioMedicamento);
-	const id = document.getElementById("id_medicamento").value;
+	if (!formularioMedicamento.valid()) return;
+	const datos = new FormData(formularioMedicamento[0]);
+	const id = $("#id_medicamento").val();
 	datos.append(id === "" ? "agregar" : "actualizar", "true");
 	if (id !== "") datos.append("id", id);
 
-	solicitar(datos).then(resultado => {
+	peticionAjax(datos).then(resultado => {
 		if (resultado.status !== "success") {
-			if(resultado.errors) {
-				if(resultado.errors.nombre) {
-					campoNombre.classList.add("is-invalid");
-					errorNombre.innerText = resultado.errors.nombre;
+			if (resultado.errors) {
+				if (resultado.errors.nombre) {
+					campoNombre.addClass("is-invalid");
+					errorNombre.text(resultado.errors.nombre);
 				}
-				if(resultado.errors.tipo) {
-					selectTipoMedicamento.classList.add("is-invalid");
-					errorTipo.innerText = resultado.errors.tipo;
+				if (resultado.errors.tipo) {
+					selectTipoMedicamento.addClass("is-invalid");
+					errorTipo.text(resultado.errors.tipo);
 				}
-				if(resultado.errors.presentacion) {
-					selectPresentacion.classList.add("is-invalid");
-					errorPresentacion.innerText = resultado.errors.presentacion;
+				if (resultado.errors.presentacion) {
+					selectPresentacion.addClass("is-invalid");
+					errorPresentacion.text(resultado.errors.presentacion);
 				}
-				if(resultado.errors.estado) {
-					campoEstado.classList.add("is-invalid");
-					errorEstado.innerText = resultado.errors.estado;
+				if (resultado.errors.estado) {
+					campoEstado.addClass("is-invalid");
+					errorEstado.text(resultado.errors.estado);
 				}
 			}
 			Swal.fire({ title: "Error", text: "No se pudo guardar el medicamento", icon: "error" });
 			return;
 		}
 		id === "" ? alertAgregar("success") : alertActualizar("success");
-		bootstrap.Modal.getInstance(document.getElementById("ModalAgregar")).hide();
-		obtenerDatos(filtrar.value, paginaActual);
+		bootstrap.Modal.getInstance($("#ModalAgregar")[0]).hide();
+		obtenerDatos(filtrar.val(), paginaActual);
 	});
 });
 
-
-
-filtrar.addEventListener("input", () => {
+filtrar.on("input", () => {
 	paginaActual = 1;
-	obtenerDatos(filtrar.value, paginaActual);
+	obtenerDatos(filtrar.val(), paginaActual);
 });
 
-limite.addEventListener("change", () => {
+limite.on("change", () => {
 	paginaActual = 1;
-	obtenerDatos(filtrar.value, paginaActual);
+	obtenerDatos(filtrar.val(), paginaActual);
 });
 
-btnAnterior.addEventListener("click", () => {
-	if (paginaActual > 1) obtenerDatos(filtrar.value, paginaActual - 1);
+btnAnterior.on("click", () => {
+	if (paginaActual > 1) obtenerDatos(filtrar.val(), paginaActual - 1);
 });
 
-btnSiguiente.addEventListener("click", () => {
-	if (!btnSiguiente.disabled) obtenerDatos(filtrar.value, paginaActual + 1);
+btnSiguiente.on("click", () => {
+	if (!btnSiguiente.prop("disabled")) obtenerDatos(filtrar.val(), paginaActual + 1);
 });

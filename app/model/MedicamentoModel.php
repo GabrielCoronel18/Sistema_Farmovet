@@ -36,7 +36,7 @@ class MedicamentoModel extends ConexionBD {
 	public function obtenerMedicamento(int $pagina, int $limitacion) {
 		$offset = ($pagina * $limitacion) - $limitacion;
 		$conex = $this->getConexion();
-		$sql = "SELECT * FROM medicamento
+		$sql = "SELECT *, medicamento.estado AS estado_medicamento FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
 				ORDER BY medicamento.id_medicamento
@@ -53,7 +53,7 @@ class MedicamentoModel extends ConexionBD {
 	public function obtenerMedicamentoPorId(int $id) {
 		$this->id = $id;
 		$conex = $this->getConexion();
-		$sql = "SELECT * FROM medicamento
+		$sql = "SELECT *, medicamento.estado AS estado_medicamento FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
 				WHERE medicamento.id_medicamento = :id";

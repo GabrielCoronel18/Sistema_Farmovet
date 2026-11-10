@@ -1,44 +1,50 @@
-const patronNombrePatologia = /^[\p{L}]+(?:[ ()\/-]+[\p{L}]+)*$/u;
-const patronTextoPatologia = /^[\p{L}\p{N}]+(?:[\s.,;:()\/'%-]+[\p{L}\p{N}]+)*$/u;
+$(function () {
+    $.validator.addMethod("nombrePatologia", function (value, element) {
+        return this.optional(element) || /^[\p{L}]+(?:[ ()\/-]+[\p{L}]+)*$/u.test(value.trim());
+    }, "Solo se permiten letras, espacios, guiones, paréntesis y barras.");
+    $.validator.addMethod("textoPatologia", function (value, element) {
+        return this.optional(element) || /^[\p{L}\p{N}]+(?:[\s.,;:()\/'%-]+[\p{L}\p{N}]+)*$/u.test(value.trim());
+    }, "El texto contiene caracteres no permitidos.");
 
-function validarNombreCatalogo(id, errorId, patron) {
-    const campo = document.getElementById(id);
-    const error = document.getElementById(errorId);
-    const valor = campo.value.trim();
-    campo.classList.remove("is-invalid");
-    error.textContent = "";
-    if (valor.length < 5 || valor.length > 50 || !patron.test(valor)) {
-        campo.classList.add("is-invalid");
-        error.textContent = "Debe tener entre 5 y 50 caracteres y solo contener letras, espacios, guiones, paréntesis y barras.";
-        return false;
-    }
-    return true;
-}
-
-function validarPatologia() {
-    const nombreValido = validarNombreCatalogo("nombre", "error-nombre", patronNombrePatologia);
-    const tipoValido = validarCampoPatologia(
-        "tipo", "error-tipo", patronNombrePatologia, 5, 50,
-        " Debe tener entre 5 y 50 caracteres y solo contener letras, espacios, guiones, paréntesis y barras."
-    );
-    const sintomasValidos = validarCampoPatologia(
-        "sintomas", "error-sintomas", patronTextoPatologia, 5, 200,
-        "Los síntomas contienen caracteres no permitidos o no cumplen con la longitud requerida."
-    );
-    return nombreValido && tipoValido && sintomasValidos;
-}
-
-function validarCampoPatologia(id, errorId, patron, minimo, maximo, mensaje) {
-    const campo = document.getElementById(id);
-    const error = document.getElementById(errorId);
-    const valor = campo.value.trim();
-    campo.classList.remove("is-invalid");
-    error.textContent = "";
-
-    if (valor.length < minimo || valor.length > maximo || !patron.test(valor)) {
-        campo.classList.add("is-invalid");
-        error.textContent = mensaje;
-        return false;
-    }
-    return true;
-}
+    $(".PatologiaForm").validate({
+        onkeyup: element => $(element).valid(),
+        onfocusout: element => $(element).valid(),
+        errorElement: "div",
+        errorClass: "invalid-feedback d-block",
+        highlight: element => $(element).addClass("is-invalid"),
+        unhighlight: element => {
+            $(element).removeClass("is-invalid")
+                .siblings(".invalid-feedback").empty().removeClass("d-block");
+        },
+        errorPlacement: (error, element) => {
+            const feedback = element.siblings(".invalid-feedback").first();
+            if (feedback.length) feedback.text(error.text()).addClass("d-block");
+            else error.insertAfter(element);
+        },
+        rules: {
+            nombre: { required: true, minlength: 5, maxlength: 50, nombrePatologia: true },
+            tipo: { required: true, minlength: 5, maxlength: 50, nombrePatologia: true },
+            sintomas: { required: true, minlength: 5, maxlength: 200, textoPatologia: true }
+        },
+        messages: {
+            nombre: {
+                required: "El nombre es obligatorio.",
+                minlength: "Debe tener al menos 5 caracteres.",
+                maxlength: "No puede exceder 50 caracteres.",
+                nombrePatologia: "Solo se permiten letras, espacios, guiones, paréntesis y barras."
+            },
+            tipo: {
+                required: "El tipo es obligatorio.",
+                minlength: "Debe tener al menos 5 caracteres.",
+                maxlength: "No puede exceder 50 caracteres.",
+                nombrePatologia: "Solo se permiten letras, espacios, guiones, paréntesis y barras."
+            },
+            sintomas: {
+                required: "Los síntomas son obligatorios.",
+                minlength: "Debe tener al menos 5 caracteres.",
+                maxlength: "No puede exceder 200 caracteres.",
+                textoPatologia: "Los síntomas contienen caracteres no permitidos."
+            }
+        }
+    });
+});

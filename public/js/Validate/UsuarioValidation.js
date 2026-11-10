@@ -1,114 +1,68 @@
-const patronCedulaUsuario = /^(?:\d{10,12}|[VEJGP]-\d{6,10})$/i;
-const patronNombreUsuario = /^[\p{L}]+(?:[ '-]+[\p{L}]+)*$/u;
-const patronTelefonoUsuario = /^\d{9,11}$/;
-const patronContraseñaUsuario = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,72}$/;
+$(function () {
+    $.validator.addMethod("cedulaUsuario", function (value, element) {
+        return this.optional(element) || /^(?:\d{10,12}|[VEJGP]-\d{6,10})$/i.test(value.trim());
+    }, "Use una cédula numérica o el formato V-12345678.");
+    $.validator.addMethod("nombreUsuario", function (value, element) {
+        return this.optional(element) || /^[\p{L}]+(?:[ '-]+[\p{L}]+)*$/u.test(value.trim());
+    }, "Solo se permiten letras, espacios, apóstrofes y guiones.");
+    $.validator.addMethod("telefonoUsuario", function (value, element) {
+        return this.optional(element) || /^\d{9,11}$/.test(value.trim());
+    }, "El teléfono debe contener entre 9 y 11 números.");
+    $.validator.addMethod("contrasenaUsuario", function (value, element) {
+        return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,72}$/.test(value);
+    }, "Debe tener entre 8 y 72 caracteres, mayúscula, minúscula, número y símbolo.");
 
-function validarCampoUsuario(id, patron, minimo, maximo, mensaje, opcional = false) {
-    const campo = document.getElementById(id);
-    const error = campo.parentElement.querySelector(".invalid-feedback");
-    const valor = campo.value.trim();
-
-    campo.classList.remove("is-invalid");
-    if (error) error.textContent = "";
-
-    if (opcional && valor === "") return true;
-
-    if (
-        valor.length < minimo ||
-        valor.length > maximo ||
-        !patron.test(valor)
-    ) {
-        campo.classList.add("is-invalid");
-        if (error) error.textContent = mensaje;
-        return false;
-    }
-
-    return true;
-}
-
-function validarCedulaUsuario() {
-    return validarCampoUsuario(
-        "cedula",
-        patronCedulaUsuario,
-        8,
-        12,
-        "Use una cédula numérica o el formato V-12345678."
-    );
-}
-
-function validarNombreUsuario(id, etiqueta) {
-    return validarCampoUsuario(
-        id,
-        patronNombreUsuario,
-        2,
-        30,
-        `Ingrese un ${etiqueta} válido.`
-    );
-}
-
-function validarTelefonoUsuario() {
-    return validarCampoUsuario(
-        "telefono",
-        patronTelefonoUsuario,
-        9,
-        11,
-        "El teléfono debe contener entre 9 y 11 números.",
-        true
-    );
-}
-
-function validarCorreoUsuario() {
-    const campo = document.getElementById("correo");
-    const error = campo.parentElement.querySelector(".invalid-feedback");
-    const valido = campo.checkValidity();
-
-    campo.classList.toggle("is-invalid", !valido);
-    if (error) error.textContent = valido
-        ? ""
-        : "Ingrese un correo electrónico válido.";
-    return valido;
-}
-
-function validarContraseñaUsuario() {
-    const campo = document.getElementById("contraseña");
-    const valor = campo.value;
-    const esEdicion = !campo.required && valor === "";
-    const error = campo.parentElement.querySelector(".invalid-feedback");
-
-    campo.classList.remove("is-invalid");
-    if (error) error.textContent = "";
-    if (esEdicion) return true;
-
-    const valido = patronContraseñaUsuario.test(valor);
-    if (!valido) {
-        campo.classList.add("is-invalid");
-        if (error) {
-            error.textContent =
-                "Debe tener entre 8 y 72 caracteres, mayúscula, minúscula, número y símbolo.";
+    $("#form-usuario").validate({
+        onkeyup: element => $(element).valid(),
+        onfocusout: element => $(element).valid(),
+        errorElement: "div",
+        errorClass: "invalid-feedback d-block",
+        highlight: element => $(element).addClass("is-invalid"),
+        unhighlight: element => {
+            $(element).removeClass("is-invalid")
+                .siblings(".invalid-feedback").empty().removeClass("d-block");
+        },
+        errorPlacement: (error, element) => {
+            const feedback = element.siblings(".invalid-feedback").first();
+            if (feedback.length) feedback.text(error.text()).addClass("d-block");
+            else error.insertAfter(element);
+        },
+        rules: {
+            cedula: { required: true, minlength: 8, maxlength: 12, cedulaUsuario: true },
+            nombre: { required: true, minlength: 2, maxlength: 30, nombreUsuario: true },
+            apellido: { required: true, minlength: 2, maxlength: 30, nombreUsuario: true },
+            telefono: { telefonoUsuario: true },
+            correo: { required: true, email: true, maxlength: 60 },
+            "contraseña": { required: true, contrasenaUsuario: true },
+            rol: { required: true }
+        },
+        messages: {
+            cedula: {
+                required: "La cédula es obligatoria.",
+                minlength: "La cédula debe tener al menos 8 caracteres.",
+                maxlength: "La cédula no puede exceder 12 caracteres.",
+                cedulaUsuario: "Use una cédula numérica o el formato V-12345678."
+            },
+            nombre: {
+                required: "El nombre es obligatorio.",
+                minlength: "Debe tener al menos 2 caracteres.",
+                maxlength: "No puede exceder 30 caracteres.",
+                nombreUsuario: "Solo se permiten letras, espacios, apóstrofes y guiones."
+            },
+            apellido: {
+                required: "El apellido es obligatorio.",
+                minlength: "Debe tener al menos 2 caracteres.",
+                maxlength: "No puede exceder 30 caracteres.",
+                nombreUsuario: "Solo se permiten letras, espacios, apóstrofes y guiones."
+            },
+            telefono: "El teléfono debe contener entre 9 y 11 números.",
+            correo: {
+                required: "El correo es obligatorio.",
+                email: "Ingrese un correo electrónico válido.",
+                maxlength: "El correo no puede exceder 60 caracteres."
+            },
+            "contraseña": "Debe tener entre 8 y 72 caracteres, mayúscula, minúscula, número y símbolo.",
+            rol: "Seleccione un rol."
         }
-    }
-    return valido;
-}
-
-function validarRolUsuario() {
-    const campo = document.getElementById("rol");
-    const error = campo.parentElement.querySelector(".invalid-feedback");
-    const valido = campo.value !== "";
-
-    campo.classList.toggle("is-invalid", !valido);
-    if (error && !valido) error.textContent = "Seleccione un rol.";
-    return valido;
-}
-
-function validarUsuario() {
-    const cedula = validarCedulaUsuario();
-    const nombre = validarNombreUsuario("nombre", "nombre");
-    const apellido = validarNombreUsuario("apellido", "apellido");
-    const telefono = validarTelefonoUsuario();
-    const correo = validarCorreoUsuario();
-    const contraseña = validarContraseñaUsuario();
-    const rol = validarRolUsuario();
-
-    return cedula && nombre && apellido && telefono &&
-        correo && contraseña && rol;
-}
+    });
+});
