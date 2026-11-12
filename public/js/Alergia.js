@@ -3,15 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnAgregar = document.getElementById('btnAgregar');
     const inputFiltrar = document.getElementById('filtrar');
 
-    // Cargar la tabla al iniciar la vista
     listarAlergias();
 
-    // Filtro de búsqueda
     if (inputFiltrar) {
         inputFiltrar.addEventListener('keyup', filtrarTabla);
     }
 
-    // Resetear el modal para nuevos registros
     if (btnAgregar) {
         btnAgregar.addEventListener('click', function () {
             if (formAlergia) formAlergia.reset();
@@ -22,10 +19,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Procesar el envío del formulario mediante Fetch / AJAX
     if (formAlergia) {
         formAlergia.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            // Capturar y limpiar espacios en blanco
+            const nombreInput = document.getElementById('nombre_alergia');
+            const tipoInput = document.getElementById('tipo_alergia');
+            
+            const nombre = nombreInput.value.trim();
+            const tipo = tipoInput.value.trim();
+
+            // 1. Validar campos vacíos en frontend
+            if (nombre === '' || tipo === '') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos vacíos',
+                    text: 'Por favor completa todos los campos obligatorios.'
+                });
+                return;
+            }
+
+            // 2. Validar longitudes mínimas
+            if (nombre.length < 3 || tipo.length < 3) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Texto muy corto',
+                    text: 'Los campos deben tener al menos 3 caracteres.'
+                });
+                return;
+            }
+
+            // 3. Validar caracteres permitidos mediante expresión regular
+            const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s,\.-]+$/;
+            if (!regex.test(nombre) || !regex.test(tipo)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Caracteres no válidos',
+                    text: 'Evita usar símbolos especiales extraños en los campos.'
+                });
+                return;
+            }
 
             const formData = new FormData(formAlergia);
 
@@ -36,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Ocultar Modal de Bootstrap
                     const modalElement = document.getElementById('ModalAgregar');
                     const modal = bootstrap.Modal.getInstance(modalElement);
                     if (modal) modal.hide();
@@ -71,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Obtención de datos AJAX para llenar la tabla
 function listarAlergias() {
     fetch('?url=Alergia&accion=listar')
         .then(res => res.json())
@@ -96,7 +128,7 @@ function listarAlergias() {
                         <td>${item.nombre_alergia}</td>
                         <td>${item.tipo}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editarAlergia(${item.id_alergia}, '${item.nombre_alergia}', '${item.tipo_alergia}')">
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editarAlergia(${item.id_alergia}, '${item.nombre_alergia}', '${item.tipo}')">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="eliminarAlergia(${item.id_alergia})">
