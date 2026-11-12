@@ -55,7 +55,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(cirugia.id_cirugia).text("Eliminar");
 
-			if($('#acciones')){	
+			if ($("#acciones").length) {
 			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
 			}
 			

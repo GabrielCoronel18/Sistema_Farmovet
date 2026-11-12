@@ -157,7 +157,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(mascota.id_mascota_hash).text("Eliminar");
 			
-			if($('#acciones')){
+			if ($("#acciones").length) {
 			fila.append(
 				$("<td>").addClass("table-light text-nowrap mascotas-acciones")
 					.append(actualizar, " ", eliminar)

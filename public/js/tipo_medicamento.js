@@ -52,7 +52,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(tipoMedicamento.id_tipo_medicamento).text("Eliminar");
 			
-			if($('#acciones')){
+			if ($("#acciones").length) {
 			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
 			}
 			tablaTipoMedicamentos.append(fila);

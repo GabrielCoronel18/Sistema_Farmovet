@@ -88,7 +88,7 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				.val(id)
 				.text("Eliminar");
 
-			if($('#acciones')){
+			if ($("#acciones").length) {
 			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar))
 			}
 			tablaMedicamentos.append(fila);

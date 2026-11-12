@@ -226,7 +226,7 @@ function obtenerConsultas(param = null, pagina = paginaActual) {
                 "data-bs-target": `#${modalId}`
             }).addClass("btn btn-sm btn-success").text("Ver detalle");
             
-            if($('#detalles')){
+            if ($("#detalles").length) {
             fila.append($("<td>").addClass("table-light").append(verDetalle));
             }
             
@@ -238,7 +238,7 @@ function obtenerConsultas(param = null, pagina = paginaActual) {
                 "data-eliminar-consulta": id
             }).addClass("btn btn-sm btn-danger").text("Eliminar");
             
-            if($('#acciones')){
+            if ($("#acciones").length) {
             fila.append($("<td>").addClass("table-light text-nowrap").append(actualizar, " ", eliminar));
             }
             

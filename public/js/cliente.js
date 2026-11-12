@@ -37,18 +37,19 @@ function obtenerDatos(param = null) {
 
             // Seleccionamos el cuerpo de la tabla (tbody) para insertar las filas
             let tbody = TablaCliente.querySelector("tbody");
-            
-         // Se separaron las acciones para el control de roles
-         const acciones = ` <td class="table-light input-group">
-                        <button class="btn btn-sm btn-success btn-actualizar" value="${cliente.cedula_cliente}" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
-                        <button class="btn btn-sm btn-danger btn-eliminar" value="${cliente.cedula_cliente}">Eliminar</button>
-                    </td> `
+            const tieneAcciones = document.getElementById("acciones") !== null;
 
             if (!tbody) tbody = TablaCliente;
 
             if (result.status === "success") {
                 tbody.innerHTML = "";
                 result.resultados.forEach(function (cliente) {
+                    const acciones = tieneAcciones ? `
+                        <td class="table-light input-group">
+                            <button class="btn btn-sm btn-success btn-actualizar" value="${cliente.cedula_cliente}" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button>
+                            <button class="btn btn-sm btn-danger btn-eliminar" value="${cliente.cedula_cliente}">Eliminar</button>
+                        </td>` : "";
+
                     tbody.innerHTML +=
                         `<tr>
                     <td class="table-light">${cliente.cedula_cliente}</td>
@@ -58,21 +59,18 @@ function obtenerDatos(param = null) {
                     <td class="table-light">${cliente.correo}</td>
                     <td class="table-light">${cliente.direccion}</td>
                     
-                    ${document.getElementById('nombre') ? acciones : ''}
+                    ${acciones}
 
                 </tr>`;
                 });
             } else if (result.status === "error") {
-                tbody.innerHTML = `
-                <tr class='table-light text-center'>
-                <td colspan="7">No se han encontrado registros de clientes</td>
-                </tr>`;
+                tbody.innerHTML = "";
             }
 
             dataTableInstance = new DataTable('#TablaCliente', {
-                "columnDefs": [
-                    { "width": "20%", "targets": 6 }, // Primera columna
-                ],
+                "columnDefs": tieneAcciones
+                    ? [{ "width": "20%", "targets": 6 }]
+                    : [],
 
                 scrollX: true,
                 searching: true,
@@ -105,12 +103,14 @@ function obtenerDatos(param = null) {
 
 obtenerDatos();
 
-btnAgregar.addEventListener("click", function (e) {
-    formularioCliente.reset();
-    TituloModal.innerText = "Agregar Nuevo Cliente";
-    document.getElementById("cedula_cliente").readOnly = false;
-    document.getElementById("is_update").value = "0";
-});
+if (btnAgregar) {
+    btnAgregar.addEventListener("click", function () {
+        formularioCliente.reset();
+        TituloModal.innerText = "Agregar Nuevo Cliente";
+        document.getElementById("cedula_cliente").readOnly = false;
+        document.getElementById("is_update").value = "0";
+    });
+}
 
 TablaCliente.addEventListener("click", function (e) {
     if (e.target.classList.contains("btn-actualizar")) {
@@ -217,7 +217,8 @@ TablaCliente.addEventListener("click", function (e) {
 });
 
 // Filtro personalizado por teclado
-filtrar.addEventListener("input", function () {
-    let param = this.value;
-    obtenerDatos(param);
-});
+if (filtrar) {
+    filtrar.addEventListener("input", function () {
+        obtenerDatos(this.value);
+    });
+}

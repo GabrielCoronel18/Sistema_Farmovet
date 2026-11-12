@@ -44,7 +44,9 @@
               <?php require_once __DIR__ . '/componente/user.php'; ?>
             </header>
             <article class="d-flex justify-content-end">
+                <?php if (in_array($_SESSION['usuario']['id_rol'], [1, 2,3], true)):?>
                 <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal" id="btnAgregar"> <i class="bi bi-plus me-2"></i> Registrar Cliente</button>
+                <?php endif;?>
             </article>
             <?php require_once "componente/modalCliente.php"; ?>
 
