@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/css/Dashboard.css">
     <link href="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.css" rel="stylesheet" integrity="sha384-qWEvqSybGvARiE5fKMA75H4edwdEGqOXm8GFt12T7kp5MOlvOxrbnpNkv9bB+XAB" crossorigin="anonymous">
 
@@ -39,28 +40,16 @@
                     <p class="text-muted">Gestionar Especies</p>
                 </div>
 
-                <div class="dropdown">
-                    <button class="btn profile-dropdown-btn d-flex align-items-center gap-2 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="text-start d-none d-sm-block" style="line-height: 1.1;">
-                            <span class="d-block fw-semibold text-dark" style="font-size: 0.85rem;">Usuario</span>
-                            <span class="text-muted" style="font-size: 0.75rem;">Administrador</span>
-                        </div>
-                        <i class="bi bi-chevron-down text-muted ms-1" style="font-size: 0.75rem;"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" style="border-radius: 10px;">
-                        <li><a class="dropdown-menu-item dropdown-item py-2" href="?url=Usuario"><i class="bi bi-person me-2 text-purple"></i>Perfil</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item py-2 text-danger" href="Login"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
-                    </ul>
-                </div>
+                <?php require_once "user.php"; ?>
+
             </header>
             
             <article class="d-flex justify-content-end">
-                <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal" id="btnAgregar"> 
+                <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?> 
+              <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal" id="btnAgregar"> 
                     <i class="bi bi-plus me-2"></i> Registrar Especie
                 </button>
+                <?php endif; ?>
             </article>
             
             <!-- 2. AQUÍ SE AGREGA LA DEL MODAL -->
@@ -72,7 +61,9 @@
                         <tr>
                             <th class="table-purple">ID</th>
                             <th class="table-purple">Nombre de la Especie</th>
-                            <th class="table-purple">Acciones</th>
+                           <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
+							<th class="table-purple" id="acciones">Acciones</th>
+							<?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,6 +79,8 @@
     
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.js" integrity="sha384-1rFATsUr0XuIonb0gHkZHfQsWDvjIDbM3VLnsBS+sNTHWo71J7FkrBG2n93tytfI" crossorigin="anonymous"></script>
 

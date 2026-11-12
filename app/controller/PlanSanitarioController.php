@@ -4,6 +4,7 @@ namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\PlanSanitarioModel;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 use Gabriel\SistemaFarmovet\helpers\traits\PlanSanitarioValidation;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 require_once __DIR__ . '/../model/PlanSanitarioModel.php';
 
@@ -20,6 +21,9 @@ class PlanSanitarioController {
     public function procesar() {
         // Manejador de llamadas asíncronas vía Fetch API (JSON)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['obtener']) || isset($_POST['action_form']) || isset($_POST['eliminar']))) {
+
+         verificarRol([1,2,3]);
+         
             header('Content-Type: application/json');
             
             if (isset($_POST['obtener'])) {
@@ -29,6 +33,10 @@ class PlanSanitarioController {
             }
 
             if (isset($_POST['action_form']) && $_POST['action_form'] === 'registrar') {
+
+            verificarRol([1,2]);
+
+
                 $idMascota = $_POST['id_mascota'] ?? '';
                 $idMedicamento = $_POST['id_medicamento'] ?? '';
                 $fechaAplicacion = trim($_POST['fecha_aplicacion'] ?? '');
@@ -54,6 +62,9 @@ class PlanSanitarioController {
             }
 
             if (isset($_POST['action_form']) && $_POST['action_form'] === 'actualizar') {
+
+            verificarRol([1,2]);
+
                 $idPlan = $_POST['id_plan'] ?? '';
                 $idMascota = $_POST['id_mascota'] ?? '';
                 $idMedicamento = $_POST['id_medicamento'] ?? '';
@@ -81,6 +92,9 @@ class PlanSanitarioController {
             }
 
            if (isset($_POST['eliminar'])) {
+
+           verificarRol([1,2]);
+
                 $res = $this->modelo->eliminarPlan($_POST['id_plan']);
                 echo json_encode(["status" => $res ? "success" : "error"]);
                 exit;

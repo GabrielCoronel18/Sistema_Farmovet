@@ -156,10 +156,14 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
 			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(mascota.id_mascota_hash).text("Eliminar");
+			
+			if($('#acciones')){
 			fila.append(
 				$("<td>").addClass("table-light text-nowrap mascotas-acciones")
 					.append(actualizar, " ", eliminar)
 			);
+            }
+
 			tablaMascotas.append(fila);
 		});
 		paginaActual = pagina;

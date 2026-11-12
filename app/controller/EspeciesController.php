@@ -1,6 +1,7 @@
 <?php
 
 use Gabriel\SistemaFarmovet\model\EspeciesModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 $especies = new EspeciesModel();
 
@@ -8,6 +9,8 @@ $mensajeAlerta = "";
 
 // 1. AGREGAR
 if (isset($_POST["agregar"])) {
+
+    verificarRol([1]);
     $nombre = trim($_POST["nombre_especie"] ?? $_POST["nombre"] ?? "");
 
     if (count($especies->validarEspecies($nombre)) == 0) {
@@ -24,6 +27,7 @@ if (isset($_POST["agregar"])) {
 
 // 2. ACTUALIZAR
 if (isset($_POST["actualizar"])) {
+    verificarRol([1]);
     $id = trim($_POST["id_especie"] ?? $_POST["id"] ?? "");
     $nombre = trim($_POST["nombre_especie"] ?? $_POST["nombre"] ?? "");
 
@@ -37,6 +41,7 @@ if (isset($_POST["actualizar"])) {
 
 // 3. ELIMINAR
 if (isset($_POST["eliminar"])) {
+    verificarRol([1]);
     $id = trim($_POST["id_especie"] ?? $_POST["id"] ?? "");
 
     if ($especies->eliminarEspecie($id)) {
@@ -63,6 +68,7 @@ if (isset($_POST["obtenerEspecie"])) {
 
 // 5. OBTENER TODAS / FILTRAR
 if (isset($_POST["obtener"])) {
+    verificarRol([1, 2]);
     $pagina = $_POST["pagina"] ?? 1;
     $limitacion = $_POST["limite"] ?? 500;
 

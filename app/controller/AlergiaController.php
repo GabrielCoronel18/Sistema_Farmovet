@@ -1,8 +1,10 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 
+verificarRol([1, 2]);
 //class AlergiaController {
 
     //private $modelo;
@@ -15,12 +17,15 @@ use Gabriel\SistemaFarmovet\model\AlergiaModel;
         $accion = $_GET['accion'] ?? 'vista';
 
         switch ($accion) {
+            
             case 'listar':
+                verificarRol([1, 2]);
                 header('Content-Type: application/json');
                 echo json_encode($modelo->registrarAlergia());
                 exit;
 
             case 'guardar':
+                verificarRol([1]);
                 header('Content-Type: application/json');
                 $id = $_POST['id_alergia'] ?? null;
                 $nombre = trim($_POST['nombre_alergia'] ?? '');
@@ -47,6 +52,7 @@ use Gabriel\SistemaFarmovet\model\AlergiaModel;
                 exit;
 
             case 'eliminar':
+                verificarRol([1]);
                 header('Content-Type: application/json');
                 $id = $_POST['id_alergia'] ?? null;
                 if ($id && $modelo->eliminarAlergia($id)) {

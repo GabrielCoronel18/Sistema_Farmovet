@@ -5,17 +5,12 @@ use Gabriel\SistemaFarmovet\model\ExamenClinicoModel;
 use Gabriel\SistemaFarmovet\model\ResultadosLaboratorioModel;
 use Gabriel\SistemaFarmovet\model\DiagnosticoModel;
 use Gabriel\SistemaFarmovet\model\RecipeModel;
-use Gabriel\SistemaFarmovet\helpers\traits\Validation;
-use Gabriel\SistemaFarmovet\helpers\traits\ConsultaValidation;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
-verificarRol([1, 2, 3]);
+verificarRol([1, 2]);
 
 $consultaModel = new ConsultaModel();
-$validador = new class {
-    use Validation;
-    use ConsultaValidation;
-};
+
 $idConsulta = (int) ($_GET['id_consulta'] ?? $_POST['id_consulta'] ?? 0);
 
 if (isset($_POST['obtenerCatalogos'])) {
@@ -42,6 +37,9 @@ if (isset($_POST['obtenerConsulta']) && $idConsulta > 0) {
 }
 
 if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    verificarRol([1,2]);
+
     $idConsulta = (int) ($_POST['id_consulta'] ?? $idConsulta);
     $datos = [
         'cedula_usuario' => (string) ($_SESSION['usuario']['cedula_usuario'] ?? ''),
@@ -54,28 +52,29 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
         'peso_consulta' => trim((string) ($_POST['peso_consulta'] ?? '')),
         'comentario' => trim((string) ($_POST['comentario_seguimiento'] ?? ''))
     ];
-    $validador->clearErrors();
-    $validador->validateRequired(
+    $consultaModel->clearErrors();
+    $consultaModel->validateRequired(
         $datos,
         ['cedula_usuario', 'id_mascota', 'fecha', 'tipo_ingreso', 'remitido']
     );
-    $validador->validateInteger($datos['id_mascota'], 'id_mascota');
-    $validador->validateDateFormat($datos['fecha'], 'Y-m-d', 'fecha');
-    $validador->validateInArray($datos['tipo_ingreso'], 'tipo_ingreso', [1, 2]);
-    $validador->validateInArray($datos['remitido'], 'remitido', [0, 1]);
-    $validador->validateTextoConsulta($datos['pronostico'], 'pronostico', 100);
-    $validador->validateTextoConsulta($datos['tratamiento_consulta'], 'tratamiento_consulta', 80);
-    $validador->validatePesoConsulta($datos['peso_consulta']);
-    $validador->validateTextoConsulta($datos['comentario'], 'comentario_seguimiento', 200);
+    $consultaModel->validateInteger($datos['id_mascota'], 'id_mascota');
+    $consultaModel->validateDateFormat($datos['fecha'], 'Y-m-d', 'fecha');
+    $consultaModel->validateInArray($datos['tipo_ingreso'], 'tipo_ingreso', [1, 2]);
+    $consultaModel->validateInArray($datos['remitido'], 'remitido', [0, 1]);
+    $consultaModel->validateTextoConsulta($datos['pronostico'], 'pronostico', 100);
+    $consultaModel->validateTextoConsulta($datos['tratamiento_consulta'], 'tratamiento_consulta', 100);
+    $consultaModel->validatePesoConsulta($datos['peso_consulta']);
+    $consultaModel->validateTextoConsulta($datos['comentario'], 'comentario_seguimiento', 200);
 
-    if (!empty($validador->getErrors())) {
+    if (!empty($consultaModel->getErrors())) {
         echo json_encode([
             'status' => 'error',
             'mensaje' => 'Revise los datos generales de la consulta.',
-            'errors' => $validador->getErrors()
+            'errors' => $consultaModel->getErrors()
         ]);
         exit;
     }
+
     $camposAnamnesis = ['motivo_consulta','inicio_enfermedad','examenes_efectuados','tratamientos_realizados',
         'ult_desp_interna','ult_desp_int_producto','ult_desp_externa','ult_desp_ext_producto','ultima_vacunacion',
         'tipo_alimentacion','frec_alimentacion','apetito','ingesta_agua','contacto_animal','vomito','heces',
@@ -93,32 +92,101 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
         $valor = $_POST[$campo] ?? null;
         $anamnesis[$campo] = $valor === '' ? null : $valor;
     }
-    $validador->clearErrors();
+
+    $consultaModel->clearErrors();
     foreach ($anamnesis as $campo => $valor) {
         if ($valor === null) {
             continue;
         }
         if (in_array($campo, ['act_ectoparasitos', 'ant_ectoparasitos'], true)) {
-            $validador->validateInArray((string) $valor, $campo, ['0', '1']);
-        } else {
-            $validador->validateTextoConsulta((string) $valor, $campo, 200);
+            $consultaModel->validateInArray((string) $valor, $campo, ['0', '1']);
         }
+        elseif (in_array($campo, ["inicio_enfermedad",'ult_desp_interna', 'ult_desp_externa',"fch_ultimo_celo", 'ultima_vacunacion'], true)) {
+            $consultaModel->validateDateFormat((string) $valor, 'Y-m-d', $campo);
+        }
+        elseif (in_array($campo, ['motivo_consulta',"examenes_efectuados","tratamientos_realizados" ], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 200);
+        }
+        else {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 80);
+        }
+
     }
-    if (!empty($validador->getErrors())) {
+    if (!empty($consultaModel->getErrors())) {
         echo json_encode([
             'status' => 'error',
             'mensaje' => 'Revise los datos de la anamnesis.',
-            'errors' => $validador->getErrors()
+            'errors' => $consultaModel->getErrors()
         ]);
         exit;
     }
+
     foreach ($camposExamen as $campo) {
         $valor = $_POST[$campo] ?? null;
         $examen[$campo] = $valor === '' ? null : $valor;
+
+
     }
+
+     foreach ($examen as $campo => $valor) {
+        if ($valor === null) {
+            continue;
+        }
+        if(in_array($campo, ['peso', 'temp_celsius', 'fr_rpm', 'fc_lpm', 'pulso_ppm', 'tlc_seg', 'tpc_seg','prcnt_deshidratacion'], true)) {
+            $consultaModel->validateNumeric((string) $valor, $campo);
+        }
+        elseif(in_array($campo, ['pas', 'pad'], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 40);
+        }
+        elseif(in_array($campo, ['cc',"pulso_yugular","actitud"], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 80);
+        }
+        elseif(in_array($campo, ["hallazgos"], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 400);
+        }
+
+        else {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 100);
+
+        }
+    }
+
+    if (!empty($consultaModel->getErrors())) {
+        echo json_encode([
+            'status' => 'error',
+            'mensaje' => 'Revise los datos del examen clínico.',
+            'errors' => $consultaModel->getErrors()
+        ]);
+        exit;
+    }
+
     foreach ($camposLaboratorio as $campo) {
         $valor = $_POST[$campo] ?? null;
         $laboratorio[$campo] = $valor === '' ? null : $valor;
+    }
+
+    foreach ($laboratorio as $campo => $valor) {
+        if ($valor === null) {
+            continue;
+        }
+        elseif(in_array($campo, ['hematologia_completa',"coprologia","quimica_sanguinea"], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 300);
+        }
+        elseif(in_array($campo, ['observaciones'], true)) {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 150);
+        }
+        else {
+            $consultaModel->validateTextoConsulta((string) $valor, $campo, 50);
+        }
+
+    }
+    if (!empty($consultaModel->getErrors())) {
+        echo json_encode([
+            'status' => 'error',
+            'mensaje' => 'Revise los datos del resultado del laboratorio.',
+            'errors' => $consultaModel->getErrors()
+        ]);
+        exit;
     }
 
     $diagnosticos = [];
@@ -131,7 +199,22 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
             ];
         }
     }
-    $recetas = [];
+   
+   foreach ($diagnosticos as $diagnostico) {
+        $consultaModel->validateTextoConsulta($diagnostico['tipo_diagnostico'], 'tipo_diagnostico', 80);
+    }
+    
+
+    if (!empty($consultaModel->getErrors())) {
+        echo json_encode([
+            'status' => 'error',
+            'mensaje' => 'Revise los diagnósticos.',
+            'errors' => $consultaModel->getErrors()
+        ]);
+        exit;
+    }
+
+   $recetas = [];
     foreach ((array) ($_POST['id_medicamento'] ?? []) as $indice => $medicamento) {
         if ((int) $medicamento > 0) {
             $recetas[] = [
@@ -143,6 +226,21 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
             ];
         }
     }
+  
+    foreach ($recetas as $receta) {
+        $consultaModel->validateTextoConsulta($receta['dosis'], 'dosis', 150);
+        $consultaModel->validateTextoConsulta($receta['frecuencia'], 'frecuencia', 150);
+        $consultaModel->validateTextoConsulta($receta['duracion'], 'duracion', 150);
+    }
+    if (!empty($consultaModel->getErrors())) {
+        echo json_encode([
+            'status' => 'error',
+            'mensaje' => 'Revise las recetas.',
+            'errors' => $consultaModel->getErrors()
+        ]);
+        exit;
+    }
+
     $resultado = $idConsulta > 0
         ? $consultaModel->actualizarConsulta($idConsulta, $datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas)
         : $consultaModel->agregarConsulta($datos, $anamnesis, $examen, $laboratorio, $diagnosticos, $recetas);
@@ -152,6 +250,7 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
         'redirect' => 'index.php?url=Consulta'
     ]);
     exit;
+
 }
 
 require_once 'app/view/NuevaConsultaView.php';

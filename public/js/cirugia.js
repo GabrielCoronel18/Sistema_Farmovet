@@ -54,7 +54,11 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
 			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(cirugia.id_cirugia).text("Eliminar");
+
+			if($('#acciones')){	
 			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
+			}
+			
 			tablaCirugias.append(fila);
 		});
 		paginaActual = pagina;

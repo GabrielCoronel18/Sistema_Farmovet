@@ -8,6 +8,7 @@ verificarRol([1]);
 $rolModel = new RolModel();
 
 if (isset($_POST['obtener'])) {
+    
     $pagina = (int)($_POST['pagina'] ?? 1);
     $limite = 10;
     $busqueda = $_POST['parametro'] ?? '';

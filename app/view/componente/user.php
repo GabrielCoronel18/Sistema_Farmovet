@@ -11,4 +11,4 @@
                         <li><hr class="dropdown-divider"></li>
                         <li><form method="post"><button type='submit' class="dropdown-item py-2 text-danger" name="logout"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</button></form></li>
                     </ul>
-                </div>
+</div>

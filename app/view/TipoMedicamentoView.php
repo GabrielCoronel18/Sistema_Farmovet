@@ -24,9 +24,11 @@
 
 			<div class="d-flex justify-content-end mb-3 gap-3">
 				<input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar" style="max-width: 260px;">
+				<?php if($_SESSION['usuario']['id_rol'] === 1 ): ?> 
 				<button type="button" class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#ModalAgregar">
 					<i class="bi bi-plus"></i> Agregar Tipo de Medicamento
 				</button>
+				<?php endif; ?>
 			</div>
 
 			<div class="table-responsive shadow-sm rounded">
@@ -36,7 +38,9 @@
 							<th class="table-purple">Id</th>
 							<th class="table-purple">Nombre</th>
 							<th class="table-purple">Estado</th>
-							<th class="table-purple">Acciones</th>
+							<?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
+							<th class="table-purple" id="acciones">Acciones</th>
+							<?php endif; ?>
 						</tr>
 					</thead>
 					<tbody id="TablaTipoMedicamentos"></tbody>

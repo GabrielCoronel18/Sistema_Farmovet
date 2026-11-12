@@ -4,7 +4,7 @@ namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\MedicamentoModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
-verificarRol([1, 2, 3]);
+verificarRol([1, 2]);
 
 $medicamentoModel = new MedicamentoModel();
 

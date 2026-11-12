@@ -26,9 +26,11 @@
                 <div class="me-3">
                     <input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar">
                 </div>
+                <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?> 
                 <button type="button" class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#ModalAgregar">
                     <i class="bi bi-plus"></i> Agregar Patología
                 </button>
+                <?php endif; ?>
             </div>
 
             <div class="table-responsive shadow-sm rounded">
@@ -39,7 +41,9 @@
                         <th class="table-purple">Tipo</th>
                         <th class="table-purple">Síntomas</th>
                         <th class="table-purple">Estado</th>
-                        <th class="table-purple">Acciones</th>
+                        <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
+							<th class="table-purple" id="acciones">Acciones</th>
+							<?php endif; ?>
                     </thead>
                     <tbody id="TablaPatologias">
                     </tbody>

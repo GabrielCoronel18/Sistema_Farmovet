@@ -4,7 +4,7 @@ use Gabriel\SistemaFarmovet\model\CirugiaModel;
 
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
-verificarRol([1, 2, 3]);
+verificarRol([1, 2]);
 
 $cirugiaModel = new CirugiaModel();
 
@@ -12,7 +12,7 @@ $errors = [];
 
 if (isset($_POST["obtener"])) {
 	
-	verificarRol([1, 2, 3]);
+	verificarRol([1, 2]);
 
 	$pagina = max(1, (int) ($_POST["pagina"] ?? 1));
 	$limitacion = (int) ($_POST["limite"] ?? 5);
@@ -33,7 +33,7 @@ if (isset($_POST["obtener"])) {
 }
 
 if (isset($_POST["agregar"])) {
-	verificarRol([1, 2]);
+	verificarRol([1]);
 
 	$nombre = trim((string) ($_POST["nombre_cirugia"] ?? ""));
 	$gravedad = trim((string) ($_POST["gravedad"] ?? ""));
@@ -78,7 +78,7 @@ if (isset($_POST["obtenerCirugia"], $_POST["id"])) {
 }
 
 if (isset($_POST["actualizar"], $_POST["id"])) {
-	verificarRol([1, 2]);
+	verificarRol([1]);
 	
 	$nombre = trim((string) ($_POST["nombre_cirugia"] ?? ""));
 	$gravedad = trim((string) ($_POST["gravedad"] ?? ""));
@@ -114,7 +114,7 @@ if (isset($_POST["actualizar"], $_POST["id"])) {
 }
 
 if (isset($_POST["eliminar"], $_POST["id"])) {
-	verificarRol([1, 2]);
+	verificarRol([1]);
 
 	$resultado = $cirugiaModel->eliminarCirugia((int) $_POST["id"]);
 	echo json_encode(["status" => $resultado ? "success" : "error"]);

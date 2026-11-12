@@ -82,7 +82,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="tratamiento_consulta">Tratamiento en consulta</label>
-                            <input type="text" class="form-control" id="tratamiento_consulta" name="tratamiento_consulta" value="" maxlength="80">
+                            <input type="text" class="form-control" id="tratamiento_consulta" name="tratamiento_consulta" value="" maxlength="100">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="peso_consulta">Peso en tratamiento (kg)</label>
@@ -359,6 +359,6 @@
 <script src="public/js/tom-select.complete.js"></script>
 <script src="public/js/ajax.js"></script>
 <script src="public/js/Validate/ConsultaValidation.js"></script>
-<script src="public/js/consulta.js"></script>
+<script src="public/js/NuevaConsulta.js"></script>
 </body>
 </html>

@@ -11,6 +11,10 @@ $cliente = new ClienteModel();
 $mensajeAlerta = "";
 
     if(isset($_POST["agregar"])){
+
+    verificarRol([1, 2]);
+
+    
         $nombre = trim($_POST["nombre"] ?? "");
         $apellido = trim($_POST["apellido"] ?? "");
         $cedula = strtoupper(trim($_POST["cedula_cliente"] ?? ""));
@@ -70,6 +74,9 @@ $mensajeAlerta = "";
     }
 
     if(isset($_POST["actualizar"])){
+
+    verificarRol([1,2]);
+
         $id = trim($_POST["id"] ?? ""); // cedula_cliente passed as id
         $nombre = trim($_POST["nombre"] ?? "");
         $apellido = trim($_POST["apellido"] ?? "");
@@ -129,6 +136,8 @@ $mensajeAlerta = "";
     }
 
     if(isset($_POST["eliminar"]) && isset($_POST["id"])){
+        verificarRol([1,2]);
+
         $id = trim($_POST["id"]);
         
         if($cliente->eliminarCliente($id)){

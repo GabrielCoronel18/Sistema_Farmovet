@@ -25,7 +25,10 @@ $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
                 </a>
                 <div class="collapse <?= $consultasActivas ? 'show' : '' ?>" id="menuConsultas">
                     <div class="submenu">
+                        <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>   
                         <a href="?url=NuevaConsulta" class="nav-link-sub <?= $urlActual === 'NuevaConsulta' ? 'active' : '' ?>">Nueva Consulta</a>
+                        <?php endif; ?>
+                        
                         <a href="?url=Consulta" class="nav-link-sub <?= $urlActual === 'Consulta' ? 'active' : '' ?>">Historial Clinico</a>
                     </div>
                 </div>

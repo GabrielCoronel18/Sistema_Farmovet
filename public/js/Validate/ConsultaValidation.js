@@ -35,7 +35,10 @@ $(function () {
             fecha: { required: true, dateISO: true },
             tipo_ingreso: { required: true, digits: true, range: [1, 2] },
             remitido: { required: true, digits: true, range: [0, 1] },
-            peso_consulta: { pesoConsulta: true }
+            peso_consulta: { pesoConsulta: true },
+            pronostico: { maxlength: 100 },
+            tratamiento_consulta: { maxlength: 100 },
+            comentario_seguimiento: { maxlength: 200 }
         },
         messages: {
             id_mascota: "Seleccione una mascota.",
@@ -45,7 +48,10 @@ $(function () {
             },
             tipo_ingreso: "Seleccione un tipo de ingreso válido.",
             remitido: "Indique si la consulta fue remitida.",
-            peso_consulta: "Ingrese un peso válido mayor o igual a cero."
+            peso_consulta: "Ingrese un peso válido mayor o igual a cero.",
+            pronostico: "El pronóstico no debe exceder los 100 caracteres.",
+            tratamiento_consulta: "El tratamiento no debe exceder los 100 caracteres.",
+            comentario_seguimiento: "El comentario no debe exceder los 200 caracteres."
         }
     });
 });

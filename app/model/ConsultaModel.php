@@ -1,11 +1,16 @@
 <?php
 namespace Gabriel\SistemaFarmovet\model;
-
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\ConsultaValidation;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use PDO;
 
 class ConsultaModel extends ConexionBD
 {
+
+use Validation;
+use ConsultaValidation;
+
     private ?int $id_consulta = null;
     private ?string $cedula_usuario = null;
     private ?int $id_mascota = null;
@@ -212,19 +217,12 @@ class ConsultaModel extends ConexionBD
                 ':peso' => $this->peso_consulta,
                 ':comentario' => $this->comentario
             ]);
-            if (!(new AnamnesisModel($conexion))->actualizarAnamnesis($id, $anamnesis)) {
-                throw new \PDOException('No fue posible actualizar la anamnesis.');
-            }
-            if (!(new ExamenClinicoModel($conexion))->actualizarExamen($id, $examen)) {
-                throw new \PDOException('No fue posible actualizar el examen clínico.');
-            }
-            if (!(new ResultadosLaboratorioModel($conexion))->actualizarResultado($id, $laboratorio)) {
-                throw new \PDOException('No fue posible actualizar los resultados de laboratorio.');
-            }
-            $idsDiagnosticos = array_column($diagnosticos, 'id_diagnostico');
-            if (!(new DiagnosticoModel($conexion))->eliminarNoIncluidos($id, $idsDiagnosticos)) {
-                throw new \PDOException('No fue posible eliminar los diagnósticos quitados.');
-            }
+
+            $this->validateActualizarAnamnesis( $conexion, $id, $anamnesis);
+            $this->validateActualizarExamen( $conexion, $id, $examen);
+            $this->validateActualizarLaboratorio( $conexion, $id, $laboratorio);
+            $this->validateEliminarDiagnosticos( $conexion, $id, $diagnosticos);
+
             foreach ($diagnosticos as $diagnostico) {
                 if (($diagnostico['id_diagnostico'] ?? 0) > 0) {
                     $actualizado = (new DiagnosticoModel($conexion))
@@ -232,14 +230,10 @@ class ConsultaModel extends ConexionBD
                 } else {
                     $actualizado = (new DiagnosticoModel($conexion))->agregarDiagnostico($id, $diagnostico);
                 }
-                if (!$actualizado) {
-                    throw new \PDOException('No fue posible actualizar los diagnósticos.');
-                }
+                $this->validateActualizarDiagnosticos($actualizado);
             }
-            $idsRecetas = array_column($recetas, 'id_recipe');
-            if (!(new RecipeModel($conexion))->eliminarNoIncluidos($id, $idsRecetas)) {
-                throw new \PDOException('No fue posible eliminar las recetas quitadas.');
-            }
+
+            $this->validateEliminarRecetas( $conexion, $id, $recetas);
             foreach ($recetas as $receta) {
                 if (($receta['id_recipe'] ?? 0) > 0) {
                     $actualizado = (new RecipeModel($conexion))
@@ -247,9 +241,7 @@ class ConsultaModel extends ConexionBD
                 } else {
                     $actualizado = (new RecipeModel($conexion))->agregarRecipe($id, $receta);
                 }
-                if (!$actualizado) {
-                    throw new \PDOException('No fue posible actualizar las recetas.');
-                }
+                $this->validateActualizarRecetas($actualizado);
             }
             $conexion->commit();
             return true;

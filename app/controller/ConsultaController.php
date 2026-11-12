@@ -41,6 +41,8 @@ if (isset($_POST['obtener'])) {
 }
 
 if (isset($_POST['eliminar'], $_POST['id'])) {
+    verificarRol([1,2]);
+    
     $resultado = $consultaModel->eliminarConsulta((int) $_POST['id']);
     echo json_encode(['status' => $resultado ? 'success' : 'error']);
     exit;

@@ -58,6 +58,9 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
     }
   
     if(isset($_POST["agregar"])){
+        
+      verificarRol([1,2]);
+
         $nombre = $_POST["nombre"] ?? "";
         $edad = $_POST["edad"]  ?? 0;
         $fch_nacimiento = $_POST["fch_nacimiento"] ?? "";
@@ -123,6 +126,8 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
     }
 
     if(isset($_POST["obtenerMascota"]) && isset($_POST["id"])){
+         
+       verificarRol([1,2]);
         
         $id = decodificarId((string) $_POST["id"]);
         if ($id === null) {
@@ -147,6 +152,7 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
      if(isset($_POST["actualizar"])){
         
+       verificarRol([1,2]);
      
         $id = decodificarId((string) $_POST["id"]);
         if ($id === null) {
@@ -219,6 +225,8 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
 
       if(isset($_POST["eliminar"]) && isset($_POST["id"])){
+
+       verificarRol([1,2]);
         
         $id = decodificarId((string) $_POST["id"]);
         if ($id === null) {

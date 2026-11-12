@@ -30,9 +30,11 @@
                     <input type="text" id="input-buscar" class="form-control" placeholder="Filtrar usuarios...">
                     <button type="submit" class="btn btn-outline-secondary ms-2"><i class="bi bi-search"></i></button>
                 </form>
+            <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?> 
             </div>
             <a href="?url=Usuario&accion=crear" class="btn btn-success"><i class="bi bi-plus"></i> Agregar Usuario</a>
         </div>
+        <?php endif; ?>
 
         <div class="table-responsive shadow-sm rounded">
             <table class="table table-striped align-middle text-nowrap">
@@ -44,7 +46,9 @@
                         <th class="table-purple">Teléfono</th>
                         <th class="table-purple">Correo</th>
                         <th class="table-purple">Rol</th>
-                        <th class="table-purple">Acciones</th>
+                        <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
+						<th class="table-purple" id="acciones">Acciones</th>
+						<?php endif; ?>
                     </tr>
                 </thead>
                 <tbody id="tabla-usuarios"></tbody>

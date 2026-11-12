@@ -87,7 +87,10 @@ function obtenerDatos(param = null, pagina = paginaActual) {
 				.addClass("btn btn-sm btn-danger btn-eliminar")
 				.val(id)
 				.text("Eliminar");
-			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
+
+			if($('#acciones')){
+			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar))
+			}
 			tablaMedicamentos.append(fila);
 		});
 		paginaActual = pagina;

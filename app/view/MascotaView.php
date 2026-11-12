@@ -28,10 +28,12 @@
             <div class="d-flex justify-content-end mb-3">
                 <div class="me-3">
                     <input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar">   
-                </div>     
+                </div>
+                <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>        
                 <button type="button" class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#ModalAgregar"> 
                     <i class="bi bi-plus"></i> Agregar Mascota
                 </button>
+                <?php endif; ?>
             </div>
 
             <div class="table-responsive shadow-sm rounded">
@@ -50,7 +52,11 @@
                      <th class="table-purple">Alergias</th>
                      <th class="table-purple">Enfermedades</th>
                      <th class="table-purple">Cirugías</th>
-                     <th class="table-purple">Acciones</th>
+                     
+                     <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
+                     <th class="table-purple" id='acciones'>Acciones</th>
+                     <?php endif;?>
+
                  </thead>
                  <tbody id="TablaMascotas">
                  </tbody>

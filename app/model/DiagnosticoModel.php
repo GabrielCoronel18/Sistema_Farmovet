@@ -4,6 +4,7 @@ namespace Gabriel\SistemaFarmovet\model;
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use PDO;
 
+
 class DiagnosticoModel extends ConexionBD
 {
     private ?int $id_diagnostico = null;

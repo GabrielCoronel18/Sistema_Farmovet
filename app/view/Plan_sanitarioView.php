@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/css/Dashboard.css">
     <style>
         /* Color morado acorde al Sidebar */
@@ -47,7 +48,9 @@
             </a>
             <div class="collapse" id="menuConsultas">
                 <div class="submenu">
+                    <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>   
                     <a href="?url=NuevaConsulta" class="nav-link-sub">Nueva Consulta</a>
+                    <?php endif; ?>
                     <a href="?url=Consulta" class="nav-link-sub">Historial Clinico</a>
                 </div>
             </div>
@@ -65,7 +68,7 @@
                 <!-- Círculo rojo / Badge indicador de alertas -->
                 <span id="badge-alertas-sidebar" class="badge-notif-red d-none">0</span>
             </a>
-
+            <?php if ((in_array($_SESSION['usuario']['id_rol'], [1, 2]))): ?>
             <a href="#menuConfiguracion" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
                 <div><i class="bi bi-gear-fill me-2"></i> Configuracion</div>
                 <i class="bi bi-chevron-down arrow-icon"></i>
@@ -82,7 +85,8 @@
                     <a href="?url=Patologia" class="nav-link-sub">Patologias</a>
                 </div>
             </div>
-
+            <?php endif; ?>
+            <?php if ((in_array($_SESSION['usuario']['id_rol'], [1]))): ?>
             <a href="#menuSeguridad" data-bs-toggle="collapse" class="nav-link-custom" aria-expanded="false">
                 <div><i class="bi bi-shield-lock-fill me-2"></i> Seguridad</div>
                 <i class="bi bi-chevron-down arrow-icon"></i>
@@ -93,6 +97,8 @@
                     <a href="?url=Rol" class="nav-link-sub">Roles</a>
                 </div>
             </div>
+              <?php endif; ?>
+
         </div>
     </nav>
 
@@ -179,9 +185,11 @@
             <div style="width: 250px;">
                 <input type="text" id="input-filtrar" class="form-control" placeholder="Filtrar" onkeyup="filtrarTabla()" style="border-color: #0d6efd;">
             </div>
+            <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>   
             <button type="button" class="btn btn-success text-white fw-semibold px-3 py-2" style="border-radius: 6px;" data-bs-toggle="modal" data-bs-target="#modalRegistroPlan" onclick="prepararNuevoRegistro()">
                 + Agregar Plan
             </button>
+            <?php endif; ?>
         </div>
 
         <!-- Tabla con Encabezado Morado a juego con el Sidebar -->
@@ -194,7 +202,10 @@
                         <th class="bg-purple-header">Medicamento</th>
                         <th class="bg-purple-header">Aplicación</th>
                         <th class="bg-purple-header">Próximo Refuerzo</th>
-                        <th class="bg-purple-header text-center">Acciones</th>
+                        <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
+                        <th class="bg-purple-header" id='acciones'>Acciones</th>
+                        <?php endif;?>
+
                     </tr>
                 </thead>
                 <tbody id="tabla-planes-sanitarios">
@@ -251,6 +262,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+<script src="public/js/sweetalert2.min.js"></script>
 <script src="public/js/Validate/PlanSanitarioValidation.js"></script>
 
 <script>
@@ -306,6 +319,17 @@
             const badgeRefuerzo = esFechaCumplida 
                 ? `<span class="badge bg-danger ms-1"><i class="bi bi-bell-fill me-1"></i>¡Día de Refuerzo / Vencido!</span>`
                 : `<span class="badge bg-success ms-1"><i class="bi bi-check-circle me-1"></i>En regla</span>`;
+            
+            //Se separaron las acciones para el control de roles
+
+            const acciones =` <td class="text-center">
+                        <button class="btn btn-sm btn-success me-1" onclick="prepararEdicion(${p.id_plan})">
+                            <i class="bi bi-pencil-square me-1"></i> Actualizar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro(${p.id_plan})">
+                            <i class="bi bi-trash me-1"></i> Eliminar
+                        </button>
+                    </td>`;
 
             const fila = `
                 <tr class="${claseFila}">
@@ -317,14 +341,7 @@
                         <strong class="${esFechaCumplida ? 'text-danger' : ''}">${p.proximo_refuerzo}</strong>
                         ${badgeRefuerzo}
                     </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-success me-1" onclick="prepararEdicion(${p.id_plan})">
-                            <i class="bi bi-pencil-square me-1"></i> Actualizar
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro(${p.id_plan})">
-                            <i class="bi bi-trash me-1"></i> Eliminar
-                        </button>
-                    </td>
+                        ${document.getElementById('acciones') ? acciones : ''}
                 </tr>`;
             tbody.insertAdjacentHTML('beforeend', fila);
         });

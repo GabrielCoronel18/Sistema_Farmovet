@@ -3,7 +3,7 @@ namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\PatologiaModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
-verificarRol([1, 2, 3]);
+verificarRol([1, 2]);
 
 $patologiaModel = new PatologiaModel();
 

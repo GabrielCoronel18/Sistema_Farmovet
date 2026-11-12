@@ -37,6 +37,13 @@ function obtenerDatos(param = null) {
 
             // Seleccionamos el cuerpo de la tabla (tbody) para insertar las filas
             let tbody = TablaCliente.querySelector("tbody");
+            
+         // Se separaron las acciones para el control de roles
+         const acciones = ` <td class="table-light input-group">
+                        <button class="btn btn-sm btn-success btn-actualizar" value="${cliente.cedula_cliente}" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
+                        <button class="btn btn-sm btn-danger btn-eliminar" value="${cliente.cedula_cliente}">Eliminar</button>
+                    </td> `
+
             if (!tbody) tbody = TablaCliente;
 
             if (result.status === "success") {
@@ -50,10 +57,9 @@ function obtenerDatos(param = null) {
                     <td class="table-light">${cliente.telefono}</td>
                     <td class="table-light">${cliente.correo}</td>
                     <td class="table-light">${cliente.direccion}</td>
-                    <td class="table-light input-group">
-                        <button class="btn btn-sm btn-success btn-actualizar" value="${cliente.cedula_cliente}" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
-                        <button class="btn btn-sm btn-danger btn-eliminar" value="${cliente.cedula_cliente}">Eliminar</button>
-                    </td>
+                    
+                    ${document.getElementById('nombre') ? acciones : ''}
+
                 </tr>`;
                 });
             } else if (result.status === "error") {

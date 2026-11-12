@@ -25,8 +25,15 @@ function obtenerDatos(param = null) {
         .then(result => {
             if (result.status === "success") {
                 TablaPatologias.innerHTML = "";
+                
+                
 
                 result.resultados.forEach(function (patologia) {
+                    const acciones =  `<td class="table-light">
+                                <button class="btn btn-sm btn-success btn-actualizar" value="${patologia.id_patologia}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
+                                <button class="btn btn-sm btn-danger btn-eliminar" value="${patologia.id_patologia}">Eliminar</button>
+                            </td> `;
+                            
                     TablaPatologias.innerHTML +=
                         `<tr>
                             <td class="table-light">${patologia.id_patologia}</td>
@@ -34,10 +41,9 @@ function obtenerDatos(param = null) {
                             <td class="table-light">${patologia.tipo}</td>
                             <td class="table-light td-large">${patologia.sintomas}</td>
                             <td class="table-light">${patologia.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
-                            <td class="table-light">
-                                <button class="btn btn-sm btn-success btn-actualizar" value="${patologia.id_patologia}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
-                                <button class="btn btn-sm btn-danger btn-eliminar" value="${patologia.id_patologia}">Eliminar</button>
-                            </td>
+                            
+                            ${document.getElementById("acciones") ? acciones : ''}
+                            
                         </tr>`;
                 });
             } else if (result.status === "error") {

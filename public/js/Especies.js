@@ -34,15 +34,19 @@ function obtenerDatos(param = null) {
             result.resultados.forEach(function (especie) {
                 let id = especie.id_especie;
                 let nombre = especie.nombre_especie;
+                const acciones = `<td class="table-light">
+                            <button class="btn btn-sm btn-success" onclick="cargarEspecie('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarEspecie('${id}')">Eliminar</button>
+                        </td>`;
+
 
                 tbody.innerHTML += `
                     <tr>
                         <td class="table-light">${id}</td>
                         <td class="table-light">${nombre}</td>
-                        <td class="table-light">
-                            <button class="btn btn-sm btn-success" onclick="cargarEspecie('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarEspecie('${id}')">Eliminar</button>
-                        </td>
+
+                        ${document.getElementById('acciones') ? acciones : ''}
+                        
                     </tr>`;
             });
 

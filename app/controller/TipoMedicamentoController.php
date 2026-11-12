@@ -3,12 +3,13 @@ namespace Gabriel\SistemaFarmovet\controller;
 use Gabriel\SistemaFarmovet\model\TipoMedicamentoModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
-verificarRol([1, 2, 3]);
+verificarRol([1, 2]);
 
 $TipoMedicamentoModel = new TipoMedicamentoModel();
  
 
 if(isset($_POST["obtener"])){
+    verificarRol([1, 2]);
     $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
     $limitacion = (int) ($_POST["limite"] ?? 5);
     $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;

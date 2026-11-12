@@ -58,7 +58,10 @@
                             <th class="table-purple">telefono</th>
                             <th class="table-purple">correo</th>
                             <th class="table-purple">direccion</th>
-                            <th class="table-purple">Acciones</th>
+                            
+                            <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
+                            <th class="table-purple" id='acciones'>Acciones</th>
+                            <?php endif;?>
                         </tr>
                     </thead>
                     <tbody>

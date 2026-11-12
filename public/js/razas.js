@@ -24,16 +24,18 @@ function obtenerDatos(param = null) {
                     let id = raza.id_raza;
                     let nombre = raza.nombre_raza;
                     let especie = raza.nombre_especie || raza.especie || "N/A";
-
+                    
+                    const acciones = ` <td class="table-light">
+                                <button class="btn btn-sm btn-success" onclick="cargarRaza('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
+                                <button class="btn btn-sm btn-danger" onclick="eliminarRaza('${id}')">Eliminar</button>
+                                </td>`;
                     tbody.innerHTML += `
                         <tr>
                             <td class="table-light">${id}</td>
                             <td class="table-light">${nombre}</td>
                             <td class="table-light">${especie}</td>
-                            <td class="table-light">
-                                <button class="btn btn-sm btn-success" onclick="cargarRaza('${id}')" data-bs-toggle="modal" data-bs-target="#exampleModal">Actualizar</button> 
-                                <button class="btn btn-sm btn-danger" onclick="eliminarRaza('${id}')">Eliminar</button>
-                            </td>
+                            ${document.getElementById('acciones') ? acciones : ''}
+                            
                         </tr>`;
                 });
             } else {

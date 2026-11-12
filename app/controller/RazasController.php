@@ -2,9 +2,12 @@
 
 use Gabriel\SistemaFarmovet\model\EspeciesModel;
 use Gabriel\SistemaFarmovet\model\RazasModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 $raza = new RazasModel();
 $especiesModel = new EspeciesModel();
+
+verificarRol([1, 2]);
 
 // Se llama a obtenerEspecie() enviando (página, limite)
 $especies = $especiesModel->obtenerEspecie(1, 500);
@@ -13,6 +16,7 @@ $mensajeAlerta = "";
 
 // 1. AGREGAR RAZA
 if(isset($_POST["agregar"])){
+    verificarRol([1]);
     $nombre_raza = trim($_POST["nombre_raza"] ?? $_POST["nombre"] ?? "");
     $id_especie = trim($_POST["id_especie"] ?? $_POST["especie"] ?? "");
 
@@ -43,6 +47,7 @@ if(isset($_POST["agregar"])){
 
 // 2. ACTUALIZAR RAZA
 if(isset($_POST["actualizar"])){
+    verificarRol([1]);
     $id_raza = trim($_POST["id_raza"] ?? $_POST["id"] ?? "");
     $nombre_raza = trim($_POST["nombre_raza"] ?? $_POST["nombre"] ?? "");
     $id_especie = trim($_POST["id_especie"] ?? $_POST["especie"] ?? "");
@@ -70,6 +75,7 @@ if(isset($_POST["actualizar"])){
 
 // 3. ELIMINAR RAZA (ELIMINACIÓN LÓGICA)
 if(isset($_POST["eliminar"])){
+    verificarRol([1]);
     $id_raza = trim($_POST["id_raza"] ?? $_POST["id"] ?? "");
 
     if(!empty($id_raza)){
@@ -100,6 +106,7 @@ if(isset($_POST["obtenerRaza"]) || isset($_POST["obtenerRazaPorId"])){
 
 // 5. OBTENER TODAS LAS RAZAS / FILTRAR (Para DataTables)
 if(isset($_POST["obtener"])){
+    verificarRol([1, 2]);
     $pagina = $_POST["pagina"] ?? 1;
     $limitacion = $_POST["limite"] ?? 500;
     

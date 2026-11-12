@@ -26,10 +26,12 @@
             <div class="d-flex justify-content-end mb-3">
                 <div class="me-3">
                     <input type="text" class="form-control" placeholder="Filtrar" name="filtrar" id="filtrar">   
-                </div>     
+                </div>
+                <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>     
                  <div class="d-flex justify-content-end mb-3">
                     <a href="index.php?url=NuevaConsulta" class="btn btn-success"><i class="bi bi-plus"></i> Agregar consulta</a>
                 </div>
+                <?php endif;?>
             </div>
        
         <div class="table-responsive consultas-tabla-contenedor shadow-sm rounded">
@@ -46,8 +48,11 @@
                     <th class="table-purple">Tratamiento</th>
                     <th class="table-purple">Peso</th>
                     <th class="table-purple">Seguimiento</th>
-                    <th class="table-purple">Detalle</th>
-                    <th class="table-purple">Acciones</th>
+                    <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
+                    <th class="table-purple "id='detalles'>Detalle</th>
+                    <th class="table-purple" id="acciones">Acciones</th>
+
+                     <?php endif;?>
                 </tr>
                 </thead>
                 <tbody id="tabla-consultas" data-url="index.php?url=Consulta">
