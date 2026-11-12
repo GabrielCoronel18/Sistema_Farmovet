@@ -1,46 +1,70 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
-use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 
-verificarRol([1, 2]);
-//class AlergiaController {
+class AlergiaController {
 
-    //private $modelo;
+    private $modelo;
 
-    //public function __construct() {
-        $modelo = new AlergiaModel();
-    //}
+    public function __construct() {
+        $this->modelo = new AlergiaModel();
+    }
 
-    //public function index() {
+    public function index() {
         $accion = $_GET['accion'] ?? 'vista';
 
         switch ($accion) {
-            
             case 'listar':
-                verificarRol([1, 2]);
                 header('Content-Type: application/json');
-                echo json_encode($modelo->registrarAlergia());
+                echo json_encode($this->modelo->consultarAlergias()); 
                 exit;
 
             case 'guardar':
-                verificarRol([1]);
                 header('Content-Type: application/json');
                 $id = $_POST['id_alergia'] ?? null;
                 $nombre = trim($_POST['nombre_alergia'] ?? '');
                 $tipo = trim($_POST['tipo_alergia'] ?? '');
 
+                // 1. Validación de campos vacíos
                 if (empty($nombre) || empty($tipo)) {
                     echo json_encode(['status' => 'error', 'message' => 'Todos los campos son obligatorios.']);
                     exit;
                 }
 
+                // 2. Validación de longitud mínima y máxima
+                if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 50) {
+                    echo json_encode(['status' => 'error', 'message' => 'El nombre de la alergia debe tener entre 3 y 50 caracteres.']);
+                    exit;
+                }
+
+                if (mb_strlen($tipo) < 3 || mb_strlen($tipo) > 50) {
+                    echo json_encode(['status' => 'error', 'message' => 'El tipo de alergia debe tener entre 3 y 50 caracteres.']);
+                    exit;
+                }
+
+                // 3. Validación de caracteres permitidos (Letras, números, espacios y acentos)
+                if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s,\.-]+$/u', $nombre)) {
+                    echo json_encode(['status' => 'error', 'message' => 'El nombre de la alergia contiene caracteres no permitidos.']);
+                    exit;
+                }
+
+                if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s,\.-]+$/u', $tipo)) {
+                    echo json_encode(['status' => 'error', 'message' => 'El tipo de alergia contiene caracteres no permitidos.']);
+                    exit;
+                }
+
+                // Si pasa las validaciones, procedemos a guardar o actualizar
                 if (!empty($id)) {
-                    $resultado = $modelo->actualizarAlergia($id, $nombre, $tipo);
+                    // Validar que el ID sea numérico por seguridad
+                    if (!is_numeric($id)) {
+                        echo json_encode(['status' => 'error', 'message' => 'ID inválido.']);
+                        exit;
+                    }
+                    $resultado = $this->modelo->actualizarAlergia($id, $nombre, $tipo);
                     $mensaje = "Alergia actualizada correctamente.";
                 } else {
-                    $resultado = $modelo->registrarAlergia($nombre, $tipo);
+                    $resultado = $this->modelo->registrarAlergia($nombre, $tipo);
                     $mensaje = "Alergia registrada correctamente.";
                 }
 
@@ -52,10 +76,9 @@ verificarRol([1, 2]);
                 exit;
 
             case 'eliminar':
-                verificarRol([1]);
                 header('Content-Type: application/json');
                 $id = $_POST['id_alergia'] ?? null;
-                if ($id && $modelo->eliminarAlergia($id)) {
+                if ($id && is_numeric($id) && $this->modelo->eliminarAlergia($id)) {
                     echo json_encode(['status' => 'success', 'message' => 'Alergia eliminada correctamente.']);
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'No se pudo eliminar la alergia.']);
@@ -63,8 +86,8 @@ verificarRol([1, 2]);
                 exit;
 
             default:
-    require_once "app/view/AlergiaView.php";
-    break;
+                require_once "app/view/AlergiaView.php";
+                break;
         }
-    //}
-//}
+    }
+}
