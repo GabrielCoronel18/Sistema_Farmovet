@@ -5,33 +5,19 @@ use Gabriel\SistemaFarmovet\config\ConexionBD;
 use PDO;
 use Exception;
 
-// Forzamos la inclusión de la conexión por si el autoload falla
-require_once __DIR__ . '/../config/ConexionBD.php';
-
 class AlergiaModel extends ConexionBD {
 
-    /**
-     * RF 5.6.1 Registrar Alergia
-     * Registra una nueva alergia con estado activo (1).
-     */
     public function registrarAlergia($nombre, $tipo) {
         try {
             $db = $this->getConexion(); 
             $sql = "INSERT INTO alergia (nombre_alergia, tipo, estado) VALUES (?, ?, 1)";
             $stmt = $db->prepare($sql);
-            return $stmt->execute([
-                $nombre['nombre_alergia'],
-                $tipo['tipo']
-            ]);
+            return $stmt->execute([$nombre, $tipo]);
         } catch (Exception $e) {
             return false;
         }
     }
 
-    /**
-     * RF 5.6.2 Consultar Alergia
-     * Obtiene todas las alergias activas (estado = 1).
-     */
     public function consultarAlergias() {
         try {
             $db = $this->getConexion();
@@ -46,9 +32,6 @@ class AlergiaModel extends ConexionBD {
         }
     }
 
-    /**
-     * Consultar una alergia específica por su ID.
-     */
     public function obtenerAlergiaPorId($id_alergia) {
         try {
             $db = $this->getConexion();
@@ -63,29 +46,17 @@ class AlergiaModel extends ConexionBD {
         }
     }
 
-    /**
-     * RF 5.6.2.1 Actualizar Alergia
-     * Modifica los datos de una alergia existente.
-     */
-    public function actualizarAlergia($id,$nombre,$tipo) {
+    public function actualizarAlergia($id, $nombre, $tipo) {
         try {
             $db = $this->getConexion();
             $sql = "UPDATE alergia SET nombre_alergia = ?, tipo = ? WHERE id_alergia = ?";
             $stmt = $db->prepare($sql);
-            return $stmt->execute([
-                $nombre['nombre_alergia'],
-                $tipo['tipo'],
-                $id['id_alergia']
-            ]);
+            return $stmt->execute([$nombre, $tipo, $id]);
         } catch (Exception $e) {
             return false;
         }
     }
 
-    /**
-     * RF 5.6.2.2 Eliminar Alergia
-     * Realiza un borrado lógico cambiando el estado a 0.
-     */
     public function eliminarAlergia($id_alergia) {
         try {
             $db = $this->getConexion();
