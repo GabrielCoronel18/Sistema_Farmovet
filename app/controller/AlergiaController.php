@@ -3,21 +3,17 @@ namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 
-class AlergiaController {
+//class AlergiaController {
+require_once "app/view/AlergiaView.php";
+$modelo = new AlergiaModel();
 
-    private $modelo;
-
-    public function __construct() {
-        $this->modelo = new AlergiaModel();
-    }
-
-    public function index() {
-        $accion = $_GET['accion'] ?? 'vista';
+    //public function index() {
+        $accion = $_POST['accion'] ?? 'listar';
 
         switch ($accion) {
             case 'listar':
                 header('Content-Type: application/json');
-                echo json_encode($this->modelo->consultarAlergias()); 
+                echo json_encode($modelo->consultarAlergias()); 
                 exit;
 
             case 'guardar':
@@ -85,9 +81,8 @@ class AlergiaController {
                 }
                 exit;
 
-            default:
-                require_once "app/view/AlergiaView.php";
                 break;
         }
-    }
-}
+        
+    //}
+//}

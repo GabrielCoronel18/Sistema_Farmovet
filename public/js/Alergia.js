@@ -105,7 +105,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function listarAlergias() {
-    fetch('?url=Alergia&accion=listar')
+    let data = new formData();
+    data.append("listar", true)
+    fetch('?url=Alergia&accion=listar',{ method:"post", body: data})
         .then(res => res.json())
         .then(data => {
             const tbody = document.getElementById('TablaAlergias');
