@@ -146,12 +146,12 @@
                 <div class="row g-3"> 
                   <div class="col-md-12">
                     <label for="nombre_alergia" class="form-label">Nombre de la Alergia</label>
-                    <input type="text" class="form-control" id="nombre_alergia" name="nombre_alergia" placeholder="Ej. Penicilina..." required>
+                    <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej. Penicilina..." required>
                   </div>
 
                   <div class="col-md-12">
                     <label for="tipo_alergia" class="form-label">Tipo de Alergia</label>
-                    <input type="text" class="form-control" id="tipo_alergia" name="tipo_alergia" placeholder="Ej. Medicamentosa, Alimentaria..." required>
+                    <input type="text" class="form-control" id="tipo" name="tipo" placeholder="Ej. Medicamentosa, Alimentaria..." required>
                   </div>
                 </div>
             </div>
@@ -164,9 +164,13 @@
       </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
-    <script src="public/js/Alergias.js"></script>
+    <script src="public/js/ajax.js"></script>
+    <script src="public/js/Alergia.js"></script>
+    
 </body>
 </html>

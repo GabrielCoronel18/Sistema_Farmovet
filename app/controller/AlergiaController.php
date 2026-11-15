@@ -5,66 +5,64 @@ use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 
 verificarRol([1, 2]);
-//class AlergiaController {
 
-    //private $modelo;
-
-    //public function __construct() {
         $modelo = new AlergiaModel();
-    //}
+    
+     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['consultar'])) {
+        
+        $resultados = $modelo->obtenerAlergias();
+        header('Content-Type: application/json');
+        echo json_encode([
+        "status" => "success",
+        "resultados" => $resultados,
+                                    ]);
+        
+        exit;
+     }
+     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['consultarPorId'])) {
+        $id = $_POST['id'] ?? null;
+        $resultado = $modelo->obtenerAlergiaPorId($id);
+        header('Content-Type: application/json');
+        echo json_encode([
+            "status" => $resultado ? "success" : "error",
+            "resultado" => $resultado,
+        ]);
+        exit;
+     }
+     
+     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar'])) {
+        $nombre = $_POST['nombre'];
+        $tipo = $_POST['tipo'];
+        $resultado = $modelo->agregarAlergia($nombre, $tipo);
+        header('Content-Type: application/json');
+        echo json_encode([
+            "status" => $resultado ? "success" : "error",
+            "message" => $resultado ? "Alergia registrada correctamente." : "Error al registrar la alergia.",
+        ]);
+        exit;
+     }
+     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar'])) {
+        $id = $_POST['id_alergia'];
+        $nombre = $_POST['nombre'];
+        $tipo = $_POST['tipo'];
+        $resultado = $modelo->actualizarAlergia($id, $nombre, $tipo);
+        header('Content-Type: application/json');
+        echo json_encode([
+            "status" => $resultado ? "success" : "error",
+            "message" => $resultado ? "Alergia editada correctamente." : "Error al editar la alergia.",
+        ]);
+        exit;
+     }
 
-    //public function index() {
-        $accion = $_GET['accion'] ?? 'vista';
+     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar'])) {
+        $id = $_POST['id'];
+        $resultado = $modelo->eliminarAlergia($id);
+        header('Content-Type: application/json');
+        echo json_encode([
+            "status" => $resultado ? "success" : "error",
+            "message" => $resultado ? "Alergia eliminada correctamente." : "Error al eliminar la alergia.",
+        ]);
+        exit;
+     }
 
-        switch ($accion) {
-            
-            case 'listar':
-                verificarRol([1, 2]);
-                header('Content-Type: application/json');
-                echo json_encode($modelo->registrarAlergia());
-                exit;
-
-            case 'guardar':
-                verificarRol([1]);
-                header('Content-Type: application/json');
-                $id = $_POST['id_alergia'] ?? null;
-                $nombre = trim($_POST['nombre_alergia'] ?? '');
-                $tipo = trim($_POST['tipo_alergia'] ?? '');
-
-                if (empty($nombre) || empty($tipo)) {
-                    echo json_encode(['status' => 'error', 'message' => 'Todos los campos son obligatorios.']);
-                    exit;
-                }
-
-                if (!empty($id)) {
-                    $resultado = $modelo->actualizarAlergia($id, $nombre, $tipo);
-                    $mensaje = "Alergia actualizada correctamente.";
-                } else {
-                    $resultado = $modelo->registrarAlergia($nombre, $tipo);
-                    $mensaje = "Alergia registrada correctamente.";
-                }
-
-                if ($resultado) {
-                    echo json_encode(['status' => 'success', 'message' => $mensaje]);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'Error al guardar en la base de datos.']);
-                }
-                exit;
-
-            case 'eliminar':
-                verificarRol([1]);
-                header('Content-Type: application/json');
-                $id = $_POST['id_alergia'] ?? null;
-                if ($id && $modelo->eliminarAlergia($id)) {
-                    echo json_encode(['status' => 'success', 'message' => 'Alergia eliminada correctamente.']);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'No se pudo eliminar la alergia.']);
-                }
-                exit;
-
-            default:
     require_once "app/view/AlergiaView.php";
-    break;
-        }
-    //}
-//}

@@ -2,65 +2,67 @@
 namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
-use PDO;
-use Exception;
+use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
-// Forzamos la inclusión de la conexión por si el autoload falla
-require_once __DIR__ . '/../config/ConexionBD.php';
+use PDO;
 
 class AlergiaModel extends ConexionBD {
-
+      private int $id;
+      private string $nombre;
+      private string $tipo;
+      private int $estado; 
+      
+    use Validation;
     /**
      * RF 5.6.1 Registrar Alergia
      * Registra una nueva alergia con estado activo (1).
      */
-    public function registrarAlergia($nombre, $tipo) {
-        try {
+    public function agregarAlergia($nombre, $tipo) {
+
+    $this->nombre = $nombre;
+    $this->tipo = $tipo;
+    $this->estado = 1;
+
             $db = $this->getConexion(); 
-            $sql = "INSERT INTO alergia (nombre_alergia, tipo, estado) VALUES (?, ?, 1)";
+            $sql = "INSERT INTO alergia (nombre_alergia, tipo, estado) VALUES (?, ?, ?)";
             $stmt = $db->prepare($sql);
             return $stmt->execute([
-                $nombre['nombre_alergia'],
-                $tipo['tipo']
+                $this->nombre,
+                $this->tipo,
+                $this->estado
             ]);
-        } catch (Exception $e) {
-            return false;
-        }
+        
     }
 
     /**
      * RF 5.6.2 Consultar Alergia
      * Obtiene todas las alergias activas (estado = 1).
      */
-    public function consultarAlergias() {
-        try {
+    public function obtenerAlergias() {
+        
             $db = $this->getConexion();
-            $sql = "SELECT id_alergia, nombre_alergia, tipo, estado 
+            $sql = "SELECT *
                     FROM alergia 
                     WHERE estado = 1";
             $stmt = $db->prepare($sql);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return [];
-        }
+        
     }
 
     /**
      * Consultar una alergia específica por su ID.
      */
-    public function obtenerAlergiaPorId($id_alergia) {
-        try {
+    public function obtenerAlergiaPorId($id) {
+        $this->id = $id;
             $db = $this->getConexion();
             $sql = "SELECT id_alergia, nombre_alergia, tipo, estado 
                     FROM alergia 
                     WHERE id_alergia = ? AND estado = 1";
             $stmt = $db->prepare($sql);
-            $stmt->execute([$id_alergia]);
+            $stmt->execute([$this->id]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return false;
-        }
+      
     }
 
     /**
@@ -68,32 +70,32 @@ class AlergiaModel extends ConexionBD {
      * Modifica los datos de una alergia existente.
      */
     public function actualizarAlergia($id,$nombre,$tipo) {
-        try {
+        $this->id = $id;
+        $this->nombre = $nombre;
+        $this->tipo = $tipo;
+
             $db = $this->getConexion();
             $sql = "UPDATE alergia SET nombre_alergia = ?, tipo = ? WHERE id_alergia = ?";
             $stmt = $db->prepare($sql);
             return $stmt->execute([
-                $nombre['nombre_alergia'],
-                $tipo['tipo'],
-                $id['id_alergia']
+                $this->nombre,
+                $this->tipo,
+                $this->id
             ]);
-        } catch (Exception $e) {
-            return false;
-        }
+       
     }
 
     /**
      * RF 5.6.2.2 Eliminar Alergia
      * Realiza un borrado lógico cambiando el estado a 0.
      */
-    public function eliminarAlergia($id_alergia) {
-        try {
+    public function eliminarAlergia($id) {
+        $this->id = $id;
+
             $db = $this->getConexion();
             $sql = "UPDATE alergia SET estado = 0 WHERE id_alergia = ?";
             $stmt = $db->prepare($sql);
-            return $stmt->execute([$id_alergia]);
-        } catch (Exception $e) {
-            return false;
-        }
+            return $stmt->execute([$this->id]);
+      
     }
 }

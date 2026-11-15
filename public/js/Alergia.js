@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const idInput = document.getElementById('id_alergia');
             if (idInput) idInput.value = '';
             const titulo = document.getElementById('TituloModalAlergia');
-            if (titulo) titulo.innerText = 'Registrar Alergia';
+            if (titulo) titulo.innerText = 'Agregar Alergia';
         });
     }
 
@@ -28,12 +28,11 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             const formData = new FormData(formAlergia);
+            const id = document.getElementById('id_alergia').value;
+            formData.append(id === '' ? 'agregar' : 'actualizar', true);
 
-            fetch('?url=Alergia&accion=guardar', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
+
+            peticionAjax(formData)
             .then(data => {
                 if (data.status === 'success') {
                     // Ocultar Modal de Bootstrap
@@ -41,22 +40,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     const modal = bootstrap.Modal.getInstance(modalElement);
                     if (modal) modal.hide();
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: data.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    let message = data.message || null;
+
+                   
+                    id === "" ? alertAgregar("success",message) : alertActualizar("success",message);
 
                     formAlergia.reset();
                     listarAlergias();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'No se pudo guardar la alergia'
-                    });
+                 
+                    id === "" ? alertAgregar("error",message) : alertActualizar("error", message);
                 }
             })
             .catch(error => {
@@ -73,15 +66,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Obtención de datos AJAX para llenar la tabla
 function listarAlergias() {
-    fetch('?url=Alergia&accion=listar')
-        .then(res => res.json())
-        .then(data => {
+    
+      let datos = new FormData();
+      datos.append('consultar', true);
+
+      peticionAjax(datos).then(alergias => {
+
             const tbody = document.getElementById('TablaAlergias');
             if (!tbody) return;
 
             tbody.innerHTML = '';
 
-            if (!data || data.length === 0) {
+            if (!alergias || alergias.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center py-3 text-muted">No hay alergias registradas</td>
@@ -89,18 +85,18 @@ function listarAlergias() {
                 return;
             }
 
-            data.forEach(item => {
+            alergias.resultados.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.id_alergia}</td>
                         <td>${item.nombre_alergia}</td>
                         <td>${item.tipo}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editarAlergia(${item.id_alergia}, '${item.nombre_alergia}', '${item.tipo_alergia}')">
-                                <i class="bi bi-pencil"></i>
+                            <button class="btn btn-sm btn-success btn-actualizar" onclick="actualizarAlergia(${item.id_alergia})">
+                                Actualizar
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarAlergia(${item.id_alergia})">
-                                <i class="bi bi-trash"></i>
+                            <button class="btn btn-sm btn-danger btn-eliminar" onclick="eliminarAlergia(${item.id_alergia})">
+                                Eliminar
                             </button>
                         </td>
                     </tr>
@@ -110,46 +106,31 @@ function listarAlergias() {
         .catch(err => console.error('Error al listar:', err));
 }
 
-function editarAlergia(id, nombre, tipo) {
-    document.getElementById('id_alergia').value = id;
-    document.getElementById('nombre_alergia').value = nombre;
-    document.getElementById('tipo_alergia').value = tipo;
-    document.getElementById('TituloModalAlergia').innerText = 'Editar Alergia';
+function actualizarAlergia(id) {
+
+    let formData = new FormData();
+    formData.append('consultarPorId', true);
+    formData.append('id', id);
+    peticionAjax(formData).then(data => {
+        document.getElementById('id_alergia').value = id;
+        document.getElementById('nombre').value = data.resultado.nombre_alergia;
+        document.getElementById('tipo').value = data.resultado.tipo;
+        document.getElementById('TituloModalAlergia').innerText = 'Editar Alergia';
+    });
 
     const modal = new bootstrap.Modal(document.getElementById('ModalAgregar'));
     modal.show();
 }
 
 function eliminarAlergia(id) {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "¡No podrás revertir esta acción!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#198754',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const formData = new FormData();
-            formData.append('id_alergia', id);
+    datos = new FormData();
+    datos.append('eliminar', true);
+    datos.append('id', id);
 
-            fetch('?url=Alergia&accion=eliminar', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    Swal.fire('¡Eliminado!', data.message, 'success');
-                    listarAlergias();
-                } else {
-                    Swal.fire('Error', data.message, 'error');
-                }
-            });
-        }
-    });
+    alertEliminar('POST', datos, function() {
+        listarAlergias();
+    });  
+
 }
 
 function filtrarTabla() {
