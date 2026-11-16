@@ -16,12 +16,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cargar la tabla al iniciar la vista
     listarAlergias();
 
-    // Filtro de búsqueda
     if (inputFiltrar) {
         inputFiltrar.addEventListener('keyup', filtrarTabla);
     }
 
-    // Resetear el modal para nuevos registros
     if (btnAgregar) {
         btnAgregar.addEventListener('click', function () {
             if (formAlergia) formAlergia.reset();
@@ -33,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Procesar el envío del formulario mediante Fetch / AJAX
     if (formAlergia) {
         formAlergia.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -75,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Obtención de datos AJAX para llenar la tabla
 function listarAlergias() {
     
       let datos = new FormData();

@@ -1,6 +1,5 @@
 <?php
 namespace Gabriel\SistemaFarmovet\controller;
-use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
 

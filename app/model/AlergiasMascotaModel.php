@@ -8,25 +8,24 @@ class AlergiasMascotaModel extends ConexionBD {
       private int $mascota;
       private string $fecha_deteccion;
 
-      
-      public function asociarAlergia(int $alergia,int $mascota, string $fecha_deteccion){
+      public function asociarAlergia(int $alergia, int $mascota, string $fecha_deteccion){
          $this->alergia = $alergia;
          $this->mascota = $mascota;
          $this->fecha_deteccion = $fecha_deteccion;
          
          $conex = $this->getConexion();
-         $sql = "INSERT INTO alergia_mascota(id_alergia,id_mascota,fecha_deteccion) 
+         $sql = "INSERT INTO alergia_mascota(id_alergia, id_mascota, fecha_deteccion) 
                  VALUES(:alergia, :mascota, :fecha_deteccion)";
          
-                $query = $conex->prepare($sql);
-                $query->bindParam(":alergia", $this->alergia);
-                $query->bindParam(":mascota", $this->mascota);
-                $query->bindParam(":fecha_deteccion", $this->fecha_deteccion);
+         $query = $conex->prepare($sql);
+         $query->bindParam(":alergia", $this->alergia);
+         $query->bindParam(":mascota", $this->mascota);
+         $query->bindParam(":fecha_deteccion", $this->fecha_deteccion);
          
          return $query->execute();
-          
       }
-        public function obtenerAlergiasActivas(){
+
+      public function obtenerAlergiasActivas(){
          $conex = $this->getConexion();
          $query = $conex->query("SELECT id_alergia, nombre_alergia FROM alergia WHERE estado = 1 ORDER BY nombre_alergia");
          return $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -39,7 +38,6 @@ class AlergiasMascotaModel extends ConexionBD {
          return $query->execute();
       }
 
-
       public function obtenerAlergiasAsociadas($id){
          $this->id = $id;
          $conex = $this->getConexion();
@@ -49,24 +47,19 @@ class AlergiasMascotaModel extends ConexionBD {
          
          $query = $conex->prepare($sql);
          $query->bindParam(":id", $this->id);
-
          $query->execute();
              
-        return $query->fetchAll(\PDO::FETCH_ASSOC);
+         return $query->fetchAll(\PDO::FETCH_ASSOC);
       }
-
 
       public function EliminarAlergiasAsociadas($id){
         $this->id = $id;
         $conex = $this->getConexion();
-         $sql = "DELETE FROM alergia_mascota WHERE id_alergia_mascota = :id";
+        $sql = "DELETE FROM alergia_mascota WHERE id_alergia_mascota = :id";
         
-         $query = $conex->prepare($sql);
+        $query = $conex->prepare($sql);
         $query->bindParam(":id", $this->id);
         
-        
         return $query->execute();
-
       }
-      
 }
