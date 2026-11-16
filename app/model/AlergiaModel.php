@@ -3,6 +3,7 @@ namespace Gabriel\SistemaFarmovet\model;
 
 use Gabriel\SistemaFarmovet\config\ConexionBD;
 use Gabriel\SistemaFarmovet\helpers\traits\Validation;
+use Gabriel\SistemaFarmovet\helpers\traits\AlergiasValidation;
 
 use PDO;
 
@@ -13,6 +14,7 @@ class AlergiaModel extends ConexionBD {
       private int $estado; 
       
     use Validation;
+    use AlergiasValidation;
     /**
      * RF 5.6.1 Registrar Alergia
      * Registra una nueva alergia con estado activo (1).

@@ -13,6 +13,23 @@ if (isset($_POST["agregar"])) {
     verificarRol([1]);
     $nombre = trim($_POST["nombre_especie"] ?? $_POST["nombre"] ?? "");
 
+    $especies->clearErrors();
+    $especies->validateRequired(['nombre_especie' => $nombre], ['nombre_especie']);
+    if ($nombre !== '') {
+        $especies->validateMinLength($nombre, 'nombre_especie', 3);
+        $especies->validateMaxLength($nombre, 'nombre_especie', 50);
+        $especies->validateNombreEspecie($nombre);
+    }
+    $errores = $especies->getErrors();
+    if (!empty($errores)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => reset($errores),
+            "errors" => $errores
+        ]);
+        exit;
+    }
+
     if (count($especies->validarEspecies($nombre)) == 0) {
         if ($especies->registrar($nombre)) {
             echo json_encode(["status" => "success"]);
@@ -30,6 +47,23 @@ if (isset($_POST["actualizar"])) {
     verificarRol([1]);
     $id = trim($_POST["id_especie"] ?? $_POST["id"] ?? "");
     $nombre = trim($_POST["nombre_especie"] ?? $_POST["nombre"] ?? "");
+
+    $especies->clearErrors();
+    $especies->validateRequired(['nombre_especie' => $nombre], ['nombre_especie']);
+    if ($nombre !== '') {
+        $especies->validateMinLength($nombre, 'nombre_especie', 3);
+        $especies->validateMaxLength($nombre, 'nombre_especie', 50);
+        $especies->validateNombreEspecie($nombre);
+    }
+    $errores = $especies->getErrors();
+    if (!empty($errores)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => reset($errores),
+            "errors" => $errores
+        ]);
+        exit;
+    }
 
     if ($especies->modificarEspecie($id, $nombre)) {
         echo json_encode(["status" => "success"]);

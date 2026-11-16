@@ -7,7 +7,14 @@ $(function () {
     }, "El texto contiene caracteres no permitidos.");
 
     $(".PatologiaForm").validate({
-        onkeyup: element => $(element).valid(),
+        onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 3) {
+            $(element).valid();
+            } 
+           
+        },
         onfocusout: element => $(element).valid(),
         errorElement: "div",
         errorClass: "invalid-feedback d-block",
@@ -22,9 +29,30 @@ $(function () {
             else error.insertAfter(element);
         },
         rules: {
-            nombre: { required: true, minlength: 5, maxlength: 50, nombrePatologia: true },
-            tipo: { required: true, minlength: 5, maxlength: 50, nombrePatologia: true },
-            sintomas: { required: true, minlength: 5, maxlength: 200, textoPatologia: true }
+            nombre: { 
+                required: true, 
+                minlength: 5, 
+                maxlength: 50, 
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                nombrePatologia: true },
+            tipo: { 
+                required: true, 
+                minlength: 5, 
+                maxlength: 50, 
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                 nombrePatologia: true },
+            sintomas: { 
+                required: true, 
+                minlength: 5, 
+                maxlength: 200, 
+                 normalizer: function(value) {
+                    return $.trim(value);
+                },
+                textoPatologia: true }
         },
         messages: {
             nombre: {
@@ -42,7 +70,7 @@ $(function () {
             sintomas: {
                 required: "Los síntomas son obligatorios.",
                 minlength: "Debe tener al menos 5 caracteres.",
-                maxlength: "No puede exceder 200 caracteres.",
+                maxlength: "No puede exceder 200 caracteres.",                
                 textoPatologia: "Los síntomas contienen caracteres no permitidos."
             }
         }

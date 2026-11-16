@@ -13,7 +13,14 @@ $(function () {
     }, "Debe tener entre 8 y 72 caracteres, mayúscula, minúscula, número y símbolo.");
 
     $("#form-usuario").validate({
-        onkeyup: element => $(element).valid(),
+        onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 3) {
+            $(element).valid();
+            } 
+           
+        },
         onfocusout: element => $(element).valid(),
         errorElement: "div",
         errorClass: "invalid-feedback d-block",
@@ -28,12 +35,44 @@ $(function () {
             else error.insertAfter(element);
         },
         rules: {
-            cedula: { required: true, minlength: 8, maxlength: 12, cedulaUsuario: true },
-            nombre: { required: true, minlength: 2, maxlength: 30, nombreUsuario: true },
-            apellido: { required: true, minlength: 2, maxlength: 30, nombreUsuario: true },
+            cedula: { 
+                required: true, 
+                minlength: 8, 
+                maxlength: 12,
+                normalizer: function(value) {
+                    return $.trim(value);
+                }, 
+                cedulaUsuario: true },
+            nombre: { 
+                required: true, 
+                minlength: 2, 
+                maxlength: 30,
+                 normalizer: function(value) {
+                    return $.trim(value);
+                }, 
+                nombreUsuario: true },
+            apellido: { 
+                required: true, 
+                minlength: 2, 
+                maxlength: 30,
+                 normalizer: function(value) {
+                    return $.trim(value);
+                }, 
+                nombreUsuario: true },
             telefono: { telefonoUsuario: true },
-            correo: { required: true, email: true, maxlength: 60 },
-            "contraseña": { required: true, contrasenaUsuario: true },
+            correo: { 
+                required: true, 
+                email: true, 
+                 normalizer: function(value) {
+                    return $.trim(value);
+                },
+                maxlength: 60 },
+            "contraseña": { 
+                required: true, 
+                 normalizer: function(value) {
+                    return $.trim(value);
+                },
+                contrasenaUsuario: true },
             rol: { required: true }
         },
         messages: {

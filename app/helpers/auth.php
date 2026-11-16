@@ -23,15 +23,8 @@ function verificarRol(array $roles): void {
     $rolesPermitidos = array_map('intval', $roles);
     if (!in_array(obtenerIdRolSesion(), $rolesPermitidos, true)) {
         http_response_code(403);
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode([
-                'status' => 'error',
-                'mensaje' => 'No tienes permisos para realizar esta acción.'
-            ]);
-        } else {
-            echo 'No tienes permisos para acceder a esta sección.';
-        }
+        
+        header("Location: index.php?url=Dashboard&error=acceso_denegado");
         exit();
     }
 }

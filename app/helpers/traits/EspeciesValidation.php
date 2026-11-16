@@ -5,9 +5,9 @@ trait EspeciesValidation
 {
     public function validateNombreEspecie(string $nombre): bool
     {
-        if (!preg_match('/^[\p{L}]+(?:[ ()\/-]+[\p{L}]+)*$/u', trim($nombre))) {
+        if (!preg_match('/^[\p{L}]+(?: +[\p{L}]+)*$/u', trim($nombre))) {
             $this->errors['nombre'] =
-                'El nombre solo puede contener letras, espacios, guiones, paréntesis y barras.';
+                'El nombre solo puede contener letras y espacios.';
             return false;
         }
         return true;

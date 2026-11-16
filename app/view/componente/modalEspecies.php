@@ -13,8 +13,8 @@
           <div class="row g-3">
             <div class="col-12">
               <label for="nombre_especie" class="form-label">Nombre de la Especie</label>
-              <input type="text" class="form-control" id="nombre_especie" name="nombre_especie" placeholder="Ej. Canino, Felino..." required>
-             <!-- <div class="invalid-feedback" id="error-nombre_especie"></div>-->
+              <input type="text" class="form-control" id="nombre_especie" name="nombre_especie" placeholder="Ej. Canino, Felino..." maxlength="50" required>
+              <div class="invalid-feedback" id="error-nombre_especie"></div>
             </div>
           </div>
         </div>

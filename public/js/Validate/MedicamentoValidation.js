@@ -4,7 +4,14 @@ $(function () {
     }, "Solo se permiten letras, espacios, guiones, paréntesis y barras.");
 
     $(".MedicamentoForm").validate({
-        onkeyup: element => $(element).valid(),
+        onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 3) {
+            $(element).valid();
+            } 
+           
+        },
         onfocusout: element => $(element).valid(),
         errorElement: "div",
         errorClass: "invalid-feedback d-block",
@@ -23,6 +30,9 @@ $(function () {
                 required: true,
                 minlength: 5,
                 maxlength: 50,
+                normalizer: function(value) {
+                    return $.trim(value); 
+                },
                 nombreMedicamento: true
             },
             tipo: { required: true },

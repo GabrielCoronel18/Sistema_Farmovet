@@ -62,7 +62,7 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
     $consultaModel->validateInArray($datos['tipo_ingreso'], 'tipo_ingreso', [1, 2]);
     $consultaModel->validateInArray($datos['remitido'], 'remitido', [0, 1]);
     $consultaModel->validateTextoConsulta($datos['pronostico'], 'pronostico', 100);
-    $consultaModel->validateTextoConsulta($datos['tratamiento_consulta'], 'tratamiento_consulta', 100);
+    $consultaModel->validateTextoConsulta($datos['tratamiento_consulta'], 'tratamiento_consulta', 80);
     $consultaModel->validatePesoConsulta($datos['peso_consulta']);
     $consultaModel->validateTextoConsulta($datos['comentario'], 'comentario_seguimiento', 200);
 
@@ -90,6 +90,9 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
     $laboratorio = [];
     foreach ($camposAnamnesis as $campo) {
         $valor = $_POST[$campo] ?? null;
+        if (is_string($valor)) {
+            $valor = trim($valor);
+        }
         $anamnesis[$campo] = $valor === '' ? null : $valor;
     }
 
@@ -123,6 +126,9 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
 
     foreach ($camposExamen as $campo) {
         $valor = $_POST[$campo] ?? null;
+        if (is_string($valor)) {
+            $valor = trim($valor);
+        }
         $examen[$campo] = $valor === '' ? null : $valor;
 
 
@@ -162,6 +168,9 @@ if (isset($_POST['guardar_consulta']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
 
     foreach ($camposLaboratorio as $campo) {
         $valor = $_POST[$campo] ?? null;
+        if (is_string($valor)) {
+            $valor = trim($valor);
+        }
         $laboratorio[$campo] = $valor === '' ? null : $valor;
     }
 

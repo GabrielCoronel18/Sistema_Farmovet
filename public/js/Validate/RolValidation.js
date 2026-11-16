@@ -1,7 +1,7 @@
 $(function () {
     $.validator.addMethod("nombreRol", function (value, element) {
-        return this.optional(element) || /^[\p{L}]+(?:[ ()\/-]+[\p{L}]+)*$/u.test(value.trim());
-    }, "Solo se permiten letras, espacios, guiones, paréntesis y barras.");
+        return this.optional(element) || /^(?=.*\p{L})[\p{L} ()\/-]+$/u.test(value);
+    }, "Solo se permiten letras, espacios, guiones, paréntesis y barras, y debe incluir al menos una letra.");
 
     $("#form-rol").validate({
         onkeyup: element => $(element).valid(),
@@ -23,6 +23,7 @@ $(function () {
                 required: true,
                 minlength: 3,
                 maxlength: 30,
+                normalizer: value => value.trim(),
                 nombreRol: true
             }
         },
@@ -31,7 +32,7 @@ $(function () {
                 required: "El nombre del rol es obligatorio.",
                 minlength: "Debe tener al menos 3 caracteres.",
                 maxlength: "No puede exceder 30 caracteres.",
-                nombreRol: "Solo se permiten letras, espacios, guiones, paréntesis y barras."
+                nombreRol: "Solo se permiten letras, espacios, guiones, paréntesis y barras, y debe incluir al menos una letra."
             }
         }
     });

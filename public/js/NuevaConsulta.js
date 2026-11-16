@@ -180,6 +180,9 @@ function prepararFormulario() {
 
     formularioConsulta.on("submit", evento => {
         evento.preventDefault();
+        formularioConsulta.find('input[type="text"], textarea').each(function () {
+            this.value = this.value.trim();
+        });
         if (!formularioConsulta.valid()) return;
         const boton = formularioConsulta.find('button[type="submit"]');
         boton.prop("disabled", true);

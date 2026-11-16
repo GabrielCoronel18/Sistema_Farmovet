@@ -1,3 +1,19 @@
+function alertAccesoDenegado(){
+  Swal.fire({
+            icon: 'error',
+            title: 'Acceso Denegado',
+            text: 'No tienes permisos para realizar esta acción o ingresar a esta sección.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#18994a',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+               
+                const nuevaUrl = window.location.pathname + window.location.search.replace(/([?&])error=acceso_denegado(&|$)/, '$1').replace(/[?&]$/, '');
+                window.history.replaceState({}, document.title, nuevaUrl);
+            }
+        });
+}
 
 function alertAgregar(status, message){
  

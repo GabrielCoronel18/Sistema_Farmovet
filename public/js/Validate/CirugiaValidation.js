@@ -4,7 +4,16 @@ $(function () {
     }, "Solo se permiten letras, espacios, guiones, paréntesis y barras.");
 
     $(".CirugiaForm").validate({
-        onkeyup: element => $(element).valid(),
+            
+        onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 5) {
+            $(element).valid();
+            } 
+           
+        },
+
         onfocusout: element => $(element).valid(),
         errorElement: "div",
         errorClass: "invalid-feedback d-block",
@@ -23,6 +32,9 @@ $(function () {
                 required: true,
                 minlength: 5,
                 maxlength: 50,
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
                 nombreCirugia: true
             },
             gravedad: { required: true },
