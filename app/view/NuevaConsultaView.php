@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Farmovet - Nueva consulta</title>
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+    <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/css/tom-select.bootstrap5.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -184,7 +185,18 @@
                         <div class="col-md-6"><label class="form-label" for="gangliios_palpables">Ganglios palpables</label><input type="text" class="form-control" id="gangliios_palpables" name="gangliios_palpables" maxlength="100"></div>
                         <div class="col-md-6"><label class="form-label" for="mucosas_visibles">Mucosas visibles</label><input type="text" class="form-control" id="mucosas_visibles" name="mucosas_visibles" maxlength="100"></div>
                         <div class="col-md-6"><label class="form-label" for="ectoparasitos">Ectoparásitos</label><input type="text" class="form-control" id="ectoparasitos" name="ectoparasitos" maxlength="100"></div>
-                        <div class="col-md-6"><label class="form-label" for="actitud">Actitud</label><input type="text" class="form-control" id="actitud" name="actitud" maxlength="80"></div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="actitud">Actitud</label>
+                            <select class="form-select tom-select" id="actitud" name="actitud"
+                                    data-create="true" data-maxlength="80"
+                                    data-placeholder="Seleccione o escriba una actitud">
+                                <option value="">Seleccione una actitud</option>
+                                <option value="alerta">Alerta</option>
+                                <option value="letargico">Letárgico</option>
+                                <option value="estuporoso">Estuporoso</option>
+                                <option value="comatoso">Comatoso</option>
+                            </select>
+                        </div>
 
                         <div class="col-12">
                             <label class="form-label" for="hallazgos">Hallazgos</label>
@@ -250,7 +262,13 @@
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label">Tipo de diagnóstico</label>
-                                <input type="text" class="form-control" name="tipo_diagnostico[]" value="" maxlength="80">
+                                <select class="form-select" name="tipo_diagnostico[]">
+                                    <option value="">Seleccione un tipo</option>
+                                        <option value="tentativo">Tentativo</option>
+                                        <option value="diferencial">Diferencial</option>
+                                        <option value="definitivo">Definitivo</option>
+
+                                </select>
                             </div>
                             <div class="col-md-2">
                                 <button type="button" class="btn btn-outline-danger w-100 quitar-fila" aria-label="Quitar diagnóstico">Quitar</button>
@@ -325,7 +343,12 @@
         </div>
         <div class="col-md-5">
             <label class="form-label">Tipo de diagnóstico</label>
-            <input type="text" class="form-control" name="tipo_diagnostico[]" maxlength="80">
+            <select class="form-select" name="tipo_diagnostico[]">
+                <option value="">Seleccione un tipo</option>
+                <option value="tentativo">Tentativo</option>
+                <option value="diferencial">Diferencial</option>
+                <option value="definitivo">Definitivo</option>
+            </select>
         </div>
         <div class="col-md-2">
             <button type="button" class="btn btn-outline-danger w-100 quitar-fila" aria-label="Quitar diagnóstico">Quitar</button>
@@ -351,10 +374,11 @@
     </div>
 </template>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="public/jquery/jquery-4.1.0.min.js"></script>
+<script src="public/jquery/jquery.validate.min.js"></script>
+<script src="public/datatables/datatables.min.js"></script>
 <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/js/sweetalert2.min.js"></script>
 <script src="public/js/tom-select.complete.js"></script>
 <script src="public/js/ajax.js"></script>
 <script src="public/js/Validate/ConsultaValidation.js"></script>

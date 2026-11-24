@@ -44,6 +44,7 @@ use ConsultaValidation;
                     consulta.pronostico, consulta.`tratamiento_consulta`,
                     consulta.`peso_trat-consulta` AS peso_consulta,
                     consulta.comentario_seguimientoo AS comentario,
+                    mascota.id_mascota,
                     mascota.nombre AS nombre_mascota,
                     CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_cliente
              FROM consulta
@@ -69,6 +70,7 @@ use ConsultaValidation;
                     consulta.pronostico, consulta.`tratamiento_consulta`,
                     consulta.`peso_trat-consulta` AS peso_consulta,
                     consulta.comentario_seguimientoo AS comentario,
+                    mascota.id_mascota,
                     mascota.nombre AS nombre_mascota,
                     CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_cliente
              FROM consulta
@@ -105,16 +107,62 @@ use ConsultaValidation;
             "SELECT consulta.*, consulta.`peso_trat-consulta` AS peso_consulta,
                     consulta.comentario_seguimientoo AS comentario,
                     mascota.nombre AS nombre_mascota,
-                    CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_cliente
+                    mascota.nombre AS nombre_paciente,
+                    mascota.sexo AS sexo,
+                    mascota.edad AS edad,
+                    mascota.pelaje AS pelaje,
+                    mascota.chip AS chip,
+                    mascota.procedencia AS procedencia,
+                    raza.nombre_raza AS raza,
+                    especie.nombre_especie AS especie,
+                    mascota.fch_nacimiento AS fecha_nacimiento,
+                    CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_cliente,
+                    CONCAT(cliente.nombre, ' ', cliente.apellido) AS nombre_propietario,
+                    cliente.cedula_cliente AS ci_propietario,
+                    cliente.correo AS correo,
+                    cliente.telefono AS telefono,
+                    cliente.direccion AS direccion,
+                    consulta.id_consulta AS numero_historia
              FROM consulta
              INNER JOIN mascota ON mascota.id_mascota = consulta.id_mascota
              INNER JOIN cliente ON cliente.cedula_cliente = mascota.cedula_cliente
+             LEFT JOIN raza ON raza.id_raza = mascota.id_raza
+             LEFT JOIN especie ON especie.id_especie = raza.id_especie
              WHERE consulta.id_consulta = :id AND consulta.estado = 1"
         );
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
         $resultado = $consulta->fetch(PDO::FETCH_ASSOC);
         return $resultado ?: null;
+    }
+
+    public function obtenerAntecedentesMascota(int $idMascota): array
+    {
+        $consulta = $this->getConexion()->prepare(
+            "SELECT
+                (SELECT GROUP_CONCAT(DISTINCT alergia.nombre_alergia ORDER BY alergia.nombre_alergia SEPARATOR ', ')
+                 FROM alergia_mascota
+                 INNER JOIN alergia ON alergia.id_alergia = alergia_mascota.id_alergia
+                 WHERE alergia_mascota.id_mascota = mascota.id_mascota) AS alergias,
+                (SELECT GROUP_CONCAT(DISTINCT patologia.nombre ORDER BY patologia.nombre SEPARATOR ', ')
+                 FROM enfermedades_padecidas
+                 INNER JOIN patologia ON patologia.id_patologia = enfermedades_padecidas.id_patologia
+                 WHERE enfermedades_padecidas.id_mascota = mascota.id_mascota) AS enfermedades_sufridas,
+                (SELECT GROUP_CONCAT(DISTINCT cirugia.nombre_cirugia ORDER BY cirugia.nombre_cirugia SEPARATOR ', ')
+                 FROM cirugia_mascota
+                 INNER JOIN cirugia ON cirugia.id_cirugia = cirugia_mascota.id_cirugia
+                 WHERE cirugia_mascota.id_mascota = mascota.id_mascota) AS cirugias_previas
+             FROM mascota
+             WHERE mascota.id_mascota = :id"
+        );
+        $consulta->execute([':id' => $idMascota]);
+        $resultado = $consulta->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        return [
+            'alergias' => (string) ($resultado['alergias'] ?? ''),
+            'enfermedades_sufridas' => (string) ($resultado['enfermedades_sufridas'] ?? ''),
+            'cirugias_previas' => (string) ($resultado['cirugias_previas'] ?? ''),
+        ];
     }
 
     public function obtenerMascotasActivas(): array

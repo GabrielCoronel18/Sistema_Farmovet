@@ -10,22 +10,30 @@ $medicamentoModel = new MedicamentoModel();
 
 
 if (isset($_POST["obtener"])) {
-    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
-    $limitacion = (int) ($_POST["limite"] ?? 5);
-    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+    $draw   = (int) ($_POST["draw"] ?? 1);
+    $start  = max(0, (int) ($_POST["start"] ?? 0));
+    $length = (int) ($_POST["length"] ?? 5);
+    $length = in_array($length, [5, 10, 20], true) ? $length : 5;
 
-    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $pagina = (int) floor($start / $length) + 1;
+
+    $param = trim((string) ($_POST["search"]["value"] ?? ""));
     $tieneFiltro = $param !== "";
 
     $resultados = $tieneFiltro
-        ? $medicamentoModel->filtrarMedicamento($param, $pagina, $limitacion)
-        : $medicamentoModel->obtenerMedicamento($pagina, $limitacion);
-    $total = $medicamentoModel->contarMedicamentos($tieneFiltro ? $param : null);
+        ? $medicamentoModel->filtrarMedicamento($param, $pagina, $length)
+        : $medicamentoModel->obtenerMedicamento($pagina, $length);
+
+    $recordsTotal = $medicamentoModel->contarMedicamentos(null);
+    $recordsFiltered = $tieneFiltro
+        ? $medicamentoModel->contarMedicamentos($param)
+        : $recordsTotal;
 
     echo json_encode([
-        "status" => "success",
-        "resultados" => $resultados,
-        "hayMas" => $pagina * $limitacion < $total
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $resultados
     ]);
     exit;
 }

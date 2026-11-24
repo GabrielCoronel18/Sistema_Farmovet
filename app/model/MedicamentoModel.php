@@ -68,7 +68,7 @@ class MedicamentoModel extends ConexionBD {
 		$offset = ($pagina * $limitacion) - $limitacion;
 		$busqueda = $param . "%";
 		$conex = $this->getConexion();
-		$sql = "SELECT * FROM medicamento
+		$sql = "SELECT *, medicamento.estado AS estado_medicamento FROM medicamento
 				INNER JOIN tipo_medicamento ON medicamento.id_tipo_medicamento = tipo_medicamento.id_tipo_medicamento
 				INNER JOIN presentacion ON medicamento.id_presentacion = presentacion.id_presentacion
 				WHERE(

@@ -5,13 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Farmovet - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
-    <link href="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.css" rel="stylesheet" integrity="sha384-qWEvqSybGvARiE5fKMA75H4edwdEGqOXm8GFt12T7kp5MOlvOxrbnpNkv9bB+XAB" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
 </head>
 <style>
     #table-container {
@@ -22,7 +20,7 @@
     }
 
     /* Remove default DataTable outer borders to avoid doubling up */
-    .table-container table.dataTable {
+    #table-container table.dataTable {
         border: none !important;
         margin: 0 !important;
     }
@@ -74,14 +72,14 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/v/dt/dt-3.0.3/datatables.min.js" integrity="sha384-1rFATsUr0XuIonb0gHkZHfQsWDvjIDbM3VLnsBS+sNTHWo71J7FkrBG2n93tytfI" crossorigin="anonymous"></script>
-
+    <script src="public/jquery/jquery-3.7.1.min.js"></script>
+    <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="public/datatables/datatables.min.js"></script>
+    <script src="public/jquery/jquery.validate.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>
     <script src="public/js/Validate/ClienteValidation.js"></script>
     <script src="public/js/cliente.js"></script>
-    <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <?php if (isset($mensajeAlerta)) {
         echo "<script>{$mensajeAlerta}</script>";
     } ?>

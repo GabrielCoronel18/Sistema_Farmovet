@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Farmovet - Consultas</title>
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -82,10 +82,38 @@
     </main>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<div class="modal fade" id="ReporteModal" tabindex="-1" aria-labelledby="ReporteModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="ReporteModalTitle">Reporte de Consulta</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <span class="text-muted small">Vista previa del documento PDF</span>
+
+                    <a target="_blank" class="btn btn-md btn-outline-success" id="GenerarPDF" name="GenerarPDF">Generar</a>
+                </div>
+
+                <div class="text-center canvas-wrapper">
+                    <canvas id="pdf-canvas" style="border: 1px solid #e2e8f0; max-width: 100%; height: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="public/jquery/jquery-3.7.1.min.js"></script>
 <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="public/js/sweetalert2.min.js"></script>
 <script src="public/js/ajax.js"></script>
+<script src="public/js/pdfjs/pdf.min.js"></script>
 <script src="public/js/consulta.js"></script>
 </body>
 </html>

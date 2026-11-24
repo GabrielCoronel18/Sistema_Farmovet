@@ -5,6 +5,7 @@ use Gabriel\SistemaFarmovet\model\ExamenClinicoModel;
 use Gabriel\SistemaFarmovet\model\ResultadosLaboratorioModel;
 use Gabriel\SistemaFarmovet\model\DiagnosticoModel;
 use Gabriel\SistemaFarmovet\model\RecipeModel;
+use Gabriel\SistemaFarmovet\services\ReporteConsulta;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 verificarRol([1, 2, 3]);
@@ -32,11 +33,35 @@ if (isset($_POST['obtener'])) {
             'examen' => (new ExamenClinicoModel())->obtenerExamen($id),
             'laboratorio' => (new ResultadosLaboratorioModel())->obtenerResultado($id),
             'diagnosticos' => (new DiagnosticoModel())->obtenerDiagnosticos($id),
-            'recetas' => (new RecipeModel())->obtenerRecipes($id)
+            'recetas' => (new RecipeModel())->obtenerRecipes($id),
+            'antecedentes' => $consultaModel->obtenerAntecedentesMascota((int) $consulta['id_mascota'])
         ];
+        unset($consulta['id_mascota']);
     }
     unset($consulta);
     echo json_encode(['status' => 'success', 'resultados' => $consultas,  "hayMas" => $pagina * $limitacion < $total]);
+    exit;
+}
+
+if (!empty($_GET['GenerarPDF'])) {
+    verificarRol([1,2]);
+    
+    $reporte = $ReporteConsulta = new ReporteConsulta();
+    $id = $_GET['GenerarPDF'];
+
+    $consulta = $consultaModel->obtenerConsultaPorId($id);
+    $anamnesis = (new AnamnesisModel())->obtenerAnamnesis($id);
+    $anamnesis = array_merge(
+        $anamnesis ?? [],
+        $consultaModel->obtenerAntecedentesMascota((int) ($consulta['id_mascota'] ?? 0))
+    );
+    $examen = (new ExamenClinicoModel())->obtenerExamen($id);
+    $laboratorio = (new ResultadosLaboratorioModel())->obtenerResultado($id);
+    $diagnostico = (new DiagnosticoModel())->obtenerDiagnosticos($id);
+    $recipe = (new RecipeModel())->obtenerRecipes($id);
+
+    $reporte->generarPDF('HISTORIA CLINICA', $consulta, $anamnesis, $examen, $laboratorio, $diagnostico, $recipe);
+  
     exit;
 }
 

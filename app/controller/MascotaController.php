@@ -10,6 +10,7 @@ use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 use function Gabriel\SistemaFarmovet\services\codificarId;
 use function Gabriel\SistemaFarmovet\services\decodificarId;
 
+require_once "app/services/hash.php";
 
 verificarRol([1, 2, 3]);
 
@@ -17,12 +18,6 @@ $mascotaModel = new MascotaModel();
 $AlergiaMascotaModel = new AlergiasMascotaModel();
 $CirgsPreviasModel = new CirugiasMascotaModel();
 $EnfSufridasModel = new EnfermedadesPadecidasModel();
-
-$alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
-$enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
-$cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
-
-
 
     if(isset( $_POST["obtener"])){
     $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
@@ -101,6 +96,7 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
        
  $idMascota = $mascotaModel->agregarMascota($nombre,$edad,$sexo,$chip,$procedencia,$fch_nacimiento,$id_raza,$pelaje,$cedula_cliente);
+ 
             if($idMascota){
                 $fechaAntecedente = date("Y-m-d");
                 foreach ((array) ($_POST["alergias"] ?? []) as $alergia) {
@@ -273,7 +269,9 @@ $cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
         echo json_encode(["status" => "success"] + $mascotaModel->obtenerCatalogos());
         exit;
     }
-
+$alergiasDisponibles = $AlergiaMascotaModel->obtenerAlergiasActivas();
+$enfermedadesDisponibles = $EnfSufridasModel->obtenerPatologiasActivas();
+$cirugiasDisponibles = $CirgsPreviasModel->obtenerCirugiasDisponibles();
 
 require_once "app/view/MascotaView.php";
 ?>

@@ -27,9 +27,16 @@ function mostrarErroresConsulta(errores) {
 }
 
 function activarTomSelect(select) {
-    if (!window.TomSelect || select.tomselect) return;
+    if (!select || !window.TomSelect || select.tomselect) return;
     new TomSelect(select, {
-        create: false,
+        create: select.dataset.create === "true"
+            ? input => {
+                const value = input.trim();
+                return value && value.length <= Number(select.dataset.maxlength || 80)
+                    ? { value, text: value }
+                    : false;
+            }
+            : false,
         allowEmptyOption: true,
         placeholder: select.dataset.placeholder || "Seleccione una opción"
     });
@@ -59,8 +66,9 @@ function cargarFila(tipo) {
     const opciones = tipo === "diagnostico"
         ? catalogos.patologias
         : catalogos.medicamentos;
-
+    
     if (select) llenarSelect(select, opciones, "Seleccione una opción");
+    
 }
 
 function establecerValores(datos) {
@@ -70,7 +78,12 @@ function establecerValores(datos) {
         }).first();
         if (!elemento.length || Array.isArray(valor)) return;
         if (elemento[0].tomselect) {
-            elemento[0].tomselect.setValue(String(valor ?? ""));
+            const tomSelect = elemento[0].tomselect;
+            const valorTexto = String(valor ?? "");
+            if (elemento[0].dataset.create === "true" && valorTexto && !tomSelect.options[valorTexto]) {
+                tomSelect.addOption({ value: valorTexto, text: valorTexto });
+            }
+            tomSelect.setValue(valorTexto);
         } else {
             elemento.val(valor ?? "");
         }
@@ -167,6 +180,7 @@ function prepararFormulario() {
     const parametros = new URLSearchParams(window.location.search);
     const id = Number(parametros.get("id_consulta") || 0);
     const fecha = formularioConsulta.find('[name="fecha"]');
+    activarTomSelect($("#actitud")[0]);
 
     if (id > 0) {
         formularioConsulta.find('[name="id_consulta"]').val(id);

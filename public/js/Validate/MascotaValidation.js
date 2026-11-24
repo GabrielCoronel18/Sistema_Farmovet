@@ -11,7 +11,7 @@ $(function () {
 
     $(".MascotasForm").validate({
         onkeyup: function (element) {
-            const longitud = $(element).val().trim().length;
+            const longitud = String($(element).val() ?? "").trim().length;
            
             if (longitud >= 3) {
             $(element).valid();
@@ -37,7 +37,7 @@ $(function () {
                 minlength: 2, 
                 maxlength: 50, 
                  normalizer: function(value) {
-                    return $.trim(value);
+                     return value.trim();
                 },
                 nombreMascota: true 
             },
@@ -65,7 +65,7 @@ $(function () {
                 minlength: 4, 
                 maxlength: 50, 
                 normalizer: function(value) {
-                    return $.trim(value);
+                    return value.trim();
                 },
                 pelajeMascota: true 
             },
@@ -77,7 +77,7 @@ $(function () {
                 minlength: 5, 
                 maxlength: 200, 
                  normalizer: function(value) {
-                    return $.trim(value);
+                     return value.trim();
                 },
                 procedenciaMascota: true 
             }
