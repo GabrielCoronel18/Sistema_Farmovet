@@ -14,10 +14,6 @@ $(document).ready(function(){
             onkeyup: function(element){
                 $(element).valid();
             },
-
-            onfocusout: function(element){
-                $(element).valid();
-            },
             
             rules: {
                 nombre_especie: {
