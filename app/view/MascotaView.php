@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Farmovet - Dashboard</title>
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+    <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/css/tom-select.bootstrap5.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -201,10 +202,11 @@
   </div>
 </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="public/jquery/jquery-3.7.1.min.js"></script>
+    <script src="public/jquery/jquery.validate.min.js"></script>
+    <script src="public/datatables/datatables.min.js"></script>
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <script src="public/js/tom-select.complete.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/ajax.js"></script>
     <script src="public/js/alerts.js"></script>

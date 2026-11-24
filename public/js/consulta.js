@@ -4,6 +4,7 @@ const btnAnterior = $("#btn-anterior");
 const btnSiguiente = $("#btn-siguiente");
 const infoPagina = $("#info-pagina");
 const filtrar = $("#filtrar");
+
 let paginaActual = 1;
 
 
@@ -79,7 +80,10 @@ const etiquetasCampos = {
     descarte: "Pruebas de descarte",
     piel_otros: "Piel / otros",
     snap: "Prueba SNAP",
-    observaciones: "Observaciones"
+    observaciones: "Observaciones",
+    alergias: "Alergias",
+    cirugias_previas: "Cirugías previas",
+    enfermedades_sufridas: "Enfermedades sufridas"
 };
 
 function obtenerEtiquetaCampo(campo) {
@@ -100,7 +104,7 @@ function renderizarSeccion(titulo, datos) {
         .forEach(([campo, valor]) => {
             const elemento = $("<div>").addClass("col-md-6 mb-2");
             elemento.append($("<dt>").text(obtenerEtiquetaCampo(campo)));
-            elemento.append($("<dd>").text(valor));
+            elemento.append($("<dd>").addClass("text-break").text(valor));
             lista.append(elemento);
         });
     if (!lista.children().length) {
@@ -117,7 +121,7 @@ function renderizarLista(titulo, datos, campoPrincipal, campoSecundario) {
     }
     const lista = $("<ul>").addClass("list-group");
     datos.forEach(item => {
-        const contenido = $("<li>").addClass("list-group-item");
+        const contenido = $("<li>").addClass("list-group-item text-break");
         contenido.append($("<strong>").text(item[campoPrincipal]));
         contenido.append($("<span>").text(` — ${item[campoSecundario] ?? ""}`));
         lista.append(contenido);
@@ -128,7 +132,7 @@ function renderizarLista(titulo, datos, campoPrincipal, campoSecundario) {
 function agregarDetalle(contenedor, etiqueta, valor, clases = "col-md-6 mb-3") {
     const campo = $("<div>").addClass(clases);
     campo.append($("<dt>").text(etiqueta));
-    campo.append($("<dd>").text(valor ?? "—"));
+    campo.append($("<dd>").addClass("text-break").text(valor ?? "—"));
     contenedor.append(campo);
 }
 
@@ -167,6 +171,7 @@ function crearDetalle(consulta) {
     agregarDetalle(resumen, "Seguimiento", consulta.comentario || "—", "col-12 mb-3");
     cuerpo.append(resumen);
     cuerpo.append(renderizarSeccion("Anamnesis", consulta.detalle?.anamnesis));
+    cuerpo.append(renderizarSeccion("Antecedentes de la mascota", consulta.detalle?.antecedentes));
     cuerpo.append(renderizarSeccion("Examen clínico", consulta.detalle?.examen));
     cuerpo.append(renderizarSeccion("Laboratorio", consulta.detalle?.laboratorio));
     cuerpo.append(renderizarLista("Diagnósticos", consulta.detalle?.diagnosticos, "patologia", "tipo_diagnostico"));
@@ -237,9 +242,17 @@ function obtenerConsultas(param = null, pagina = paginaActual) {
                 type: "button",
                 "data-eliminar-consulta": id
             }).addClass("btn btn-sm btn-danger").text("Eliminar");
+            const GenerarPDF =  $("<button>").attr({
+                type: "button",
+                "data-bs-toggle": "modal",
+                "data-bs-target": `#ReporteModal`,
+                "data-pdf-consulta": id
+            }).addClass("btn btn-sm btn-success").text("Generar PDF");
             
             if ($("#acciones").length) {
-            fila.append($("<td>").addClass("table-light text-nowrap").append(actualizar, " ", eliminar));
+                const acciones = $("<div>").addClass("consulta-acciones d-flex gap-1")
+                    .append(GenerarPDF, actualizar, eliminar);
+                fila.append($("<td>").addClass("table-light").append(acciones));
             }
             
             tablaConsultas.append(fila);
@@ -260,6 +273,47 @@ function obtenerConsultas(param = null, pagina = paginaActual) {
         actualizarPaginacion(resultado.hayMas);
     }).catch(normalizarErrorAjax)
         .catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
+}
+
+const reporteModal = document.getElementById("ReporteModal");
+const pdfCanvas = document.getElementById("pdf-canvas");
+
+if (reporteModal && pdfCanvas && window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'public/js/pdfjs/pdf.worker.min.js';
+    let pdfUrl = "";
+
+    reporteModal.addEventListener("show.bs.modal", event => {
+        const consultaId = event.relatedTarget?.getAttribute("data-pdf-consulta");
+        if (!consultaId) return;
+
+        pdfUrl = `index.php?url=Consulta&GenerarPDF=${consultaId}`;
+        $("#GenerarPDF").attr({ href: pdfUrl, target: "_blank" });
+        pdfCanvas.width = 0;
+        pdfCanvas.height = 0;
+    });
+
+    reporteModal.addEventListener("shown.bs.modal", async () => {
+        if (!pdfUrl) return;
+
+        try {
+            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 1.2 });
+            const context = pdfCanvas.getContext("2d");
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            await page.render({ canvasContext: context, viewport }).promise;
+        } catch (error) {
+            console.error("Error al renderizar el PDF:", error);
+            alertar({
+                icon: "error",
+                title: "Error al cargar la vista previa",
+                text: "No se pudo abrir el PDF. Intenta de nuevo o revisa la respuesta del servidor."
+            });
+        }
+    });
+} else if (reporteModal && pdfCanvas) {
+    console.error("No se pudo inicializar la vista previa: PDF.js no está disponible.");
 }
 
 if (tablaConsultas.length) {
@@ -294,6 +348,8 @@ if (tablaConsultas.length) {
                 });
         });
     });
+
+
     obtenerConsultas();
 
     filtrar.on("input", () => {

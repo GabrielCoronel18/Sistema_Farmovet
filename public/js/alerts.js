@@ -15,6 +15,8 @@ function alertAccesoDenegado(){
         });
 }
 
+
+
 function alertAgregar(status, message){
  
   if(status === "success" ){
