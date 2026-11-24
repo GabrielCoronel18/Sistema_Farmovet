@@ -7,7 +7,14 @@ $(function () {
 
     $("#form-modal-plan, #form-edicion-plan").each(function () {
         $(this).validate({
-            onkeyup: element => $(element).valid(),
+            onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 3) {
+            $(element).valid();
+            } 
+           
+        },
             onfocusout: element => $(element).valid(),
             errorElement: "div",
             errorClass: "invalid-feedback d-block",

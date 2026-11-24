@@ -43,13 +43,19 @@ if (isset($_POST['agregar'])) {
      
     $rolModel->clearErrors();
     $rolModel->validateRequired(['nombre' => $nombre],['nombre']);
-    $rolModel->validateMinLength($nombre, 'nombre', 3);
-    $rolModel->validateMaxLength($nombre, 'nombre', 30);
-    $rolModel->validateNombreRol($nombre);
+    if ($nombre !== '') {
+        $rolModel->validateMinLength($nombre, 'nombre', 3);
+        $rolModel->validateMaxLength($nombre, 'nombre', 30);
+        $rolModel->validateNombreRol($nombre);
+    }
 
     $errors = $rolModel->getErrors();
     if (!empty($errors)) {
-        echo json_encode(["status" => "error", "errors" => $errors]);
+        echo json_encode([
+            "status" => "error",
+            "mensaje" => reset($errors),
+            "errors" => $errors
+        ]);
         exit;
     }
 
@@ -66,8 +72,27 @@ if (isset($_POST['agregar'])) {
 if (isset($_POST['actualizar'])) {
     $id = (int)($_POST['id'] ?? 0);
     $nombre = trim($_POST['nombre'] ?? '');
-    if ($id <= 0 || empty($nombre)) {
-        echo json_encode(["status" => "error", "mensaje" => "Complete los campos."]);
+
+    $rolModel->clearErrors();
+    $rolModel->validateRequired(['nombre' => $nombre],['nombre']);
+    if ($nombre !== '') {
+        $rolModel->validateMinLength($nombre, 'nombre', 3);
+        $rolModel->validateMaxLength($nombre, 'nombre', 30);
+        $rolModel->validateNombreRol($nombre);
+    }
+
+    $errors = $rolModel->getErrors();
+    if (!empty($errors)) {
+        echo json_encode([
+            "status" => "error",
+            "mensaje" => reset($errors),
+            "errors" => $errors
+        ]);
+        exit;
+    }
+
+    if ($id <= 0) {
+        echo json_encode(["status" => "error", "mensaje" => "El rol seleccionado no es válido."]);
         exit;
     }
     $exito = $rolModel->actualizarRol($id, $nombre);

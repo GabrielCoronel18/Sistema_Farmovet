@@ -133,6 +133,11 @@ window.eliminarEspecie = function (id) {
                     });
                     obtenerDatos();
                 } else {
+                    const error = Object.values(res.errors || {})[0];
+                    if (error) {
+                        $("#nombre_especie").addClass("is-invalid");
+                        $("#error-nombre_especie").text(error).addClass("d-block");
+                    }
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -158,6 +163,7 @@ if (btnAgregar) {
         let validator = $("#formularioEspecie").validate();
         validator.resetForm();
         $("#nombre_especie").removeClass("is-invalid is-valid");
+        $("#error-nombre_especie").empty().removeClass("d-block");
     });
 }
 
@@ -200,6 +206,11 @@ if (formularioEspecie) {
 
                 obtenerDatos();
             } else {
+                const error = Object.values(res.errors || {})[0];
+                if (error) {
+                    $("#nombre_especie").addClass("is-invalid");
+                    $("#error-nombre_especie").text(error).addClass("d-block");
+                }
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

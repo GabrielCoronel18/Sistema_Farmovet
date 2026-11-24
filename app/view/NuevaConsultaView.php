@@ -82,7 +82,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="tratamiento_consulta">Tratamiento en consulta</label>
-                            <input type="text" class="form-control" id="tratamiento_consulta" name="tratamiento_consulta" value="" maxlength="100">
+                            <input type="text" class="form-control" id="tratamiento_consulta" name="tratamiento_consulta" value="" maxlength="80">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="peso_consulta">Peso en tratamiento (kg)</label>
@@ -160,8 +160,8 @@
                         <div class="col-md-4"><label class="form-label" for="fch_ultimo_celo">Fecha del último celo</label><input type="date" class="form-control" id="fch_ultimo_celo" name="fch_ultimo_celo"></div>
                         <div class="col-md-4"><label class="form-label" for="prod_higiene">Producto de higiene</label><input type="text" class="form-control" id="prod_higiene" name="prod_higiene" maxlength="80"></div>
                         <div class="col-md-4"><label class="form-label" for="frec_higiene">Frecuencia de higiene</label><input type="text" class="form-control" id="frec_higiene" name="frec_higiene" maxlength="80"></div>
-                        <div class="col-md-6"><label class="form-label" for="int_ambiente">Ambiente interno</label><input type="text" class="form-control" id="int_ambiente" name="int_ambiente" maxlength="100"></div>
-                        <div class="col-md-6"><label class="form-label" for="ext_ambiente">Ambiente externo</label><input type="text" class="form-control" id="ext_ambiente" name="ext_ambiente" maxlength="100"></div>
+                        <div class="col-md-6"><label class="form-label" for="int_ambiente">Ambiente interno</label><input type="text" class="form-control" id="int_ambiente" name="int_ambiente" maxlength="80"></div>
+                        <div class="col-md-6"><label class="form-label" for="ext_ambiente">Ambiente externo</label><input type="text" class="form-control" id="ext_ambiente" name="ext_ambiente" maxlength="80"></div>
 
                     </div>
                 </div>
@@ -170,9 +170,9 @@
                     <div class="row g-3">
 
                         <div class="col-md-3"><label class="form-label" for="peso">Peso (kg)</label><input type="number" step="0.01" min="0" class="form-control" id="peso" name="peso"></div>
-                        <div class="col-md-3"><label class="form-label" for="cc">Condición corporal</label><input type="text" class="form-control" id="cc" name="cc"></div>
+                        <div class="col-md-3"><label class="form-label" for="cc">Condición corporal</label><input type="text" class="form-control" id="cc" name="cc" maxlength="80"></div>
                         <div class="col-md-3"><label class="form-label" for="temp_celsius">Temperatura (°C)</label><input type="number" step="0.1" class="form-control" id="temp_celsius" name="temp_celsius"></div>
-                        <div class="col-md-3"><label class="form-label" for="pulso_yugular">Pulso yugular</label><input type="text" class="form-control" id="pulso_yugular" name="pulso_yugular"></div>
+                        <div class="col-md-3"><label class="form-label" for="pulso_yugular">Pulso yugular</label><input type="text" class="form-control" id="pulso_yugular" name="pulso_yugular" maxlength="80"></div>
                         <div class="col-md-3"><label class="form-label" for="fr_rpm">FR (rpm)</label><input type="number" class="form-control" id="fr_rpm" name="fr_rpm"></div>
                         <div class="col-md-3"><label class="form-label" for="fc_lpm">FC (lpm)</label><input type="number" class="form-control" id="fc_lpm" name="fc_lpm"></div>
                         <div class="col-md-3"><label class="form-label" for="pulso_ppm">Pulso (ppm)</label><input type="number" class="form-control" id="pulso_ppm" name="pulso_ppm"></div>
@@ -181,10 +181,10 @@
                         <div class="col-md-3"><label class="form-label" for="pas">PAS</label><input type="number" class="form-control" id="pas" name="pas"></div>
                         <div class="col-md-3"><label class="form-label" for="pad">PAD</label><input type="number" class="form-control" id="pad" name="pad"></div>
                         <div class="col-md-3"><label class="form-label" for="prcnt_deshidratacion">Deshidratación (%)</label><input type="number" step="0.1" class="form-control" id="prcnt_deshidratacion" name="prcnt_deshidratacion"></div>
-                        <div class="col-md-6"><label class="form-label" for="gangliios_palpables">Ganglios palpables</label><input type="text" class="form-control" id="gangliios_palpables" name="gangliios_palpables"></div>
-                        <div class="col-md-6"><label class="form-label" for="mucosas_visibles">Mucosas visibles</label><input type="text" class="form-control" id="mucosas_visibles" name="mucosas_visibles"></div>
-                        <div class="col-md-6"><label class="form-label" for="ectoparasitos">Ectoparásitos</label><input type="text" class="form-control" id="ectoparasitos" name="ectoparasitos"></div>
-                        <div class="col-md-6"><label class="form-label" for="actitud">Actitud</label><input type="text" class="form-control" id="actitud" name="actitud"></div>
+                        <div class="col-md-6"><label class="form-label" for="gangliios_palpables">Ganglios palpables</label><input type="text" class="form-control" id="gangliios_palpables" name="gangliios_palpables" maxlength="100"></div>
+                        <div class="col-md-6"><label class="form-label" for="mucosas_visibles">Mucosas visibles</label><input type="text" class="form-control" id="mucosas_visibles" name="mucosas_visibles" maxlength="100"></div>
+                        <div class="col-md-6"><label class="form-label" for="ectoparasitos">Ectoparásitos</label><input type="text" class="form-control" id="ectoparasitos" name="ectoparasitos" maxlength="100"></div>
+                        <div class="col-md-6"><label class="form-label" for="actitud">Actitud</label><input type="text" class="form-control" id="actitud" name="actitud" maxlength="80"></div>
 
                         <div class="col-12">
                             <label class="form-label" for="hallazgos">Hallazgos</label>
@@ -209,7 +209,6 @@
                         </div>
                         <h5 class="text-secondary mt-3 mb-0 border-bottom pb-2">Uroanálisis</h5>
 
-                        <div class="col-md-3"><label class="form-label" for="uro_sangre">Sangre</label><input type="text" class="form-control" id="uro_sangre" name="uro_sangre" maxlength="50"></div>
                         <div class="col-md-3"><label class="form-label" for="uro_urob">Urobilinógeno</label><input type="text" class="form-control" id="uro_urob" name="uro_urob" maxlength="50"></div>
                         <div class="col-md-3"><label class="form-label" for="uro_bli">Bilirrubina</label><input type="text" class="form-control" id="uro_bli" name="uro_bli" maxlength="50"></div>
                         <div class="col-md-3"><label class="form-label" for="uro_prot">Proteínas</label><input type="text" class="form-control" id="uro_prot" name="uro_prot" maxlength="50"></div>

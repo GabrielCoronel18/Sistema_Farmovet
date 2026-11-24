@@ -7,10 +7,9 @@ use Gabriel\SistemaFarmovet\model\AlergiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\CirugiasMascotaModel;
 use Gabriel\SistemaFarmovet\model\EnfermedadesPadecidasModel;
 use function Gabriel\SistemaFarmovet\helpers\verificarRol;
-use function Gabriel\SistemaFarmovet\helpers\codificarId;
-use function Gabriel\SistemaFarmovet\helpers\decodificarId;
+use function Gabriel\SistemaFarmovet\services\codificarId;
+use function Gabriel\SistemaFarmovet\services\decodificarId;
 
-require_once __DIR__ . '/../helpers/hash.php';
 
 verificarRol([1, 2, 3]);
 

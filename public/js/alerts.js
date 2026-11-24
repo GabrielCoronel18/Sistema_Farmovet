@@ -1,11 +1,27 @@
+function alertAccesoDenegado(){
+  Swal.fire({
+            icon: 'error',
+            title: 'Acceso Denegado',
+            text: 'No tienes permisos para realizar esta acción o ingresar a esta sección.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#18994a',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+               
+                const nuevaUrl = window.location.pathname + window.location.search.replace(/([?&])error=acceso_denegado(&|$)/, '$1').replace(/[?&]$/, '');
+                window.history.replaceState({}, document.title, nuevaUrl);
+            }
+        });
+}
 
-function alertAgregar(status){
+function alertAgregar(status, message){
  
   if(status === "success" ){
   
           Swal.fire({
           title: "Agregado",
-          text: "Se ha Agregado Correctamente ",
+          text: message || "Se ha Agregado Correctamente ",
           icon: "success",
           draggable: true,
           confirmButtonColor: "#18994a",
@@ -15,7 +31,7 @@ function alertAgregar(status){
   else if(status === "error"){
           Swal.fire({
           title: "Error",
-          text: "Error al Agregar el Registro",
+          text: message || "Error al Agregar el Registro",
           icon: "error",
           confirmButtonColor: "#ce0808",
         });
@@ -23,13 +39,13 @@ function alertAgregar(status){
 }
 
 
-function alertActualizar(status){
+function alertActualizar(status, message){
  
   if(status === "success"){
   
           Swal.fire({
           title: "Editado",
-          text: "Se ha Editado Correctamente ",
+          text: message || "Se ha Editado Correctamente ",
           icon: "success",
           draggable: true,
           confirmButtonColor: "#18994a",
@@ -39,14 +55,14 @@ function alertActualizar(status){
   else if(status === "error"){
           Swal.fire({
           title: "Error",
-          text: "Error al Editar el Registro",
+          text: message || "Error al Editar el Registro",
           icon: "error",
           confirmButtonColor: "#ce0808",
         });
   }
 }
 
-function alertEliminar(method,data, callback){
+function alertEliminar(method, data, callback){
 
   Swal.fire({
   title: "Confirmar Eliminacion",

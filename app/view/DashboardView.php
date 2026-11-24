@@ -51,7 +51,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Consultas</h6>
-                                <h4 class="mb-0 fw-bold text-purple"><?php echo $consultas; ?></h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo htmlspecialchars($consultas); ?></h4>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Clientes</h6>
-                                <h4 class="mb-0 fw-bold text-purple"><?php echo $clientes; ?></h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo htmlspecialchars($clientes); ?></h4>
                             </div>
                         </div>
                     </div>
@@ -79,7 +79,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Mascotas</h6>
-                                <h4 class="mb-0 fw-bold text-purple"><?php echo $mascotas; ?></h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo htmlspecialchars($mascotas); ?></h4>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div>
                                 <h6 class="text-muted mb-0">Planes Sanitarios</h6>
-                                <h4 class="mb-0 fw-bold text-purple"><?php echo $planes; ?></h4>
+                                <h4 class="mb-0 fw-bold text-purple"><?php echo htmlspecialchars($planes); ?></h4>
                             </div>
                         </div>
                     </div>
@@ -104,6 +104,11 @@
     </div>
 
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="public/js/sweetalert2.min.js"></script>
+    <script src="public/js/alerts.js"></script>
+    <script src="public/js/Dashboard.js"></script>
+
 </body>
 </html>
        

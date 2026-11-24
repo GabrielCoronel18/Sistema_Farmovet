@@ -10,7 +10,14 @@ $(function () {
     }, "La procedencia contiene caracteres no permitidos.");
 
     $(".MascotasForm").validate({
-        onkeyup: element => $(element).valid(),
+        onkeyup: function (element) {
+            const longitud = $(element).val().trim().length;
+           
+            if (longitud >= 3) {
+            $(element).valid();
+            } 
+           
+        },
         onfocusout: element => $(element).valid(),
         errorElement: "div",
         errorClass: "invalid-feedback d-block",
@@ -25,21 +32,62 @@ $(function () {
             else error.insertAfter(element);
         },
         rules: {
-            nombre: { required: true, minlength: 2, maxlength: 50, nombreMascota: true },
-            edad: { required: true, digits: true, min: 0 },
-            fch_nacimiento: { required: true, dateISO: true },
-            sexo: { required: true },
-            chip: { required: true },
-            id_raza: { required: true },
-            pelaje: { required: true, minlength: 4, maxlength: 50, pelajeMascota: true },
-            cedula_cliente: { required: true },
-            procedencia: { required: true, minlength: 5, maxlength: 200, procedenciaMascota: true }
+            nombre: { 
+                required: true, 
+                minlength: 2, 
+                maxlength: 50, 
+                 normalizer: function(value) {
+                    return $.trim(value);
+                },
+                nombreMascota: true 
+            },
+            edad: { 
+                required: true, 
+                digits: true, 
+                min: 0 
+            },
+            fch_nacimiento: { 
+                required: 
+                true, 
+                dateISO: true 
+            },
+            sexo: { 
+                required: true 
+            },
+            chip: { 
+                required: true 
+            },
+            id_raza: { 
+                required: true 
+            },
+            pelaje: { 
+                required: true, 
+                minlength: 4, 
+                maxlength: 50, 
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                pelajeMascota: true 
+            },
+            cedula_cliente: { 
+                required: true 
+            },
+            procedencia: { 
+                required: true, 
+                minlength: 5, 
+                maxlength: 200, 
+                 normalizer: function(value) {
+                    return $.trim(value);
+                },
+                procedenciaMascota: true 
+            }
         },
         messages: {
             nombre: {
                 required: "El nombre es obligatorio.",
                 minlength: "Debe tener al menos 2 caracteres.",
                 maxlength: "No puede exceder 50 caracteres.",
+                 
                 nombreMascota: "El nombre solo puede contener letras, espacios, apóstrofes y guiones."
             },
             edad: {
@@ -58,6 +106,7 @@ $(function () {
                 required: "El pelaje es obligatorio.",
                 minlength: "Debe tener al menos 4 caracteres.",
                 maxlength: "No puede exceder 50 caracteres.",
+                 
                 pelajeMascota: "El pelaje solo puede contener letras, espacios, guiones, paréntesis y barras."
             },
             cedula_cliente: "Seleccione un cliente.",
@@ -65,6 +114,7 @@ $(function () {
                 required: "La procedencia es obligatoria.",
                 minlength: "Debe tener al menos 5 caracteres.",
                 maxlength: "No puede exceder 200 caracteres.",
+                 
                 procedenciaMascota: "La procedencia contiene caracteres no permitidos."
             }
         }

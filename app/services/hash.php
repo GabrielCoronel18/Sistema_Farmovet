@@ -1,5 +1,5 @@
 <?php
-namespace Gabriel\SistemaFarmovet\helpers;
+namespace Gabriel\SistemaFarmovet\services;
 
 use Hashids\Hashids;
 
