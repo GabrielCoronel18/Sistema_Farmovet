@@ -2,6 +2,7 @@
 namespace Gabriel\SistemaFarmovet\controller;
 
 use Gabriel\SistemaFarmovet\model\AlergiaModel;
+use function Gabriel\SistemaFarmovet\helpers\verificarRol;
 
 verificarRol([1, 2]);
 
