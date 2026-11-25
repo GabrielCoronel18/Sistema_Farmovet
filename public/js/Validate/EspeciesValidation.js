@@ -1,42 +1,44 @@
 $(document).ready(function () {
+
+    // Solo letras (con acentos, ñ) y espacios SOLO entre palabras
     $.validator.addMethod("soloLetras", function (value, element) {
-        return this.optional(element) || /^[\p{L}]+(?: +[\p{L}]+)*$/u.test(value);
-    }, "Solo se permiten letras y espacios.");
+        return this.optional(element) || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/.test(value.trim());
+    }, "Solo se permiten letras y espacios entre palabras (no al inicio/final)");
 
-    $.validator.addMethod("soloNumeros", function (value, element) {
-        return this.optional(element) || /^[0-9]+$/.test(value);
-    }, "Solo se permiten números.");
+    //  No permitir solo espacios
+    $.validator.addMethod("noSoloEspacios", function (value, element) {
+        return this.optional(element) || value.trim().length > 0;
+    }, "El campo no puede contener solo espacios");
 
-    $("#formularioEspecie").validate({
-        onkeyup: element => $(element).valid(),
-        onfocusout: element => $(element).valid(),
-        errorElement: "div",
-        errorClass: "invalid-feedback d-block",
-        highlight: element => $(element).addClass("is-invalid"),
-        unhighlight: element => {
-            $(element).removeClass("is-invalid")
-                .siblings(".invalid-feedback").empty().removeClass("d-block");
+    //  No permitir dobles espacios
+    $.validator.addMethod("sinDoblesEspacios", function (value, element) {
+        return this.optional(element) || !/\s{2,}/.test(value);
+    }, "No se permiten espacios dobles");
+
+    $('#formularioEspecie').validate({
+        onkeyup: function (element) {
+            $(element).valid();
         },
-        errorPlacement: (error, element) => {
-            const feedback = element.siblings(".invalid-feedback").first();
-            if (feedback.length) feedback.text(error.text()).addClass("d-block");
-            else error.insertAfter(element);
-        },
+
         rules: {
             nombre_especie: {
                 required: true,
+                noSoloEspacios: true,      
+                sinDoblesEspacios: true,   
                 minlength: 3,
                 maxlength: 50,
-                normalizer: value => value.trim(),
-                soloLetras: true
+                soloLetras: true           // 🔒 regex estricta
             }
         },
+
         messages: {
             nombre_especie: {
-                required: "El nombre de la especie es obligatorio.",
-                minlength: "El nombre debe tener al menos 3 caracteres.",
-                maxlength: "El nombre no puede exceder 50 caracteres.",
-                soloLetras: "Solo se permiten letras y espacios."
+                required: "El nombre de la especie es obligatorio",
+                noSoloEspacios: "El nombre no puede ser solo espacios",
+                sinDoblesEspacios: "No se permiten espacios dobles",
+                minlength: "El nombre debe tener al menos 3 letras",
+                maxlength: "El nombre no puede exceder 50 caracteres",
+                soloLetras: "Solo se permiten letras",
             }
         }
     });

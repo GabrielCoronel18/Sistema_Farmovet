@@ -58,11 +58,21 @@ function obtenerDatos(param = null) {
             scrollX: true,
             searching: true,
             lengthChange: false,
+            pageLength:10,
+            pagingType: "full_numbers",
             language: {
                 search: "Buscar:",
                 zeroRecords: "No se encontraron resultados",
                 info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                paginate: { previous: "Anterior", next: "Siguiente" }
+                infoEmpty:"Mostrando 0 registros",
+                infoFiltered:"(filtrado de _MAX_ registros)",
+                paginate: { 
+                    
+                    first: "Primero",
+                    previous: "Anterior",
+                    next: "Siguiente",
+                    last: "Último"
+                 }
             }
         });
     });
