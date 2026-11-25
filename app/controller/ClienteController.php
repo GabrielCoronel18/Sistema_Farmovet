@@ -34,8 +34,8 @@ $mensajeAlerta = "";
 	$cliente->validateMaxLength($apellido, 'apellido', 30);
     $cliente->validateNombreCliente($apellido, 'apellido');
 
-    $cliente->validateMinLength($cedula, 'cedula', 8);
-	$cliente->validateMaxLength($cedula, 'cedula', 12);
+    $cliente->validateMinLength($cedula, 'cedula', 6);
+	$cliente->validateMaxLength($cedula, 'cedula', 9);
     $cliente->validateCedulaCliente($cedula);
     
     $cliente->validateMinLength($telefono, 'telefono', 9);
@@ -104,8 +104,8 @@ $mensajeAlerta = "";
         $cliente->validateMinLength($apellido, 'apellido', 3);
         $cliente->validateMaxLength($apellido, 'apellido', 30);
         $cliente->validateNombreCliente($apellido, 'apellido');
-        $cliente->validateMinLength($cedula, 'cedula', 8);
-        $cliente->validateMaxLength($cedula, 'cedula', 12);
+        $cliente->validateMinLength($cedula, 'cedula', 6);
+        $cliente->validateMaxLength($cedula, 'cedula', 9);
         $cliente->validateCedulaCliente($cedula);
         $cliente->validateMinLength($telefono, 'telefono', 9);
         $cliente->validateMaxLength($telefono, 'telefono', 11);

@@ -1,39 +1,123 @@
-const patronNombreCliente = /^[\p{L}]+(?:[ '-]+[\p{L}]+)*$/u;
-const patronDireccionCliente = /^[\p{L}\p{N}]+(?:[\s.,#()\/'-]+[\p{L}\p{N}]+)*$/u;
-const patronCedulaCliente = /^(?:\d{10,12}|[VEJGP]-\d{6,10})$/i;
-const patronCorreoCliente = /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i;
+$(document).ready(function () {
 
-function validarCampoCliente(id, errorId, patron, minimo, maximo, mensaje) {
-    const campo = document.getElementById(id);
-    const error = document.getElementById(errorId);
-    const valor = campo.value.trim();
-    campo.classList.remove("is-invalid");
-    error.textContent = "";
-    if (valor.length < minimo || valor.length > maximo || !patron.test(valor)) {
-        campo.classList.add("is-invalid");
-        error.textContent = mensaje;
-        return false;
-    }
-    return true;
-}
+   
+    // ✅ Solo letras (con acentos, ñ) y espacios SOLO entre palabras
+    $.validator.addMethod("soloLetras", function (value, element) {
+        return this.optional(element) || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/.test(value.trim());
+    }, "Solo se permiten letras y espacios entre palabras");
 
-function validarCliente() {
-    const cedula = validarCampoCliente("cedula_cliente", "error-cedula", patronCedulaCliente,
-        8, 12, "Use una cédula numérica o el formato V-12345678.");
-    const nombre = validarCampoCliente("nombre", "error-nombre", patronNombreCliente,
-        3, 30, "Debe tener entre 3 y 30 caracteres y solo contener letras, espacios, apóstrofes y guiones.");
-    const apellido = validarCampoCliente("apellido", "error-apellido", patronNombreCliente,
-        3, 30, "Debe tener entre 3 y 30 caracteres y solo contener letras, espacios, apóstrofes y guiones.");
-    const telefono = validarCampoCliente("telefono", "error-telefono", /^\d{9,11}$/,
-        9, 11, "El teléfono debe contener entre 9 y 11 números.");
-    const correo = document.getElementById("correo");
-    const correoValido = patronCorreoCliente.test(correo.value.trim());
-    correo.classList.toggle("is-invalid", !correoValido);
-    if (!correoValido) {
-        document.getElementById("error-correo").textContent =
-            "Ingrese un correo válido, por ejemplo: usuario@dominio.com.";
-    }
-    const direccion = validarCampoCliente("direccion", "error-direccion", patronDireccionCliente,
-        10, 50, "Debe tener entre 10 y 50 caracteres y solo contener letras, números, espacios, puntos, comas, paréntesis y guiones.");
-    return cedula && nombre && apellido && telefono && correoValido && direccion;
-}
+    // ✅ No permitir solo espacios
+    $.validator.addMethod("noSoloEspacios", function (value, element) {
+        return this.optional(element) || value.trim().length > 0;
+    }, "El campo no puede contener solo espacios");
+
+    // ✅ No permitir dobles espacios
+    $.validator.addMethod("sinDoblesEspacios", function (value, element) {
+        return this.optional(element) || !/\s{2,}/.test(value);
+    }, "No se permiten espacios dobles");
+
+    // ✅ Cédula: SOLO números, longitud entre 6 y 9 dígitos (ej. 12345678)
+    $.validator.addMethod("formatoCedula", function (value, element) {
+        return this.optional(element) || /^\d{6,9}$/.test(value.trim());
+    }, "La cédula debe contener solo números");
+
+    // ✅ Teléfono: Solo números, permite + y guiones
+    $.validator.addMethod("formatoTelefono", function (value, element) {
+        return this.optional(element) || /^[\+]?[0-9\s\-]{10,15}$/.test(value.trim());
+    }, "Formato de teléfono inválido");
+
+    // ✅ Dirección: Letras, números, espacios, #, ., ,, -
+    $.validator.addMethod("formatoDireccion", function (value, element) {
+        return this.optional(element) || /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ#.,\-\s]+$/.test(value.trim());
+    }, "La dirección contiene caracteres no válidos");
+
+    // =============================================
+    // 2. VALIDACIÓN DEL FORMULARIO
+    // =============================================
+
+    $('.ClienteForm').validate({
+        onkeyup: function (element) {
+            $(element).valid();
+        },
+
+        rules: {
+            cedula_cliente: {
+                required: true,
+                noSoloEspacios: true,
+                formatoCedula: true, // <-- Aquí se aplica la nueva regla de puros números
+                minlength: 6,
+                maxlength: 9
+            },
+            nombre: {
+                required: true,
+                noSoloEspacios: true,
+                sinDoblesEspacios: true,
+                soloLetras: true,
+                minlength: 2,
+                maxlength: 30
+            },
+            apellido: {
+                required: true,
+                noSoloEspacios: true,
+                sinDoblesEspacios: true,
+                soloLetras: true,
+                minlength: 2,
+                maxlength: 30
+            },
+            telefono: {
+                required: true,
+                noSoloEspacios: true,
+                formatoTelefono: true,
+                minlength: 10,
+                maxlength: 11
+            },
+            correo: {
+                required: true,
+                email: true,
+                noSoloEspacios: true,
+                maxlength: 100
+            },
+            direccion: {
+                required: true,
+                noSoloEspacios: true,
+                sinDoblesEspacios: true,
+                formatoDireccion: true,
+                minlength: 5,
+                maxlength: 50
+            }
+        },
+
+        messages: {
+            cedula_cliente: {
+                required: "La cédula es obligatoria",
+                formatoCedula: "La cédula debe contener solo números",
+                minlength: "La cédula debe tener al menos 6 números",
+                maxlength: "La cédula no puede tener más de 9 números"
+            },
+            nombre: {
+                required: "El nombre es obligatorio",
+                soloLetras: "Solo se permiten letras",
+                minlength: "El nombre debe tener al menos 2 letras"
+            },
+            apellido: {
+                required: "El apellido es obligatorio",
+                soloLetras: "Solo se permiten letras",
+                minlength: "El apellido debe tener al menos 2 letras"
+            },
+            telefono: {
+                required: "El teléfono es obligatorio",
+                formatoTelefono: "Ingrese un teléfono válido (Ej: 04241234567)",
+                minlength: "El teléfono debe tener al menos 11 dígitos"
+            },
+            correo: {
+                required: "El correo es obligatorio",
+                email: "Ingrese un correo electrónico válido (Ej: correo@dominio.com)"
+            },
+            direccion: {
+                required: "La dirección es obligatoria",
+                formatoDireccion: "La dirección contiene caracteres no permitidos",
+                minlength: "La dirección es muy corta"
+            }
+        }
+    });
+});

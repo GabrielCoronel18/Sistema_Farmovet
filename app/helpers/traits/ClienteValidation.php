@@ -15,11 +15,12 @@ trait ClienteValidation
     public function validateCedulaCliente(string $cedula): bool
     {
         $cedula = strtoupper(trim($cedula));
-        $formatoValido = preg_match('/^(?:\d{10,12}|[VEJGP]-\d{6,10})$/', $cedula);
+         // Cambiamos el patrón: Solo de 6 a 9 números (sin letras ni guiones)
+        $formatoValido = preg_match('/^\d{6,9}$/', $cedula);
 
         if (!$formatoValido) {
             $this->errors['cedula'] =
-                'Use una cédula numérica de 10 a 12 dígitos o el formato V-12345678.';
+                 'La cédula debe contener solo números (entre 6 y 9 dígitos).';
             return false;
         }
         return true;
