@@ -74,7 +74,7 @@ class MedicamentoModel extends ConexionBD {
 				WHERE(
 				   CAST(medicamento.id_medicamento AS CHAR) LIKE :param
 				   OR medicamento.nombre_medicamento LIKE :param
-				   OR medicamento.id_tipo_medicamento LIKE :param
+				   OR tipo_medicamento.nom_tipo_medicamento LIKE :param
 				)
 				ORDER BY medicamento.id_medicamento
 				LIMIT :limitacion OFFSET :offset";

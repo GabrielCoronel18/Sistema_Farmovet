@@ -25,7 +25,7 @@ class PlanSanitarioModel extends ConexionBD {
         }
     }
 
-    public function consultarPlanes() {
+    public function consultarPlanes(?string $busqueda = null, int $start = 0, ?int $length = null): array {
         try {
             $db = $this->getConexion();
             $sql = "SELECT p.id_plan, p.id_mascota, m.nombre AS nombre_mascota, 
@@ -35,11 +35,31 @@ class PlanSanitarioModel extends ConexionBD {
                     INNER JOIN mascota m ON p.id_mascota = m.id_mascota
                     INNER JOIN medicamento med ON p.id_medicamento = med.id_medicamento
                     WHERE p.estado = 1";
+            if ($busqueda !== null && $busqueda !== '') {
+                $sql .= " AND (CAST(p.id_plan AS CHAR) LIKE :param
+                           OR CAST(p.id_mascota AS CHAR) LIKE :param
+                           OR m.nombre LIKE :param
+                           OR CAST(p.id_medicamento AS CHAR) LIKE :param
+                           OR med.nombre_medicamento LIKE :param
+                           OR p.fecha_aplicacion LIKE :param
+                           OR p.proximo_refuerzo LIKE :param)";
+            }
+            $sql .= " ORDER BY p.id_plan DESC";
+            if ($length !== null) {
+                $sql .= " LIMIT :limite OFFSET :offset";
+            }
             $stmt = $db->prepare($sql);
+            if ($busqueda !== null && $busqueda !== '') {
+                $stmt->bindValue(':param', '%' . $busqueda . '%', PDO::PARAM_STR);
+            }
+            if ($length !== null) {
+                $stmt->bindValue(':limite', $length, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', $start, PDO::PARAM_INT);
+            }
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            return [];
+            throw $e;
         }
     }
 
@@ -71,10 +91,38 @@ class PlanSanitarioModel extends ConexionBD {
         }
     }
 
-     public function contarPlanesSanitarios(): int {
-		$conex = $this->getConexion();
-		$query = $conex->query("SELECT COUNT(*) FROM plan_sanitario WHERE estado = 1");
-		
-		return (int) $query->fetchColumn();
+     public function contarPlanesSanitarios(?string $busqueda = null): int {
+        $conex = $this->getConexion();
+        if ($busqueda === null || $busqueda === '') {
+            $query = $conex->query("SELECT COUNT(*) FROM plan_sanitario WHERE estado = 1");
+        } else {
+            $query = $conex->prepare(
+                "SELECT COUNT(*)
+                 FROM plan_sanitario p
+                 INNER JOIN mascota m ON p.id_mascota = m.id_mascota
+                 INNER JOIN medicamento med ON p.id_medicamento = med.id_medicamento
+                 WHERE p.estado = 1
+                   AND (CAST(p.id_plan AS CHAR) LIKE :param
+                        OR CAST(p.id_mascota AS CHAR) LIKE :param
+                        OR m.nombre LIKE :param
+                        OR CAST(p.id_medicamento AS CHAR) LIKE :param
+                        OR med.nombre_medicamento LIKE :param
+                        OR p.fecha_aplicacion LIKE :param
+                        OR p.proximo_refuerzo LIKE :param)"
+            );
+            $query->bindValue(':param', '%' . $busqueda . '%', PDO::PARAM_STR);
+            $query->execute();
+        }
+
+        return (int) $query->fetchColumn();
+    }
+
+    public function contarPlanesPendientes(): int {
+        $query = $this->getConexion()->query(
+            "SELECT COUNT(*) FROM plan_sanitario
+             WHERE estado = 1 AND proximo_refuerzo <= CURRENT_DATE"
+        );
+
+        return (int) $query->fetchColumn();
 	}
 }

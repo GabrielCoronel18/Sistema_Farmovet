@@ -7,6 +7,7 @@
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -35,22 +36,24 @@
                 <?php endif; ?>
             </div>
 
-            <div class="table-responsive shadow-sm rounded">
-              <table class="table table-striped align-middle text-nowrap">
+            <article id="table-container">
+				    <table id="TablaAlergias" class="table table-striped" style="border-radius: 12px;">
                  <thead>
                      <tr>
                          <th class="table-purple">Id</th>
                          <th class="table-purple">Nombre de la Alergia</th>
                          <th class="table-purple">Tipo de Alergia</th>
+                         <th class="table-purple">Estado</th>
                          <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
 							<th class="table-purple" id="acciones">Acciones</th>
 							<?php endif; ?>
                      </tr>
                  </thead>
-                 <tbody id="TablaAlergias">
+                 <tbody>
                  </tbody>
              </table>
-            </div>
+            </article>
+
         </main>
     </div>
 
@@ -79,7 +82,17 @@
                     <input type="text" class="form-control" id="tipo" name="tipo" placeholder="Ej. Medicamentosa, Alimentaria..." required>
                     <div class="invalid-feedback" id="errorTipo"></div>
                   </div>
+                  <div class="col-md-12">
+                
+                  <label for="estado" class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado" required>
+                  <option value="1" selected>Activo</option>
+                  <option value="0">Inactivo</option>
+                </select>
+                <div class="invalid-feedback" id="errorEstado"></div>
+              </div>
                 </div>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -92,6 +105,7 @@
 
     <script src="public/jquery/jquery-3.7.1.min.js"></script>
     <script src="public/jquery/jquery.validate.min.js"></script>
+    <script src="public/datatables/datatables.min.js"></script>
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/alerts.js"></script>

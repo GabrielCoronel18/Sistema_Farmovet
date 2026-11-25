@@ -6,34 +6,39 @@ use Gabriel\SistemaFarmovet\helpers\traits\Validation;
 
 verificarRol([1, 2, 3]);
 
-
-
 $PresentacionModel = new PresentacionModel();
 
 $errors = [];
 
 if(isset($_POST["obtener"])) {
-    verificarRol([1, 2]);
-    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
-    $limitacion = (int) ($_POST["limite"] ?? 5);
-    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+    $draw   = (int) ($_POST["draw"] ?? 1);
+    $start  = max(0, (int) ($_POST["start"] ?? 0));
+    $length = (int) ($_POST["length"] ?? 5);
+    $length = in_array($length, [5, 10, 20], true) ? $length : 5;
 
-    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $pagina = (int) floor($start / $length) + 1;
+    
+    $param = trim((string) ($_POST["search"]["value"] ?? ""));
+    
     $tieneFiltro = $param !== "";
 
-    if ($tieneFiltro) {
-        $resultados = $PresentacionModel->filtrarPresentacion($param, $pagina, $limitacion);
-    } else {
-        $resultados = $PresentacionModel->obtenerPresentacion($pagina, $limitacion);
-    }
-    $total = $PresentacionModel->contarPresentaciones($tieneFiltro ? $param : null);
+  $resultados = $tieneFiltro
+        ? $PresentacionModel->filtrarPresentacion($param, $pagina, $length)
+        : $PresentacionModel->obtenerPresentacion($pagina, $length);
 
-    if ($resultados) {
-        echo json_encode(["status" => "success", "resultados" => $resultados, "hayMas" => $pagina * $limitacion < $total]);
-    } else {
-        echo json_encode(["status" => "success", "resultados" => [], "hayMas" => false]);
-    }
+    $recordsTotal = $PresentacionModel->contarPresentaciones(null);
+    $recordsFiltered = $tieneFiltro
+        ? $PresentacionModel->contarPresentaciones($param)
+        : $recordsTotal;
+
+    echo json_encode([
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $resultados
+    ]);
     exit;
+    
 }
 
 if (isset($_POST["agregar"])) {

@@ -8,15 +8,28 @@ verificarRol([1]);
 $rolModel = new RolModel();
 
 if (isset($_POST['obtener'])) {
-    
-    $pagina = (int)($_POST['pagina'] ?? 1);
-    $limite = 10;
-    $busqueda = $_POST['parametro'] ?? '';
+    $draw = (int) ($_POST['draw'] ?? 1);
+    $start = max(0, (int) ($_POST['start'] ?? 0));
+    $limite = (int) ($_POST['length'] ?? 10);
+    $limite = in_array($limite, [5, 10, 20], true) ? $limite : 10;
+    $pagina = (int) floor($start / $limite) + 1;
+    $busqueda = trim((string) ($_POST['search']['value'] ?? $_POST['parametro'] ?? ''));
 
     if ($busqueda !== '') {
         $roles = $rolModel->filtrarRoles($busqueda, $pagina, $limite);
     } else {
         $roles = $rolModel->obtenerRoles($pagina, $limite);
+    }
+
+    if (isset($_POST['draw'])) {
+        $recordsTotal = $rolModel->contarRoles();
+        echo json_encode([
+            "draw" => $draw,
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $busqueda !== '' ? $rolModel->contarRoles($busqueda) : $recordsTotal,
+            "data" => $roles
+        ]);
+        exit;
     }
 
     echo json_encode([

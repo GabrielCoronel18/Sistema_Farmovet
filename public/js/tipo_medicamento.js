@@ -13,63 +13,110 @@ const campoEstado = $("#estado_tipo_medicamento");
 const errorEstado = $("#error-estado_tipo_medicamento");
 let paginaActual = 1;
 
-function obtenerDatos(param = null, pagina = paginaActual) {
-	const datos = new FormData();
-	datos.append("obtener", "true");
-	datos.append("pagina", pagina);
-	datos.append("limite", limite.val());
-	if (param !== null) datos.append("parametro", param);
+const tieneAcciones = $("#acciones").length > 0;
 
-	peticionAjax(datos).then(resultado => {
-		tablaTipoMedicamentos.empty();
-		if (resultado.status !== "success") {
-			tablaTipoMedicamentos.append(
-				$("<tr>").append($("<td>").attr("colspan", 4).text("No hay tipos de medicamentos registrados"))
-			);
-			paginaActual = pagina;
-			actualizarPaginacion(false);
-			return;
+const columnas = [
+	{ data: "id_tipo_medicamento", className: "table-light " },
+	{ data: "nom_tipo_medicamento", className: "table-light" },
+	{
+		data: "estado",
+		className: "table-light",
+		render: function (estado) {
+			const activo = Number(estado) === 1;
+			return `<span class="badge ${activo ? "bg-success" : "bg-secondary"}">${activo ? "Activo" : "Inactivo"}</span>`;
 		}
-		if (resultado.resultados.length === 0 && pagina > 1) {
-			obtenerDatos(param, pagina - 1);
-			return;
-		}
+	}
+];
 
-		resultado.resultados.forEach(tipoMedicamento => {
-			const fila = $("<tr>");
-			fila.append($("<td>").addClass("table-light").text(tipoMedicamento.id_tipo_medicamento));
-			fila.append($("<td>").addClass("table-light").text(tipoMedicamento.nom_tipo_medicamento));
-			fila.append(
-				$("<td>").addClass("table-light").append(
-					$("<span>")
-						.addClass(tipoMedicamento.estado == 1 ? "badge bg-success" : "badge bg-secondary")
-						.text(tipoMedicamento.estado == 1 ? "Activo" : "Inactivo")
-				)
-			);
-			const actualizar = $("<button>").addClass("btn btn-sm btn-success btn-actualizar")
-				.val(tipoMedicamento.id_tipo_medicamento).attr("data-bs-toggle", "modal")
-				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
-			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
-				.val(tipoMedicamento.id_tipo_medicamento).text("Eliminar");
-			
-			if ($("#acciones").length) {
-			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
-			}
-			tablaTipoMedicamentos.append(fila);
-		});
-		paginaActual = pagina;
-		actualizarPaginacion(resultado.hayMas);
+if (tieneAcciones) {
+	columnas.push({
+		data: "id_tipo_medicamento",
+		className: "table-light",
+		orderable: false,
+		searchable: false,
+		render: function (id) {
+			return `
+				<button type="button" class="btn btn-sm btn-success btn-actualizar" value="${id}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
+				<button type="button" class="btn btn-sm btn-danger btn-eliminar" value="${id}">Eliminar</button>
+			`;
+		}
 	});
 }
 
-function actualizarPaginacion(hayMas) {
-	btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
-	btnAnterior.prop("disabled", paginaActual === 1);
-	btnSiguiente.prop("disabled", !hayMas);
-	infoPagina.text(`Página ${paginaActual}`);
-}
+const tabla = tablaTipoMedicamentos.DataTable({
 
-obtenerDatos();
+	serverSide: true,
+	autoWidth: false,
+	scrollX: true,
+	searching: true,
+	lengthChange: true,
+	lengthMenu: [5, 10, 20],
+	pageLength: 5,
+	layout: {
+		topStart: null,    
+		topEnd: null,
+		bottomStart: "pageLength", 
+		bottomEnd: "paging"
+	},
+	columns: columnas,
+	language: {
+		
+		search: "Buscar:",
+		lengthMenu: "Mostrar _MENU_ registros",
+		info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+		infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+		loadingRecords: "Cargando...",
+		zeroRecords: "No se encontraron resultados",
+		emptyTable: "Ningún dato disponible en esta tabla",
+		paginate: {
+			first: "Primero",
+			previous: "Anterior",
+			next: "Siguiente",
+			last: "Último"
+		},
+		aria: {
+			sortAscending: ": Activar para ordenar la columna de manera ascendente",
+			sortDescending: ": Activar para ordenar la columna de manera descendente"
+		}
+	},
+	ajax: function (data, callback) {
+		const datos = new FormData();
+		datos.append("obtener", "true");
+		datos.append("draw", data.draw);
+		datos.append("start", data.start);
+		datos.append("length", data.length);
+		datos.append("search[value]", data.search.value);
+
+		peticionAjax(datos)
+			.then(resultado => {
+				if (!Array.isArray(resultado.data)) {
+					throw new Error("El servidor devolvió un formato de respuesta inválido.");
+				}
+
+				callback({
+					draw: resultado.draw,
+					recordsTotal: resultado.recordsTotal,
+					recordsFiltered: resultado.recordsFiltered,
+					data: resultado.data
+				});
+			})
+			.catch(error => {
+				console.error("No se pudieron cargar los tipos de medicamentos:", error);
+				callback({
+					draw: data.draw,
+					recordsTotal: 0,
+					recordsFiltered: 0,
+					data: []
+				});
+			});
+	}
+});
+
+filtrar.on("input", () => {
+	tabla.search(filtrar.val()).draw();
+});
+
 
 btnAgregar.on("click", () => {
 	formularioTipoMedicamento[0].reset();
@@ -96,7 +143,7 @@ tablaTipoMedicamentos.on("click", ".btn-eliminar", function () {
 	const datos = new FormData();
 	datos.append("eliminar", "true");
 	datos.append("id", $(this).val());
-	alertEliminar("post", datos, () => obtenerDatos(filtrar.val(), paginaActual));
+	alertEliminar("post", datos, () => tabla.ajax.reload(null, false));
 });
 
 formularioTipoMedicamento.on("submit", event => {
@@ -124,24 +171,7 @@ formularioTipoMedicamento.on("submit", event => {
 		}
 		id === "" ? alertAgregar("success") : alertActualizar("success");
 		bootstrap.Modal.getInstance($("#ModalAgregar")[0]).hide();
-		obtenerDatos(filtrar.val(), paginaActual);
+		tabla.ajax.reload(null, false);
 	});
 });
 
-filtrar.on("input", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-limite.on("change", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-btnAnterior.on("click", () => {
-	if (paginaActual > 1) obtenerDatos(filtrar.val(), paginaActual - 1);
-});
-
-btnSiguiente.on("click", () => {
-	if (!btnSiguiente.prop("disabled")) obtenerDatos(filtrar.val(), paginaActual + 1);
-});

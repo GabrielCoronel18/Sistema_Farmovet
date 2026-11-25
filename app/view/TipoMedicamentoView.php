@@ -7,6 +7,7 @@
 	<link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
 	<link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+	<link rel="stylesheet" href="public/datatables/datatables.min.css">
 	<link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -30,40 +31,21 @@
 				</button>
 				<?php endif; ?>
 			</div>
-
-			<div class="table-responsive shadow-sm rounded">
-				<table class="table table-striped align-middle text-nowrap">
-					<thead>
-						<tr>
-							<th class="table-purple">Id</th>
-							<th class="table-purple">Nombre</th>
-							<th class="table-purple">Estado</th>
-							<?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
-							<th class="table-purple" id="acciones">Acciones</th>
-							<?php endif; ?>
-						</tr>
-					</thead>
-					<tbody id="TablaTipoMedicamentos"></tbody>
-				</table>
-			</div>
-			<div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-3">
-			<div class="d-flex align-items-center gap-2">
-			<label for="limite" class="form-label mb-0 text-muted">Mostrar:</label>
-			<select name="limite" id="limite" class="form-select form-select-sm w-auto" style="min-width: 78px;" required>
-				<option value="5" selected>5</option>
-				<option value="10">10</option>
-				<option value="20">20</option>
-			</select>
-			
-			</div>
-			<nav aria-label="Paginación de tipos de medicamento">
-				<ul class="pagination pagination-sm mb-0">
-					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-anterior">Anterior</button></li>
-					<li class="page-item disabled text-purple"><span class="page-link" id="info-pagina"></span></li>
-					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-siguiente">Siguiente</button></li>
-				</ul>
-			</nav>
-			</div>
+            <article id="table-container">
+		   <table id="TablaTipoMedicamentos" class="table table-striped w-100" style="border-radius: 12px; overflow: hidden;">
+		<thead>
+			<tr>
+				<th class="table-purple">Id</th>
+				<th class="table-purple">Nombre</th>
+				<th class="table-purple">Estado</th>
+				<?php if ((int) ($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>  
+				<th class="table-purple" id="acciones">Acciones</th>
+				<?php endif; ?>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</article>
 		</main>
 	</div>
 
@@ -104,6 +86,7 @@
 
 	<script src="public/jquery/jquery-3.7.1.min.js"></script>
 	<script src="public/jquery/jquery.validate.min.js"></script>
+	<script src="public/datatables/datatables.min.js"></script>
 	<script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 	<script src="public/js/sweetalert2.min.js"></script>
 	<script src="public/js/ajax.js"></script>

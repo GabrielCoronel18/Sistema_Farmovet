@@ -118,5 +118,27 @@ class PatologiaModel extends ConexionBD {
 
         return $query->execute();
     }
+    public function contarPatologias(?string $param = null): int {
+		$conex = $this->getConexion();
+		if ($param === null) {
+			$query = $conex->query("SELECT COUNT(*) FROM patologia");
+		} else {
+			$query = $conex->prepare("SELECT COUNT(*) FROM patologia
+				WHERE CAST(id_patologia AS CHAR) LIKE :param_id
+				OR nombre LIKE :param_nombre
+				OR tipo LIKE :param_tipo
+                OR sintomas LIKE :param_sintomas");
+			$busqueda = $param . "%";
+			$query->bindValue(":param_id", $busqueda);
+			$query->bindValue(":param_nombre", $busqueda);
+			$query->bindValue(":param_tipo", $busqueda);
+            $query->bindValue(":param_sintomas", $busqueda);
+			$query->execute();
+		}
+
+		return (int) $query->fetchColumn();
+	}
+
 }
+
 ?>

@@ -1,153 +1,198 @@
-let formularioPatologia = document.querySelector(".PatologiaForm");
-let TablaPatologias = document.getElementById("TablaPatologias");
-let TituloModal = document.getElementById("TituloModalPatologia");
-let btnAgregar = document.getElementById("btnAgregar");
-let filtrar = document.getElementById("filtrar");
-let campoNombre = document.getElementById("nombre");
-let campoTipo = document.getElementById("tipo");
-let campoSintomas = document.getElementById("sintomas");
-let campoEstado = document.getElementById("estado_patologia");
-let errorNombre = document.getElementById("error-nombre");
-let errorTipo = document.getElementById("error-tipo");
-let errorSintomas = document.getElementById("error-sintomas");
-let errorEstado = document.getElementById("error-estado");
+const formularioPatologia = $(".PatologiaForm");
+const tablaPatologias = $("#TablaPatologias");
+const tituloModal = $("#TituloModalPatologia");
+const btnAgregar = $("#btnAgregar");
+const filtrar = $("#filtrar");
+const campoNombre = $("#nombre");
+const campoTipo = $("#tipo");
+const campoSintomas = $("#sintomas");
+const campoEstado = $("#estado_patologia");
+const errorNombre = $("#error-nombre");
+const errorTipo = $("#error-tipo");
+const errorSintomas = $("#error-sintomas");
+const errorEstado = $("#error-estado");
 
-function obtenerDatos(param = null) {
-    let datos = new FormData();
-    datos.append("obtener", true);
+const tieneAcciones = $("#acciones").length > 0;
 
-    if (param != null) {
-        datos.append("parametro", param);
-    }
+const columnas = [
+	{ data: "id_patologia", className: "table-light" },
+	{ data: "nombre", className: "table-light" },
+	{ data: "tipo", className: "table-light" },
+	{ data: "sintomas", className: "table-light" },
+	{
+		data: "estado",
+		className: "table-light",
+		render: function (estado) {
+			const activo = Number(estado) === 1;
+			return `<span class="badge ${activo ? "bg-success" : "bg-secondary"}">${activo ? "Activo" : "Inactivo"}</span>`;
+		}
+	}
+];
 
-    fetch(window.location, { method: "post", body: datos })
-        .then(resultados => resultados.json())
-        .then(result => {
-            if (result.status === "success") {
-                TablaPatologias.innerHTML = "";
-                
-                
-
-                result.resultados.forEach(function (patologia) {
-                    const acciones =  `<td class="table-light">
-                                <button class="btn btn-sm btn-success btn-actualizar" value="${patologia.id_patologia}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
-                                <button class="btn btn-sm btn-danger btn-eliminar" value="${patologia.id_patologia}">Eliminar</button>
-                            </td> `;
-                            
-                    TablaPatologias.innerHTML +=
-                        `<tr>
-                            <td class="table-light">${patologia.id_patologia}</td>
-                            <td class="table-light">${patologia.nombre}</td>
-                            <td class="table-light">${patologia.tipo}</td>
-                            <td class="table-light td-large">${patologia.sintomas}</td>
-                            <td class="table-light">${patologia.estado == 1 ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-secondary'>Inactivo</span>"}</td>
-                            
-                            ${document.getElementById("acciones") ? acciones : ''}
-                            
-                        </tr>`;
-                });
-            } else if (result.status === "error") {
-                TablaPatologias.innerHTML = "<tr><td colspan='5'>Error al obtener los registros</td></tr>";
-            }
-        });
+if (tieneAcciones) {
+	columnas.push({
+		data: "id_patologia",
+		className: "table-light",
+		orderable: false,
+		searchable: false,
+		render: function (id) {
+			return `
+				<button type="button" class="btn btn-sm btn-success btn-actualizar" value="${id}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
+				<button type="button" class="btn btn-sm btn-danger btn-eliminar" value="${id}">Eliminar</button>
+			`;
+		}
+	});
 }
 
-obtenerDatos();
+const tabla = tablaPatologias.DataTable({
+	serverSide: true,
+	autoWidth: false,
+	scrollX: true,
+	searching: true,
+	lengthChange: true,
+	lengthMenu: [5, 10, 20],
+	pageLength: 5,
+	layout: {
+		topStart: null,
+		topEnd: null,
+		bottomStart: "pageLength",
+		bottomEnd: "paging"
+	},
+	columns: columnas,
+	language: {
+		search: "Buscar:",
+		lengthMenu: "Mostrar _MENU_ registros",
+		info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+		infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+		loadingRecords: "Cargando...",
+		zeroRecords: "No se encontraron resultados",
+		emptyTable: "Ningún dato disponible en esta tabla",
+		paginate: {
+			first: "Primero",
+			previous: "Anterior",
+			next: "Siguiente",
+			last: "Último"
+		},
+		aria: {
+			sortAscending: ": Activar para ordenar la columna de manera ascendente",
+			sortDescending: ": Activar para ordenar la columna de manera descendente"
+		}
+	},
+	ajax: function (data, callback) {
+		const datos = new FormData();
+		datos.append("obtener", "true");
+		datos.append("draw", data.draw);
+		datos.append("start", data.start);
+		datos.append("length", data.length);
+		datos.append("search[value]", data.search.value);
 
-btnAgregar.addEventListener("click", function (e) {
-    formularioPatologia.reset();
-    TituloModal.innerText = "Agregar Nueva Patología";
-    document.getElementById("id_patologia").value = "";
+		peticionAjax(datos)
+			.then(resultado => {
+				if (!Array.isArray(resultado.data)) {
+					throw new Error("El servidor devolvió un formato de respuesta inválido.");
+				}
+
+				callback({
+					draw: resultado.draw,
+					recordsTotal: resultado.recordsTotal,
+					recordsFiltered: resultado.recordsFiltered,
+					data: resultado.data
+				});
+			})
+			.catch(error => {
+				console.error("No se pudieron cargar las patologias:", error);
+				callback({
+					draw: data.draw,
+					recordsTotal: 0,
+					recordsFiltered: 0,
+					data: []
+				});
+			});
+	}
 });
 
-TablaPatologias.addEventListener("click", function (e) {
-    if (e.target.classList.contains("btn-actualizar")) {
-        e.preventDefault();
-        TituloModal.innerText = "Actualizar Patología";
-        let id = e.target.value;
-        let datos = new FormData();
-        datos.append("obtenerPatologia", true);
-        datos.append("id", id);
-
-        fetch(window.location, { method: "post", body: datos })
-            .then(respuesta => respuesta.json())
-            .then(resultado => {
-                let result = resultado.resultado;
-                if (resultado.status === "success") {
-                    document.getElementById("id_patologia").value = result.id_patologia;
-                    document.getElementById("nombre").value = result.nombre;
-                    document.getElementById("tipo").value = result.tipo;
-                    document.getElementById("sintomas").value = result.sintomas;
-                    const estadoInput = document.getElementById("estado_patologia");
-                    if (estadoInput) estadoInput.value = result.estado;
-                } else if (resultado.status === "error") {
-                    Swal.fire({ title: "Error", text: "Error al obtener el registro", icon: "error" });
-                }
-            });
-    }
+filtrar.on("input", function () {
+	tabla.search(this.value).draw();
 });
 
-formularioPatologia.addEventListener("submit", function (e) {
-    e.preventDefault();
-     if (!$(formularioPatologia).valid()) return;
-     
-    let datos = new FormData(formularioPatologia);
-    let id = document.getElementById("id_patologia").value;
+btnAgregar.on("click", function () {
+	formularioPatologia[0].reset();
+	tituloModal.text("Agregar Nueva Patología");
+	$("#id_patologia").val("");
+});
 
-    if (id === "") {
-        datos.append("agregar", true);
-    } else {
-        datos.append("actualizar", true);
-        datos.append("id", id);
-    }
+tablaPatologias.on("click", ".btn-actualizar", function (e) {
+	e.preventDefault();
+	tituloModal.text("Actualizar Patología");
+	const id = $(this).val();
+	const datos = new FormData();
+	datos.append("obtenerPatologia", "true");
+	datos.append("id", id);
 
-  
-    fetch(window.location, { method: "post", body: datos })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            if (resultado.status === "success") {
-                id === "" ? alertAgregar("success") : alertActualizar("success");
-                let ModalAgregar = bootstrap.Modal.getInstance(document.getElementById("ModalAgregar"));
-                ModalAgregar.hide();
-                obtenerDatos();
-            } else if (resultado.status === "error") {
-                
+	peticionAjax(datos).then(resultado => {
+		if (resultado.status === "success") {
+			const result = resultado.resultado;
+			$("#id_patologia").val(result.id_patologia);
+			campoNombre.val(result.nombre);
+			campoTipo.val(result.tipo);
+			campoSintomas.val(result.sintomas);
+			if (campoEstado.length) campoEstado.val(result.estado);
+		} else {
+			Swal.fire({ title: "Error", text: "Error al obtener el registro", icon: "error" });
+		}
+	});
+});
 
-                if(resultado.errors) {
-				if(resultado.errors.nombre) {
-					campoNombre.classList.add("is-invalid");
-					errorNombre.innerText = resultado.errors.nombre;
+formularioPatologia.on("submit", function (e) {
+	e.preventDefault();
+	if (!formularioPatologia.valid()) return;
+
+	const datos = new FormData(formularioPatologia[0]);
+	const id = $("#id_patologia").val();
+
+	if (id === "") {
+		datos.append("agregar", "true");
+	} else {
+		datos.append("actualizar", "true");
+		datos.append("id", id);
+	}
+
+	peticionAjax(datos).then(resultado => {
+		if (resultado.status === "success") {
+			id === "" ? alertAgregar("success") : alertActualizar("success");
+			const modalInstance = bootstrap.Modal.getInstance(document.getElementById("ModalAgregar"));
+			if (modalInstance) modalInstance.hide();
+			tabla.ajax.reload(null, false);
+		} else if (resultado.status === "error") {
+			if (resultado.errors) {
+				if (resultado.errors.nombre) {
+					campoNombre.addClass("is-invalid");
+					errorNombre.text(resultado.errors.nombre);
 				}
-				if(resultado.errors.tipo) {
-					campoTipo.classList.add("is-invalid");
-					errorTipo.innerText = resultado.errors.tipo;
+				if (resultado.errors.tipo) {
+					campoTipo.addClass("is-invalid");
+					errorTipo.text(resultado.errors.tipo);
 				}
-				if(resultado.errors.sintomas) {
-					campoSintomas.classList.add("is-invalid");
-					errorSintomas.innerText = resultado.errors.sintomas;
+				if (resultado.errors.sintomas) {
+					campoSintomas.addClass("is-invalid");
+					errorSintomas.text(resultado.errors.sintomas);
 				}
-				if(resultado.errors.estado) {
-					campoEstado.classList.add("is-invalid");
-					errorEstado.innerText = resultado.errors.estado;
+				if (resultado.errors.estado) {
+					campoEstado.addClass("is-invalid");
+					errorEstado.text(resultado.errors.estado);
 				}
 			}
-                id === "" ? alertAgregar("error") : alertActualizar("error");
-            }
-        });
+			id === "" ? alertAgregar("error") : alertActualizar("error");
+		}
+	});
 });
 
-TablaPatologias.addEventListener("click", function (e) {
-    if (e.target.classList.contains("btn-eliminar")) {
-        e.preventDefault();
-        let id = e.target.value;
-        let datos = new FormData();
-        datos.append("eliminar", true);
-        datos.append("id", id);
-        alertEliminar("post", datos, obtenerDatos);
-    }
-});
-
-filtrar.addEventListener("input", function () {
-    let param = this.value;
-    obtenerDatos(param);
+tablaPatologias.on("click", ".btn-eliminar", function (e) {
+	e.preventDefault();
+	const id = $(this).val();
+	const datos = new FormData();
+	datos.append("eliminar", "true");
+	datos.append("id", id);
+	alertEliminar("post", datos, () => tabla.ajax.reload(null, false));
 });

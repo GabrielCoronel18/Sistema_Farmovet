@@ -10,6 +10,8 @@ $medicamentoModel = new MedicamentoModel();
 
 
 if (isset($_POST["obtener"])) {
+    verificarRol([1, 2]);
+    
     $draw   = (int) ($_POST["draw"] ?? 1);
     $start  = max(0, (int) ($_POST["start"] ?? 0));
     $length = (int) ($_POST["length"] ?? 5);

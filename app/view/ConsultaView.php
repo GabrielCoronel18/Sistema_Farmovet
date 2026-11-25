@@ -8,6 +8,7 @@
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -34,8 +35,8 @@
                 <?php endif;?>
             </div>
        
-        <div class="table-responsive consultas-tabla-contenedor shadow-sm rounded">
-            <table class="table table-striped align-middle consultas-tabla">
+        <div class="consultas-tabla-contenedor shadow-sm rounded">
+            <table id="tabla-consultas" class="table table-striped align-middle consultas-tabla" data-url="index.php?url=Consulta">
                 <thead>
                 <tr>
                     <th class="table-purple">Id</th>
@@ -50,35 +51,14 @@
                     <th class="table-purple">Seguimiento</th>
                     <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
                     <th class="table-purple "id='detalles'>Detalle</th>
-                    <th class="table-purple" id="acciones">Acciones</th>
+                    <th class="table-purple" id="acciones-consulta">Acciones</th>
 
                      <?php endif;?>
                 </tr>
                 </thead>
-                <tbody id="tabla-consultas" data-url="index.php?url=Consulta">
-                    <tr><td colspan="12" class="text-center text-muted py-4">Cargando consultas...</td></tr>
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-3">
-			<div class="d-flex align-items-center gap-2">
-			<label for="limite" class="form-label mb-0 text-muted">Mostrar:</label>
-			<select name="limite" id="limite" class="form-select form-select-sm w-auto" style="min-width: 78px;" required>
-				<option value="5" selected>5</option>
-				<option value="10">10</option>
-				<option value="20">20</option>
-			</select>
-			
-			</div>
-			
-            <nav aria-label="Paginación de consulta">
-				<ul class="pagination pagination-sm mb-0">
-					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-anterior">Anterior</button></li>
-					<li class="page-item disabled text-purple"><span class="page-link" id="info-pagina"></span></li>
-					<li class="page-item text-purple"><button type="button" class="page-link" id="btn-siguiente">Siguiente</button></li>
-				</ul>
-			</nav>
-			</div>
     </main>
 </div>
 
@@ -113,6 +93,7 @@
 <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 <script src="public/js/sweetalert2.min.js"></script>
 <script src="public/js/ajax.js"></script>
+<script src="public/datatables/datatables.min.js"></script>
 <script src="public/js/pdfjs/pdf.min.js"></script>
 <script src="public/js/consulta.js"></script>
 </body>

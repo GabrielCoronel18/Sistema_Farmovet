@@ -37,9 +37,12 @@
                 <?php endif; ?>
             </div>
 
-            <div class="table-responsive shadow-sm rounded">
-              <table class="table table-striped align-middle mascotas-tabla">
+            <article id="table-container">
+            <div class="shadow-sm rounded">
+              
+              <table id="mascotas-tabla" class="table table-striped align-middle mascotas-tabla">
                  <thead>
+                   <tr>
                      <th class="table-purple">Id</th>
                      <th class="table-purple">Nombre</th>
                      <th class="table-purple">Edad</th>
@@ -57,30 +60,13 @@
                      <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>
                      <th class="table-purple" id='acciones'>Acciones</th>
                      <?php endif;?>
-
+                   </tr>
                  </thead>
                  <tbody id="TablaMascotas">
                  </tbody>
              </table>
             </div>
-              <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-3">
-              <div class="d-flex align-items-center gap-2">
-              <label for="limite" class="form-label mb-0 text-muted">Mostrar:</label>
-              <select name="limite" id="limite" class="form-select form-select-sm w-auto" style="min-width: 78px;" required>
-                <option value="5" selected>5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-              </select>
-              
-              </div>
-              <nav aria-label="Paginación de tipos de Mascota">
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item text-purple"><button type="button" class="page-link" id="btn-anterior">Anterior</button></li>
-                  <li class="page-item disabled text-purple"><span class="page-link" id="info-pagina"></span></li>
-                  <li class="page-item text-purple"><button type="button" class="page-link" id="btn-siguiente">Siguiente</button></li>
-                </ul>
-              </nav>
-              </div>
+            </article>
         </main>
     </div>
 

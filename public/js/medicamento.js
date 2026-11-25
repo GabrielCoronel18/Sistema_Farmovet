@@ -50,18 +50,23 @@ if (tieneAcciones) {
 }
 
 const tabla = tablaMedicamentos.DataTable({
-	processing: true,
+	
 	serverSide: true,
+	autoWidth: false,
 	scrollX: true,
 	searching: true,
-	lengthChange: false,
-	pageLength: 10,
+	lengthChange: true,
+	lengthMenu: [5, 10, 20],
+	pageLength: 5,
 	layout: {
-		topEnd: null
+		topStart: null,    
+		topEnd: null,
+		bottomStart: "pageLength", 
+		bottomEnd: "paging"
 	},
 	columns: columnas,
 	language: {
-		processing: "Procesando...",
+		
 		search: "Buscar:",
 		lengthMenu: "Mostrar _MENU_ registros",
 		info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",

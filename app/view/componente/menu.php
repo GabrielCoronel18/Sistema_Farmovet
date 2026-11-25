@@ -8,7 +8,9 @@ $catalogosActivo = in_array($urlActual, $rutasCatalogos, true);
 $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
 ?>
 
-<nav class="sidebar d-flex flex-column">
+<button type="button" class="sidebar-backdrop" data-sidebar-close aria-label="Cerrar menú de navegación"></button>
+
+<nav class="sidebar d-flex flex-column" id="app-sidebar" aria-label="Navegación principal">
             <div class="sidebar-brand">
                 <i class="bi bi-heart-pulse-fill me-2"></i>Farmovet
             </div>
@@ -79,3 +81,5 @@ $administracionActiva = in_array($urlActual, $rutasAdministracion, true);
 
           
         </nav>
+
+<script src="public/js/responsive.js" defer></script>

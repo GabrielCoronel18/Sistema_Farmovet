@@ -7,6 +7,7 @@
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -33,8 +34,8 @@
         </div>
         <?php endif; ?>
 
-        <div class="table-responsive shadow-sm rounded">
-            <table class="table table-striped align-middle text-nowrap">
+        <div class="shadow-sm rounded">
+            <table id="tabla-roles" class="table table-striped align-middle text-nowrap">
                 <thead>
                     <tr>
                         <th class="table-purple">ID</th>
@@ -44,77 +45,86 @@
 							<?php endif; ?>
                     </tr>
                 </thead>
-                <tbody id="tabla-roles"></tbody>
+                <tbody></tbody>
             </table>
         </div>
 
-        <div id="paginacion" class="d-flex justify-content-between align-items-center mt-3">
-            <div>
-                <button id="btn-anterior" class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
-                <button id="btn-siguiente" class="btn btn-outline-secondary btn-sm">Siguiente</button>
-            </div>
-            <span id="info-pagina" class="text-muted">Página 1</span>
-        </div>
-    </main>
+      
 </div>
 
+<script src="public/jquery/jquery-3.7.1.min.js"></script>
+<script src="public/datatables/datatables.min.js"></script>
 <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 <script src="public/js/sweetalert2.min.js"></script>
 <script>
-    let paginaActual = 1;
-    const limite = 10;
-
-    function cargarRoles(pagina, busqueda = '') {
-        const formData = new FormData();
-        formData.append('obtener', '1');
-        formData.append('pagina', pagina);
-        formData.append('limite', limite);
-        if (busqueda) formData.append('parametro', busqueda);
-
-        fetch('?url=Rol', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById('tabla-roles');
-                tbody.innerHTML = '';
-                if (data.resultados.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center">No se encontraron roles.</td></tr>';
-                } else {
-                    data.resultados.forEach(rol => {
-                        const fila = `
-                            <tr class="table-light">
-                                <td>${rol.id_rol}</td>
-                                <td>${rol.nombre_rol}</td>
-                                <td>
-                                    <a href="?url=Rol&accion=editar&id=${rol.id_rol}" class="btn btn-sm btn-success">Actualizar</a>
-                                    <button class="btn btn-sm btn-danger btn-eliminar" data-id="${rol.id_rol}">Eliminar</button>
-                                </td>
-                            </tr>`;
-                        tbody.insertAdjacentHTML('beforeend', fila);
-                    });
-                }
-                document.getElementById('btn-anterior').disabled = (pagina <= 1);
-                document.getElementById('btn-siguiente').disabled = (data.resultados.length < limite);
-                document.getElementById('info-pagina').textContent = `Página ${pagina}`;
-                paginaActual = pagina;
-            });
+    const tablaRoles = $('#tabla-roles');
+    const columnasRoles = [
+        { data: 'id_rol', className: 'table-light' },
+        { data: 'nombre_rol', className: 'table-light', render: $.fn.dataTable.render.text() }
+    ];
+    if ($('#acciones').length) {
+        columnasRoles.push({
+            data: 'id_rol',
+            className: 'table-light',
+            orderable: false,
+            searchable: false,
+            render: id => `<a href="?url=Rol&accion=editar&id=${encodeURIComponent(id)}" class="btn btn-sm btn-success">Actualizar</a>
+                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${encodeURIComponent(id)}">Eliminar</button>`
+        });
     }
 
-    document.getElementById('form-buscar').addEventListener('submit', function(e) {
-        e.preventDefault();
-        cargarRoles(1, document.getElementById('input-buscar').value);
+    const tabla = tablaRoles.DataTable({
+        serverSide: true,
+        autoWidth: false,
+        scrollX: true,
+        searching: true,
+        lengthChange: true,
+        lengthMenu: [5, 10, 20],
+        pageLength: 10,
+        layout: { topStart: null, topEnd: null, bottomStart: 'pageLength', bottomEnd: 'paging' },
+        columns: columnasRoles,
+        language: {
+            lengthMenu: 'Mostrar _MENU_ registros',
+            info: 'Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros',
+            infoEmpty: 'Mostrando registros del 0 al 0 de un total de 0 registros',
+            infoFiltered: '(filtrado de un total de _MAX_ registros)',
+            loadingRecords: 'Cargando...',
+            zeroRecords: 'No se encontraron resultados',
+            emptyTable: 'Ningún dato disponible en esta tabla',
+            paginate: { first: 'Primero', previous: 'Anterior', next: 'Siguiente', last: 'Último' }
+        },
+        ajax: function (request, callback) {
+            const formData = new FormData();
+            formData.append('obtener', '1');
+            formData.append('draw', request.draw);
+            formData.append('start', request.start);
+            formData.append('length', request.length);
+            formData.append('search[value]', request.search.value);
+
+            fetch('?url=Rol', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (!Array.isArray(data.data)) {
+                        throw new Error('El servidor devolvió un formato de respuesta inválido.');
+                    }
+                    callback(data);
+                })
+                .catch(error => {
+                    console.error('No se pudieron cargar los roles:', error);
+                    Swal.fire('Error', 'No se pudieron cargar los roles.', 'error');
+                    callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                });
+        }
     });
 
-    document.getElementById('btn-anterior').addEventListener('click', function() {
-        if (paginaActual > 1) cargarRoles(paginaActual - 1, document.getElementById('input-buscar').value);
+    $('#input-buscar').on('input', function () {
+        tabla.search(this.value).draw();
     });
 
-    document.getElementById('btn-siguiente').addEventListener('click', function() {
-        cargarRoles(paginaActual + 1, document.getElementById('input-buscar').value);
-    });
+    $('#form-buscar').on('submit', event => event.preventDefault());
 
-    document.querySelector('#tabla-roles').addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-eliminar')) {
-            const id = e.target.getAttribute('data-id');
+    tablaRoles.on('click', '.btn-eliminar', function() {
+            const id = $(this).data('id');
             Swal.fire({
                 title: "Confirmar Eliminación",
                 text: "Esta acción no se puede revertir",
@@ -134,17 +144,18 @@
                         .then(data => {
                             if (data.status === 'success') {
                                 Swal.fire('Eliminado', '', 'success');
-                                cargarRoles(paginaActual, document.getElementById('input-buscar').value);
+                                tabla.ajax.reload();
                             } else {
                                 Swal.fire('Error', 'No se pudo eliminar', 'error');
                             }
+                        })
+                        .catch(error => {
+                            console.error('No se pudo eliminar el rol:', error);
+                            Swal.fire('Error', 'No se pudo eliminar el rol.', 'error');
                         });
                 }
             });
-        }
     });
-
-    cargarRoles(1);
 </script>
 </body>
 </html>

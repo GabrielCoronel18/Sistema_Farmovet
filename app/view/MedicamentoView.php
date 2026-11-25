@@ -12,7 +12,7 @@
 	<style>
 		#table-container {
 			border-radius: 12px;
-			overflow: hidden;
+			overflow: visible;
 			border: 1px solid #dee2e6;
 		}
 
@@ -44,7 +44,7 @@
 				<?php endif; ?>
 			</div>
 
-			<article id="table-container">
+		      <article id="table-container">
 				<table id="TablaMedicamentos" class="table table-striped" style="border-radius: 12px;">
 					<thead>
 						<tr>

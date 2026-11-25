@@ -27,8 +27,34 @@ class PlanSanitarioController {
             header('Content-Type: application/json');
             
             if (isset($_POST['obtener'])) {
-                $planes = $this->modelo->consultarPlanes();
-                echo json_encode(["resultados" => $planes]);
+                try {
+                    $draw = (int) ($_POST['draw'] ?? 1);
+                    $start = max(0, (int) ($_POST['start'] ?? 0));
+                    $length = (int) ($_POST['length'] ?? 10);
+                    $length = in_array($length, [5, 10, 20], true) ? $length : 10;
+                    $busqueda = trim((string) ($_POST['search']['value'] ?? ''));
+                    $recordsTotal = $this->modelo->contarPlanesSanitarios();
+                    $planes = $this->modelo->consultarPlanes($busqueda, $start, $length);
+                    echo json_encode([
+                        "draw" => $draw,
+                        "recordsTotal" => $recordsTotal,
+                        "recordsFiltered" => $busqueda !== ''
+                            ? $this->modelo->contarPlanesSanitarios($busqueda)
+                            : $recordsTotal,
+                        "data" => $planes,
+                        "pendingCount" => $this->modelo->contarPlanesPendientes()
+                    ]);
+                } catch (\Throwable $error) {
+                    error_log("No se pudieron consultar los planes sanitarios: " . $error->getMessage());
+                    http_response_code(500);
+                    echo json_encode([
+                        "draw" => (int) ($_POST['draw'] ?? 1),
+                        "recordsTotal" => 0,
+                        "recordsFiltered" => 0,
+                        "data" => [],
+                        "error" => "No se pudieron cargar los planes sanitarios."
+                    ]);
+                }
                 exit;
             }
 

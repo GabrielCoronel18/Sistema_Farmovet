@@ -1,14 +1,12 @@
 const formularioMascotas = $(".MascotasForm");
-const tablaMascotas = $("#TablaMascotas");
+const tablaMascotas = $("#mascotas-tabla");
 const tituloModal = $("#TituloModalMascotas");
 const btnAgregar = $("#btnAgregar");
 const filtrar = $("#filtrar");
-const limite = $("#limite");
-const btnAnterior = $("#btn-anterior");
-const btnSiguiente = $("#btn-siguiente");
-const infoPagina = $("#info-pagina");
 const selectRaza = $("#id_raza");
 const selectCliente = $("#cedula_cliente");
+const tieneAcciones = $("#acciones").length > 0;
+const renderTexto = $.fn.dataTable.render.text();
 const camposValidacion = [
 	{ error: "nombre", campo: "#nombre", mensaje: "#error-nombre" },
 	{ error: "edad", campo: "#edad", mensaje: "#error-edad" },
@@ -20,7 +18,6 @@ const camposValidacion = [
 	{ error: "cedula", campo: "#cedula_cliente", mensaje: "#error-cedula_cliente" },
 	{ error: "procedencia", campo: "#procedencia", mensaje: "#error-procedencia" }
 ];
-let paginaActual = 1;
 let selectAlergias;
 let selectEnfermedades;
 let selectCirugias;
@@ -91,85 +88,97 @@ function cargarCatalogos() {
 	});
 }
 
-function actualizarPaginacion(hayMas) {
-	btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
-	btnAnterior.prop("disabled", paginaActual === 1);
-	btnSiguiente.prop("disabled", !hayMas);
-	infoPagina.text(`Página ${paginaActual}`);
+function escaparHtml(valor) {
+	return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': "&quot;",
+		"'": "&#39;"
+	})[caracter]);
 }
 
-function crearCelda(valor, clases = "table-light") {
-	return $("<td>").addClass(clases).text(valor ?? "");
+function renderizarAntecedente(valor, tipo) {
+	if (tipo !== "display") return valor || "Ninguna";
+	return `<span class="badge ${valor ? "bg-success" : "bg-secondary"}">${escaparHtml(valor || "Ninguna")}</span>`;
 }
 
-function crearCeldaAntecedentes(valor) {
-	const badge = $("<span>")
-		.addClass(valor ? "badge bg-success" : "badge bg-secondary")
-		.text(valor || "Ninguna");
-	return $("<td>").addClass("table-light").append(badge);
-}
-
-function obtenerDatos(param = null, pagina = paginaActual) {
-	const datos = new FormData();
-	datos.append("obtener", true);
-	datos.append("pagina", pagina);
-	datos.append("limite", limite.val());
-	if (param !== null) datos.append("parametro", param);
-
-	peticionAjax(datos).then(resultado => {
-		tablaMascotas.empty();
-		if (resultado.status !== "success") {
-			tablaMascotas.append(
-				$("<tr>").append(
-					$("<td>").attr("colspan", 14)
-						.addClass("text-center text-muted py-4")
-						.text("No hay mascotas registradas")
-				)
-			);
-			paginaActual = pagina;
-			actualizarPaginacion(false);
-			return;
+const columnasMascotas = [
+	{ data: "id_mascota_hash", className: "table-light td-nowrap td-left", render: renderTexto },
+	{ data: "nombre", className: "table-light", render: renderTexto },
+	{ data: "edad", className: "table-light", render: renderTexto },
+	{ data: "sexo", className: "table-light", render: renderTexto },
+	{ data: "chip", className: "table-light", render: renderTexto },
+	{ data: "procedencia", className: "table-light td-large", render: renderTexto },
+	{ data: "fch_nacimiento", className: "table-light", render: renderTexto },
+	{ data: "nombre_raza", className: "table-light", render: renderTexto },
+	{ data: "pelaje", className: "table-light", render: renderTexto },
+	{
+		data: null,
+		className: "table-light td-nowrap td-left",
+		render: (_, tipo, mascota) => {
+			const cliente = `${mascota.cedula_cliente ?? ""} - ${mascota.nombre_cliente ?? ""}`;
+			return tipo === "display" ? escaparHtml(cliente) : cliente;
 		}
-		if (resultado.resultados.length === 0 && pagina > 1) {
-			obtenerDatos(param, pagina - 1);
-			return;
-		}
+	},
+	{ data: "alergias", className: "table-light", render: renderizarAntecedente },
+	{ data: "enfermedades", className: "table-light", render: renderizarAntecedente },
+	{ data: "cirugias", className: "table-light", render: renderizarAntecedente }
+];
 
-		resultado.resultados.forEach(mascota => {
-			const fila = $("<tr>");
-			fila.append(crearCelda(mascota.id_mascota_hash));
-			fila.append(crearCelda(mascota.nombre));
-			fila.append(crearCelda(mascota.edad));
-			fila.append(crearCelda(mascota.sexo));
-			fila.append(crearCelda(mascota.chip));
-			fila.append(crearCelda(mascota.procedencia, "table-light td-large"));
-			fila.append(crearCelda(mascota.fch_nacimiento));
-			fila.append(crearCelda(mascota.nombre_raza));
-			fila.append(crearCelda(mascota.pelaje));
-			fila.append(crearCelda(`${mascota.cedula_cliente} - ${mascota.nombre_cliente}`));
-			fila.append(crearCeldaAntecedentes(mascota.alergias));
-			fila.append(crearCeldaAntecedentes(mascota.enfermedades));
-			fila.append(crearCeldaAntecedentes(mascota.cirugias));
-
-			const actualizar = $("<button>").addClass("btn btn-sm btn-success btn-actualizar")
-				.val(mascota.id_mascota_hash).attr("data-bs-toggle", "modal")
-				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
-			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
-				.val(mascota.id_mascota_hash).text("Eliminar");
-			
-			if ($("#acciones").length) {
-			fila.append(
-				$("<td>").addClass("table-light text-nowrap mascotas-acciones")
-					.append(actualizar, " ", eliminar)
-			);
-            }
-
-			tablaMascotas.append(fila);
-		});
-		paginaActual = pagina;
-		actualizarPaginacion(resultado.hayMas);
+if (tieneAcciones) {
+	columnasMascotas.push({
+		data: "id_mascota_hash",
+		className: "table-light text-nowrap mascotas-acciones",
+		orderable: false,
+		searchable: false,
+		render: id => `<button type="button" class="btn btn-sm btn-success btn-actualizar" value="${escaparHtml(id)}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
+			<button type="button" class="btn btn-sm btn-danger btn-eliminar" value="${escaparHtml(id)}">Eliminar</button>`
 	});
 }
+
+const tabla = tablaMascotas.DataTable({
+	serverSide: true,
+	autoWidth: false,
+	scrollX: true,
+	searching: true,
+	lengthChange: true,
+	lengthMenu: [5, 10, 20],
+	pageLength: 5,
+	layout: { topStart: null, topEnd: null, bottomStart: "pageLength", bottomEnd: "paging" },
+	columns: columnasMascotas,
+	language: {
+		lengthMenu: "Mostrar _MENU_ registros",
+		info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+		infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+		loadingRecords: "Cargando...",
+		zeroRecords: "No se encontraron resultados",
+		emptyTable: "Ninguna mascota registrada",
+		paginate: { first: "Primero", previous: "Anterior", next: "Siguiente", last: "Último" }
+	},
+	ajax: function (request, callback) {
+		const datos = new FormData();
+		datos.append("obtener", true);
+		datos.append("draw", request.draw);
+		datos.append("start", request.start);
+		datos.append("length", request.length);
+		datos.append("search[value]", request.search.value);
+
+		peticionAjax(datos)
+			.then(resultado => {
+				if (!Array.isArray(resultado.data)) {
+					throw new Error("El servidor devolvió un formato de respuesta inválido.");
+				}
+				callback(resultado);
+			})
+			.catch(error => {
+				console.error("No se pudieron cargar las mascotas:", error);
+				Swal.fire({ title: "Error", text: "No se pudieron cargar las mascotas.", icon: "error" });
+				callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+			});
+	}
+});
 
 function cargarAntecedentesEnFormulario(id) {
 	const datos = new FormData();
@@ -184,7 +193,7 @@ function cargarAntecedentesEnFormulario(id) {
 	});
 }
 
-cargarCatalogos().then(() => obtenerDatos()).catch(() => {});
+cargarCatalogos().catch(() => {});
 
 btnAgregar.on("click", () => {
 	formularioMascotas[0].reset();
@@ -236,7 +245,7 @@ formularioMascotas.on("submit", event => {
 		if (resultado.status === "success") {
 			id === "" ? alertAgregar("success") : alertActualizar("success");
 			bootstrap.Modal.getInstance($("#ModalAgregar")[0]).hide();
-			obtenerDatos(filtrar.val(), paginaActual);
+			tabla.ajax.reload(null, id === "");
 			return;
 		}
 		renderizarErroresValidacion(resultado.errors);
@@ -249,23 +258,9 @@ tablaMascotas.on("click", ".btn-eliminar", function (event) {
 	const datos = new FormData();
 	datos.append("eliminar", true);
 	datos.append("id", $(this).val());
-	alertEliminar("post", datos, () => obtenerDatos(filtrar.val(), paginaActual));
+	alertEliminar("post", datos, () => tabla.ajax.reload());
 });
 
 filtrar.on("input", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-limite.on("change", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-btnAnterior.on("click", () => {
-	if (paginaActual > 1) obtenerDatos(filtrar.val(), paginaActual - 1);
-});
-
-btnSiguiente.on("click", () => {
-	if (!btnSiguiente.prop("disabled")) obtenerDatos(filtrar.val(), paginaActual + 1);
+	tabla.search(filtrar.val()).draw();
 });

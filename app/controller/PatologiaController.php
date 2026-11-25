@@ -8,21 +8,35 @@ verificarRol([1, 2]);
 $patologiaModel = new PatologiaModel();
 
 if (isset($_POST["obtener"])) {
-    $pagina = $_POST["pagina"] ?? 1;
-    $limitacion = $_POST["limite"] ?? 5;
+    
+   verificarRol([1, 2]);
+   
+    $draw   = (int) ($_POST["draw"] ?? 1);
+    $start  = max(0, (int) ($_POST["start"] ?? 0));
+    $length = (int) ($_POST["length"] ?? 5);
+    $length = in_array($length, [5, 10, 20], true) ? $length : 5;
 
-    if (isset($_POST["parametro"])) {
-        $param = $_POST["parametro"];
-        $resultados = $patologiaModel->filtrarPatologia($param, $pagina, $limitacion);
-    } else {
-        $resultados = $patologiaModel->obtenerPatologias($pagina, $limitacion);
-    }
+    $pagina = (int) floor($start / $length) + 1;
+    
+    $param = trim((string) ($_POST["search"]["value"] ?? ""));
+    
+    $tieneFiltro = $param !== "";
 
-    if ($resultados) {
-        echo json_encode(["status" => "success", "resultados" => $resultados]);
-    } else {
-        echo json_encode(["status" => "error", "resultados" => []]);
-    }
+  $resultados = $tieneFiltro
+        ? $patologiaModel->filtrarPatologia($param, $pagina, $length)
+        : $patologiaModel->obtenerPatologias($pagina, $length);
+
+    $recordsTotal = $patologiaModel->contarPatologias(null);
+    $recordsFiltered = $tieneFiltro
+        ? $patologiaModel->contarPatologias($param)
+        : $recordsTotal;
+
+    echo json_encode([
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $resultados
+    ]);
     exit;
 }
 

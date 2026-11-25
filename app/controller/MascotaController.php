@@ -20,11 +20,15 @@ $CirgsPreviasModel = new CirugiasMascotaModel();
 $EnfSufridasModel = new EnfermedadesPadecidasModel();
 
     if(isset( $_POST["obtener"])){
-    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
-    $limitacion = (int) ($_POST["limite"] ?? 5);
+    $draw = (int) ($_POST["draw"] ?? 1);
+    $start = max(0, (int) ($_POST["start"] ?? 0));
+    $limitacion = (int) ($_POST["length"] ?? $_POST["limite"] ?? 5);
     $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
+    $pagina = isset($_POST["draw"])
+        ? (int) floor($start / $limitacion) + 1
+        : max(1, (int) ($_POST["pagina"] ?? 1));
 
-    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $param = trim((string) ($_POST["search"]["value"] ?? $_POST["parametro"] ?? ""));
     $idFiltrado = $param !== "" ? decodificarId($param) : null;
     if ($idFiltrado !== null) {
         $param = (string) $idFiltrado;
@@ -35,7 +39,22 @@ $EnfSufridasModel = new EnfermedadesPadecidasModel();
         ? $mascotaModel->filtrarMascota($param, $pagina, $limitacion)
         : $mascotaModel->obtenerMascotas($pagina, $limitacion);
     $total = $mascotaModel->contarMascota($tieneFiltro ? $param : null);
-        
+
+        if (isset($_POST["draw"])) {
+            $recordsTotal = $mascotaModel->contarMascota();
+            foreach ($resultados as &$mascota) {
+                $mascota['id_mascota_hash'] = codificarId((int) $mascota['id_mascota']);
+                unset($mascota['id_mascota']);
+            }
+            unset($mascota);
+            echo json_encode([
+                "draw" => $draw,
+                "recordsTotal" => $recordsTotal,
+                "recordsFiltered" => $total,
+                "data" => $resultados
+            ]);
+            exit;
+        }
 
         if($resultados){
            foreach ($resultados as &$mascota) {

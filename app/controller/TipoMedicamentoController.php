@@ -10,28 +10,38 @@ $TipoMedicamentoModel = new TipoMedicamentoModel();
 
 if(isset($_POST["obtener"])){
     verificarRol([1, 2]);
-    $pagina = max(1, (int) ($_POST["pagina"] ?? 1));
-    $limitacion = (int) ($_POST["limite"] ?? 5);
-    $limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
     
-    $param = trim((string) ($_POST["parametro"] ?? ""));
+    $draw   = (int) ($_POST["draw"] ?? 1);
+    $start  = max(0, (int) ($_POST["start"] ?? 0));
+    $length = (int) ($_POST["length"] ?? 5);
+    $length = in_array($length, [5, 10, 20], true) ? $length : 5;
+    
+    $pagina = (int) floor($start / $length) + 1;
+
+    $param = trim((string) ($_POST["search"]["value"] ?? ""));
+
     $tieneFiltro = $param !== "";
+    
+    $recordsTotal = $TipoMedicamentoModel->contarTipoMedicamentos(null);
 
     if($tieneFiltro){
-        $resultados = $TipoMedicamentoModel->filtrarTipoMedicamento($pagina,$limitacion,$param);
+        $resultados = $TipoMedicamentoModel->filtrarTipoMedicamento($pagina,$length,$param);
+        
+        $recordsFiltered = $TipoMedicamentoModel->contarTipoMedicamentos($param);
     }
     else{
-        $resultados = $TipoMedicamentoModel->obtenerTipoMedicamento($pagina,$limitacion);
+        $resultados = $TipoMedicamentoModel->obtenerTipoMedicamento($pagina,$length);
+        $recordsFiltered = $recordsTotal;
     }
-    $total = $TipoMedicamentoModel->contarTipoMedicamentos($tieneFiltro ? $param : null);
+    
 
-    if($resultados){
-        echo json_encode(["status"=>"success","resultados" => $resultados, "hayMas" => $pagina * $limitacion < $total]);
-    }
-    else{
-        echo json_encode(["status"=>"success","resultados" => [], "hayMas" => false]);
-    }
-  exit;
+echo json_encode([
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $resultados
+    ]);
+    exit;
 
 }
 

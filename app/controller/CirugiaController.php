@@ -14,22 +14,35 @@ if (isset($_POST["obtener"])) {
 	
 	verificarRol([1, 2]);
 
-	$pagina = max(1, (int) ($_POST["pagina"] ?? 1));
-	$limitacion = (int) ($_POST["limite"] ?? 5);
-	$limitacion = in_array($limitacion, [5, 10, 20], true) ? $limitacion : 5;
-	$param = trim((string) ($_POST["parametro"] ?? ""));
-	$tieneFiltro = $param !== "";
-	$resultados = $tieneFiltro
-		? $cirugiaModel->filtrarCirugia($param, $pagina, $limitacion)
-		: $cirugiaModel->obtenerCirugias($pagina, $limitacion);
-	$total = $cirugiaModel->contarCirugias($tieneFiltro ? $param : null);
+	$draw   = (int) ($_POST["draw"] ?? 1);
+    $start  = max(0, (int) ($_POST["start"] ?? 0));
+    $length = (int) ($_POST["length"] ?? 5);
+    $length = in_array($length, [5, 10, 20], true) ? $length : 5;
 
-	echo json_encode([
-		"status" => "success",
-		"resultados" => $resultados,
-		"hayMas" => $pagina * $limitacion < $total
-	]);
-	exit;
+    $pagina = (int) floor($start / $length) + 1;
+    
+    $param = trim((string) ($_POST["search"]["value"] ?? ""));
+    
+    $tieneFiltro = $param !== "";
+
+  $resultados = $tieneFiltro
+        ? $cirugiaModel->filtrarCirugia($param, $pagina, $length)
+        : $cirugiaModel->obtenerCirugias($pagina, $length);
+
+    $recordsTotal = $cirugiaModel->contarCirugias(null);
+    $recordsFiltered = $tieneFiltro
+        ? $cirugiaModel->contarCirugias($param)
+        : $recordsTotal;
+
+    echo json_encode([
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $resultados
+    ]);
+    exit;
+    
+
 }
 
 if (isset($_POST["agregar"])) {

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
     <style>
         /* Color morado acorde al Sidebar */
@@ -32,7 +33,8 @@
 <body>
 <div class="d-flex">
     
-    <nav class="sidebar d-flex flex-column">
+    <button type="button" class="sidebar-backdrop" data-sidebar-close aria-label="Cerrar menú de navegación"></button>
+    <nav class="sidebar d-flex flex-column" id="app-sidebar" aria-label="Navegación principal">
         <div class="sidebar-brand">
             <i class="bi bi-heart-pulse-fill me-2"></i>Farmovet
         </div>
@@ -169,7 +171,7 @@
         <!-- Barra de Controles: Filtrar + Agregar Plan -->
         <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
             <div style="width: 250px;">
-                <input type="text" id="input-filtrar" class="form-control" placeholder="Filtrar" onkeyup="filtrarTabla()" style="border-color: #0d6efd;">
+                <input type="text" id="input-filtrar" class="form-control" placeholder="Filtrar" style="border-color: #0d6efd;">
             </div>
             <?php if(in_array($_SESSION['usuario']['id_rol'],[1, 2], true)): ?>   
             <button type="button" class="btn btn-success text-white fw-semibold px-3 py-2" style="border-radius: 6px;" data-bs-toggle="modal" data-bs-target="#modalRegistroPlan" onclick="prepararNuevoRegistro()">
@@ -179,8 +181,8 @@
         </div>
 
         <!-- Tabla con Encabezado Morado a juego con el Sidebar -->
-        <div class="table-responsive shadow-sm rounded">
-            <table class="table table-striped align-middle text-nowrap bg-white m-0">
+        <div class="shadow-sm rounded">
+            <table id="tabla-planes-sanitarios" class="table table-striped align-middle text-nowrap bg-white m-0">
                 <thead>
                     <tr class="bg-purple-header">
                         <th class="bg-purple-header">ID Plan</th>
@@ -246,92 +248,135 @@
 
 <script src="public/jquery/jquery-3.7.1.min.js"></script>
 <script src="public/jquery/jquery.validate.min.js"></script>
+<script src="public/datatables/datatables.min.js"></script>
 <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 <script src="public/js/sweetalert2.min.js"></script>
 <script src="public/js/Validate/PlanSanitarioValidation.js"></script>
+<script src="public/js/responsive.js"></script>
 
 <script>
     let registrosLocales = [];
     let campoIdMascotaEdit = document.getElementById('id_mascota_edit');
     let campoIdMedicamentoEdit = document.getElementById('id_medicamento_edit');
+    const tieneAcciones = document.getElementById('acciones') !== null;
+    const tablaPlanes = $('#tabla-planes-sanitarios');
 
-    function cargarPlanesSanitarios() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const moduloUrl = urlParams.get('url') || 'PlanSanitario';
-
-        const formData = new FormData();
-        formData.append('obtener', '1');
-
-        fetch(`?url=${moduloUrl}`, { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            registrosLocales = data.resultados || [];
-            renderizarTabla(registrosLocales);
-        }).catch(err => {
-            console.error("Error al cargar:", err);
-            document.getElementById('tabla-planes-sanitarios').innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No hay planes sanitarios registrados.</td></tr>';
-        });
+    function escaparHtml(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[caracter]);
     }
 
-    function renderizarTabla(lista) {
-        const tbody = document.getElementById('tabla-planes-sanitarios');
-        tbody.innerHTML = '';
-
-        if (!lista || lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No se encontraron planes sanitarios.</td></tr>';
-            actualizarNotificaciones(0);
-            return;
-        }
-
-        // Obtener la fecha de hoy en formato AAAA-MM-DD local
-        const hoy = new Date().toISOString().split('T')[0];
-        let contadorVencidos = 0;
-
-        lista.forEach(p => {
-            const nombreMascota = p.nombre_mascota || '';
-            const nombreMedicamento = p.nombre_medicamento || '';
-            const fechaRefuerzo = p.proximo_refuerzo || '';
-
-            // Comprobar si el refuerzo ya se cumplió o venció
-            const esFechaCumplida = fechaRefuerzo !== '' && fechaRefuerzo <= hoy;
-
-            if (esFechaCumplida) {
-                contadorVencidos++;
+    const columnasPlanes = [
+        {
+            data: 'id_plan',
+            className: 'table-light',
+            render: id => `<strong>#${escaparHtml(id)}</strong>`
+        },
+        {
+            data: 'nombre_mascota',
+            className: 'table-light',
+            render: (nombre, tipo, plan) => tipo === 'display'
+                ? `${escaparHtml(nombre || 'Mascota')} <span class="text-muted small">(ID: ${escaparHtml(plan.id_mascota)})</span>`
+                : `${nombre || ''} ${plan.id_mascota || ''}`
+        },
+        {
+            data: 'nombre_medicamento',
+            className: 'table-light',
+            render: (nombre, tipo, plan) => tipo === 'display'
+                ? `${escaparHtml(nombre || 'Medicamento')} <span class="text-muted small">(ID: ${escaparHtml(plan.id_medicamento)})</span>`
+                : `${nombre || ''} ${plan.id_medicamento || ''}`
+        },
+        { data: 'fecha_aplicacion', className: 'table-light' },
+        {
+            data: 'proximo_refuerzo',
+            className: 'table-light',
+            render: (fecha, tipo) => {
+                if (tipo !== 'display') return fecha || '';
+                const vencido = Boolean(fecha) && fecha <= new Date().toISOString().split('T')[0];
+                const estado = vencido
+                    ? '<span class="badge bg-danger ms-1"><i class="bi bi-bell-fill me-1"></i>¡Día de Refuerzo / Vencido!</span>'
+                    : '<span class="badge bg-success ms-1"><i class="bi bi-check-circle me-1"></i>En regla</span>';
+                return `<strong class="${vencido ? 'text-danger' : ''}">${escaparHtml(fecha)}</strong> ${estado}`;
             }
+        }
+    ];
 
-            const claseFila = esFechaCumplida ? 'tr-alerta-vencido' : 'table-light';
-            const badgeRefuerzo = esFechaCumplida 
-                ? `<span class="badge bg-danger ms-1"><i class="bi bi-bell-fill me-1"></i>¡Día de Refuerzo / Vencido!</span>`
-                : `<span class="badge bg-success ms-1"><i class="bi bi-check-circle me-1"></i>En regla</span>`;
-            
-            //Se separaron las acciones para el control de roles
-
-            const acciones =` <td class="text-center">
-                        <button class="btn btn-sm btn-success me-1" onclick="prepararEdicion(${p.id_plan})">
-                            <i class="bi bi-pencil-square me-1"></i> Actualizar
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro(${p.id_plan})">
-                            <i class="bi bi-trash me-1"></i> Eliminar
-                        </button>
-                    </td>`;
-
-            const fila = `
-                <tr class="${claseFila}">
-                    <td><strong>#${p.id_plan}</strong></td>
-                    <td>${nombreMascota ? nombreMascota : 'Mascota'} <span class="text-muted small">(ID: ${p.id_mascota})</span></td>
-                    <td>${nombreMedicamento ? nombreMedicamento : 'Medicamento'} <span class="text-muted small">(ID: ${p.id_medicamento})</span></td>
-                    <td>${p.fecha_aplicacion}</td>
-                    <td>
-                        <strong class="${esFechaCumplida ? 'text-danger' : ''}">${p.proximo_refuerzo}</strong>
-                        ${badgeRefuerzo}
-                    </td>
-                        ${document.getElementById('acciones') ? acciones : ''}
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', fila);
+    if (tieneAcciones) {
+        columnasPlanes.push({
+            data: 'id_plan',
+            className: 'table-light text-center',
+            orderable: false,
+            searchable: false,
+            render: id => `<button type="button" class="btn btn-sm btn-success me-1 btn-editar-plan" data-id="${escaparHtml(id)}">
+                    <i class="bi bi-pencil-square me-1"></i> Actualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-danger btn-eliminar-plan" data-id="${escaparHtml(id)}">
+                    <i class="bi bi-trash me-1"></i> Eliminar
+                </button>`
         });
-
-        actualizarNotificaciones(contadorVencidos);
     }
+
+    const tabla = tablaPlanes.DataTable({
+        serverSide: true,
+        autoWidth: false,
+        scrollX: true,
+        searching: true,
+        lengthChange: true,
+        lengthMenu: [5, 10, 20],
+        pageLength: 10,
+        layout: { topStart: null, topEnd: null, bottomStart: 'pageLength', bottomEnd: 'paging' },
+        columns: columnasPlanes,
+        createdRow: (row, plan) => {
+            const vencido = Boolean(plan.proximo_refuerzo)
+                && plan.proximo_refuerzo <= new Date().toISOString().split('T')[0];
+            row.classList.add(vencido ? 'tr-alerta-vencido' : 'table-light');
+        },
+        language: {
+            lengthMenu: 'Mostrar _MENU_ registros',
+            info: 'Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros',
+            infoEmpty: 'Mostrando registros del 0 al 0 de un total de 0 registros',
+            infoFiltered: '(filtrado de un total de _MAX_ registros)',
+            loadingRecords: 'Cargando...',
+            zeroRecords: 'No se encontraron resultados',
+            emptyTable: 'Ningún plan sanitario registrado',
+            paginate: { first: 'Primero', previous: 'Anterior', next: 'Siguiente', last: 'Último' }
+        },
+        ajax: function (request, callback) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const moduloUrl = urlParams.get('url') || 'PlanSanitario';
+            const formData = new FormData();
+            formData.append('obtener', '1');
+            formData.append('draw', request.draw);
+            formData.append('start', request.start);
+            formData.append('length', request.length);
+            formData.append('search[value]', request.search.value);
+
+            fetch(`?url=${moduloUrl}`, { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error || !Array.isArray(data.data)) {
+                        throw new Error(data.error || 'El servidor devolvió un formato de respuesta inválido.');
+                    }
+                    registrosLocales = data.data;
+                    actualizarNotificaciones(Number(data.pendingCount) || 0);
+                    callback(data);
+                })
+                .catch(error => {
+                    console.error('No se pudieron cargar los planes sanitarios:', error);
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los planes sanitarios.' });
+                    callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                });
+        }
+    });
+
+    document.getElementById('input-filtrar').addEventListener('input', function () {
+        tabla.search(this.value).draw();
+    });
 
     // Actualiza el círculo rojo del sidebar y la barra de alerta superior
     function actualizarNotificaciones(contador) {
@@ -351,30 +396,6 @@
             bannerAlerta.classList.add('d-none');
             bannerAlerta.classList.remove('d-flex');
         }
-    }
-
-    function filtrarTabla() {
-        const busqueda = document.getElementById('input-filtrar').value.toLowerCase().trim();
-        if (!busqueda) {
-            renderizarTabla(registrosLocales);
-            return;
-        }
-
-        const filtrados = registrosLocales.filter(p => {
-            const mascota = (p.nombre_mascota || '').toLowerCase();
-            const idMascota = (p.id_mascota || '').toString();
-            const medicamento = (p.nombre_medicamento || '').toLowerCase();
-            const idMedicamento = (p.id_medicamento || '').toString();
-            const idPlan = (p.id_plan || '').toString();
-
-            return mascota.includes(busqueda) || 
-                   idMascota.includes(busqueda) || 
-                   medicamento.includes(busqueda) || 
-                   idMedicamento.includes(busqueda) || 
-                   idPlan.includes(busqueda);
-        });
-
-        renderizarTabla(filtrados);
     }
 
     document.getElementById('form-modal-plan').addEventListener('submit', function(e) {
@@ -408,7 +429,7 @@
                     cancelarEdicion();
                 }
 
-                cargarPlanesSanitarios();
+                tabla.ajax.reload(null, esModal);
             } else {
                 if (data.errors) {
                     Object.entries(data.errors).forEach(([campo, mensaje]) => {
@@ -477,14 +498,20 @@
                 .then(data => {
                     if (data.status === 'success') {
                         Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Registro dado de baja.', confirmButtonColor: '#dc3545' });
-                        cargarPlanesSanitarios();
+                        tabla.ajax.reload();
                     }
                 });
             }
         });
     }
 
-    cargarPlanesSanitarios();
+    tablaPlanes.on('click', '.btn-editar-plan', function () {
+        prepararEdicion($(this).data('id'));
+    });
+
+    tablaPlanes.on('click', '.btn-eliminar-plan', function () {
+        eliminarRegistro($(this).data('id'));
+    });
 </script>
 </body>
 </html>

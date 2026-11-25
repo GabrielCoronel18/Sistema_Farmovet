@@ -1,11 +1,6 @@
 const tablaConsultas = $("#tabla-consultas");
-const limite = $("#limite");
-const btnAnterior = $("#btn-anterior");
-const btnSiguiente = $("#btn-siguiente");
-const infoPagina = $("#info-pagina");
 const filtrar = $("#filtrar");
-
-let paginaActual = 1;
+const renderTexto = $.fn.dataTable.render.text();
 
 
 function normalizarErrorAjax(xhr, estado, error) {
@@ -187,93 +182,109 @@ function crearDetalle(consulta) {
     return modalId;
 }
 
-function actualizarPaginacion(hayMas) {
-    btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
-    btnAnterior.prop("disabled", paginaActual === 1);
-    btnSiguiente.prop("disabled", !hayMas);
-    infoPagina.text(`Página ${paginaActual}`);
+const columnasConsultas = [
+    { data: "id_consulta", className: "table-light td-nowrap td-left" },
+    { data: "nombre_mascota", className: "table-light td-nowrap td-left", render: renderTexto },
+    { data: "nombre_cliente", className: "table-light td-nowrap td-left", render: renderTexto },
+    { data: "fecha", className: "table-light td-nowrap td-left", render: renderTexto },
+    {
+        data: "tipo_ingreso",
+        className: "table-light td-nowrap td-left",
+        render: tipo => Number(tipo) === 1 ? "Primera vez" : "Sucesivo"
+    },
+    {
+        data: "remitido",
+        className: "table-light td-nowrap",
+        render: remitido => Number(remitido) === 1 ? "Sí" : "No"
+    },
+    { data: "pronostico", className: "table-light td-large td-left", render: valor => renderTexto.display(valor || "—") },
+    { data: "tratamiento_consulta", className: "table-light td-large td-left", render: valor => renderTexto.display(valor || "—") },
+    { data: "peso_consulta", className: "table-light td-nowrap td-left", render: valor => renderTexto.display(valor || "—") },
+    { data: "comentario", className: "table-light td-large td-left", render: valor => renderTexto.display(valor || "—") }
+];
+
+if ($("#detalles").length) {
+    columnasConsultas.push({
+        data: "modalId",
+        className: "table-light td-detalle ",
+        orderable: false,
+        searchable: false,
+        render: modalId => `<button type="button" data-bs-toggle="modal" data-bs-target="#${modalId}" class="btn btn-sm btn-success text-nowrap">Ver detalle</button>`
+    });
 }
 
-function obtenerConsultas(param = null, pagina = paginaActual) {
-    const datos = new FormData();
-    datos.append("obtener", "true");
-    datos.append("pagina", pagina);
-    datos.append("limite", limite.val());
-    if (param !== null) datos.append("parametro", param);
-
-    const url = tablaConsultas.data("url") || "index.php?url=Consulta";
-
-    peticionAjax(datos, null, () => {}, url).then(resultado => {
-        if (resultado.status !== "success") {
-            throw new Error("No fue posible cargar las consultas.");
-        }
-        tablaConsultas.empty();
-        (resultado.resultados || []).forEach(consulta => {
-            const id = Number(consulta.id_consulta);
-            const modalId = crearDetalle(consulta);
-            const fila = $("<tr>");
-            const agregarCelda = (valor, clases = "table-light") =>
-                fila.append($("<td>").addClass(clases).text(valor ?? ""));
-            agregarCelda(id);
-            agregarCelda(consulta.nombre_mascota);
-            agregarCelda(consulta.nombre_cliente);
-            agregarCelda(consulta.fecha);
-            agregarCelda(Number(consulta.tipo_ingreso) === 1 ? "Primera vez" : "Sucesivo");
-            agregarCelda(Number(consulta.remitido) === 1 ? "Sí" : "No");
-            agregarCelda(consulta.pronostico || "—", "table-light td-large");
-            agregarCelda(consulta.tratamiento_consulta || "—", "table-light td-large");
-            agregarCelda(consulta.peso_consulta || "—");
-            agregarCelda(consulta.comentario || "—", "table-light td-large");
-
-            const verDetalle = $("<button>").attr({
-                type: "button",
-                "data-bs-toggle": "modal",
-                "data-bs-target": `#${modalId}`
-            }).addClass("btn btn-sm btn-success").text("Ver detalle");
-            
-            if ($("#detalles").length) {
-            fila.append($("<td>").addClass("table-light").append(verDetalle));
-            }
-            
-            const actualizar = $("<a>").attr("href", `index.php?url=NuevaConsulta&id_consulta=${id}`)
-                .addClass("btn btn-sm btn-success").text("Actualizar");
-            
-            const eliminar = $("<button>").attr({
-                type: "button",
-                "data-eliminar-consulta": id
-            }).addClass("btn btn-sm btn-danger").text("Eliminar");
-            const GenerarPDF =  $("<button>").attr({
-                type: "button",
-                "data-bs-toggle": "modal",
-                "data-bs-target": `#ReporteModal`,
-                "data-pdf-consulta": id
-            }).addClass("btn btn-sm btn-success").text("Generar PDF");
-            
-            if ($("#acciones").length) {
-                const acciones = $("<div>").addClass("consulta-acciones d-flex gap-1")
-                    .append(GenerarPDF, actualizar, eliminar);
-                fila.append($("<td>").addClass("table-light").append(acciones));
-            }
-            
-            tablaConsultas.append(fila);
-        });
-        if (!tablaConsultas.children().length) {
-            if (pagina > 1) {
-                obtenerConsultas(param, pagina - 1);
-                return;
-            }
-            tablaConsultas.append(
-                $("<tr>").append(
-                    $("<td>").attr("colspan", 12).addClass("text-center text-muted py-4")
-                        .text("Todavía no hay consultas registradas.")
-                )
-            );
-        }
-        paginaActual = pagina;
-        actualizarPaginacion(resultado.hayMas);
-    }).catch(normalizarErrorAjax)
-        .catch(error => alertar({ icon: "error", title: "Error", text: error.message }));
+if ($("#acciones-consulta").length) {
+    columnasConsultas.push({
+        data: "id_consulta",
+        className: "table-light td-acciones",
+        orderable: false,
+        searchable: false,
+        render: id => `<div class="consulta-acciones d-flex flex-nowrap gap-1">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#ReporteModal" data-pdf-consulta="${id}" class="btn btn-sm btn-success text-nowrap">Generar PDF</button>
+            <a href="index.php?url=NuevaConsulta&id_consulta=${encodeURIComponent(id)}" class="btn btn-sm btn-success text-nowrap">Actualizar</a>
+            <button type="button" data-eliminar-consulta="${id}" class="btn btn-sm btn-danger text-nowrap">Eliminar</button>
+        </div>`
+    });
 }
+
+const tabla = tablaConsultas.DataTable({
+    serverSide: true,
+    autoWidth: false,
+    scrollX: true,
+    searching: true,
+    lengthChange: true,
+    lengthMenu: [5, 10, 20],
+    pageLength: 5,
+    layout: { topStart: null, topEnd: null, bottomStart: "pageLength", bottomEnd: "paging" },
+    columns: columnasConsultas,
+    language: {
+        lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+        infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+        infoFiltered: "(filtrado de un total de _MAX_ registros)",
+        loadingRecords: "Cargando...",
+        zeroRecords: "No se encontraron resultados",
+        emptyTable: "Todavía no hay consultas registradas.",
+        paginate: { first: "Primero", previous: "Anterior", next: "Siguiente", last: "Último" }
+    },
+    ajax: function (request, callback) {
+        const datos = new FormData();
+        datos.append("obtener", "true");
+        datos.append("draw", request.draw);
+        datos.append("start", request.start);
+        datos.append("length", request.length);
+        datos.append("search[value]", request.search.value);
+        const url = tablaConsultas.data("url") || "index.php?url=Consulta";
+
+        peticionAjax(datos, null, () => {}, url)
+            .then(resultado => {
+                if (!Array.isArray(resultado.data)) {
+                    throw new Error("El servidor devolvió un formato de respuesta inválido.");
+                }
+                $("body > .modal[id^='consulta-detalle-']").remove();
+                resultado.data.forEach(consulta => {
+                    consulta.modalId = crearDetalle(consulta);
+                });
+                callback(resultado);
+            })
+            .catch(normalizarErrorAjax)
+            .catch(error => {
+                console.error("No se pudieron cargar las consultas:", error);
+                alertar({ icon: "error", title: "Error", text: error.message });
+                callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+            });
+    }
+});
+
+filtrar.on("input", () => tabla.search(filtrar.val()).draw());
+
+tabla.on("draw.dt", function () {
+    tabla.columns.adjust();
+});
+
+$(window).on("resize", function () {
+    tabla.columns.adjust();
+});
 
 const reporteModal = document.getElementById("ReporteModal");
 const pdfCanvas = document.getElementById("pdf-canvas");
@@ -340,7 +351,7 @@ if (tablaConsultas.length) {
                     }
                     return alertar({ icon: "success", title: "Consulta eliminada" });
                 })
-                .then(() => obtenerConsultas(filtrar.val(), paginaActual))
+                .then(() => tabla.ajax.reload())
                 .catch(normalizarErrorAjax)
                 .catch(error => {
                     boton.prop("disabled", false);
@@ -349,25 +360,5 @@ if (tablaConsultas.length) {
         });
     });
 
-
-    obtenerConsultas();
-
-    filtrar.on("input", () => {
-        paginaActual = 1;
-        obtenerConsultas(filtrar.val(), paginaActual);
-    });
-
-    limite.on("change", () => {
-        paginaActual = 1;
-        obtenerConsultas(filtrar.val(), paginaActual);
-    });
-
-    btnAnterior.on("click", () => {
-        if (paginaActual > 1) obtenerConsultas(filtrar.val(), paginaActual - 1);
-    });
-
-    btnSiguiente.on("click", () => {
-        if (!btnSiguiente.prop("disabled")) obtenerConsultas(filtrar.val(), paginaActual + 1);
-    });
 
 }

@@ -7,6 +7,7 @@
     <link href="public/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/icons/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="public/icons/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="public/datatables/datatables.min.css">
     <link rel="stylesheet" href="public/css/Dashboard.css">
 </head>
 <body>
@@ -33,22 +34,25 @@
                 <?php endif; ?>
             </div>
 
-            <div class="table-responsive shadow-sm rounded">
-                <table class="table table-striped align-middle text-nowrap">
+            <article id="table-container">
+				<table id="TablaPatologias" class="table table-striped" style="border-radius: 12px;">
                     <thead>
+                        <tr>
                         <th class="table-purple">Id</th>
                         <th class="table-purple">Nombre</th>
                         <th class="table-purple">Tipo</th>
                         <th class="table-purple">Síntomas</th>
                         <th class="table-purple">Estado</th>
+                        
                         <?php if($_SESSION['usuario']['id_rol'] === 1 ): ?>  
 							<th class="table-purple" id="acciones">Acciones</th>
 							<?php endif; ?>
+                        </tr>
                     </thead>
-                    <tbody id="TablaPatologias">
-                    </tbody>
+                    <tbody></tbody>
                 </table>
-            </div>
+            </article>
+            
         </main>
     </div>
 
@@ -99,6 +103,7 @@
 
     <script src="public/jquery/jquery-3.7.1.min.js"></script>
     <script src="public/jquery/jquery.validate.min.js"></script>
+    <script src="public/datatables/datatables.min.js"></script>
     <script src="public/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="public/js/sweetalert2.min.js"></script>
     <script src="public/js/ajax.js"></script>

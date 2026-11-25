@@ -14,9 +14,9 @@
 <style>
     #table-container {
         border-radius: 12px;
-        overflow: hidden;
+        overflow: visible;
         border: 1px solid #dee2e6;
-        /* The actual visible outer border */
+        /* Keep the table border visible without clipping DataTables controls. */
     }
 
     /* Remove default DataTable outer borders to avoid doubling up */

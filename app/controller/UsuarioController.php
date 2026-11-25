@@ -16,14 +16,28 @@ $validador = new class {
 };
 
 if (isset($_POST['obtener'])) {
-    $pagina = (int)($_POST['pagina'] ?? 1);
-    $limite = 5;
-    $busqueda = $_POST['parametro'] ?? '';
+    $draw = (int) ($_POST['draw'] ?? 1);
+    $start = max(0, (int) ($_POST['start'] ?? 0));
+    $limite = (int) ($_POST['length'] ?? 5);
+    $limite = in_array($limite, [5, 10, 20], true) ? $limite : 5;
+    $pagina = (int) floor($start / $limite) + 1;
+    $busqueda = trim((string) ($_POST['search']['value'] ?? $_POST['parametro'] ?? ''));
 
     if ($busqueda !== '') {
         $usuarios = $usuarioModel->filtrarUsuarios($busqueda, $pagina, $limite);
     } else {
         $usuarios = $usuarioModel->obtenerUsuarios($pagina, $limite);
+    }
+
+    if (isset($_POST['draw'])) {
+        $recordsTotal = $usuarioModel->contarUsuarios();
+        echo json_encode([
+            "draw" => $draw,
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $busqueda !== '' ? $usuarioModel->contarUsuarios($busqueda) : $recordsTotal,
+            "data" => $usuarios
+        ]);
+        exit;
     }
 
     echo json_encode([

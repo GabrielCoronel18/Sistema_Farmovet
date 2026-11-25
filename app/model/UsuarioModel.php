@@ -134,6 +134,33 @@ class UsuarioModel extends ConexionBD
         return $query->fetchAll();
     }
 
+    public function contarUsuarios(?string $busqueda = null): int
+    {
+        $conex = $this->getConexion();
+        if ($busqueda === null || $busqueda === '') {
+            $query = $conex->query(
+                "SELECT COUNT(*) FROM usuario WHERE estado = 1"
+            );
+        } else {
+            $query = $conex->prepare(
+                "SELECT COUNT(*)
+                 FROM usuario u
+                 INNER JOIN rol r ON u.id_rol = r.id_rol
+                 WHERE u.estado = 1
+                   AND (u.cedula_usuario LIKE :param
+                        OR u.nombre LIKE :param
+                        OR u.apellido LIKE :param
+                        OR u.telefono LIKE :param
+                        OR u.correo LIKE :param
+                        OR r.nombre_rol LIKE :param)"
+            );
+            $query->bindValue(':param', '%' . $busqueda . '%');
+            $query->execute();
+        }
+
+        return (int) $query->fetchColumn();
+    }
+
     public function actualizarUsuario(
         string $cedulaOriginal,
         string $cedula,

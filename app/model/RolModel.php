@@ -69,6 +69,22 @@ class RolModel extends ConexionBD
         return $query->fetchAll();
     }
 
+    public function contarRoles(?string $busqueda = null): int
+    {
+        $conex = $this->getConexion();
+        if ($busqueda === null || $busqueda === '') {
+            $query = $conex->query("SELECT COUNT(*) FROM rol WHERE estado = 1");
+        } else {
+            $query = $conex->prepare(
+                "SELECT COUNT(*) FROM rol WHERE estado = 1 AND nombre_rol LIKE :param"
+            );
+            $query->bindValue(':param', '%' . $busqueda . '%');
+            $query->execute();
+        }
+
+        return (int) $query->fetchColumn();
+    }
+
     public function actualizarRol(int $id, string $nombre): bool
     {
         $conex = $this->getConexion();

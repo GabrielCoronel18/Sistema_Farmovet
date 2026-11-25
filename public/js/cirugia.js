@@ -10,71 +10,112 @@ const campoGravedad = $("#gravedad");
 const errorGravedad = $("#error-gravedad");
 const campoEstado = $("#estado");
 const errorEstado = $("#error-estado");
-const limite = $("#limite");
-const btnAnterior = $("#btn-anterior");
-const btnSiguiente = $("#btn-siguiente");
-const infoPagina = $("#info-pagina");
-let paginaActual = 1;
 
 
-function obtenerDatos(param = null, pagina = paginaActual) {
-	const datos = new FormData();
-	datos.append("obtener", "true");
-	datos.append("pagina", pagina);
-	datos.append("limite", limite.val());
-	if (param !== null) datos.append("parametro", param);
+const tieneAcciones = $("#acciones").length > 0;
 
-	peticionAjax(datos , function(resultado) {
-		tablaCirugias.empty();
-		if (resultado.status !== "success") {
-			tablaCirugias.append($("<tr>").append($("<td>").attr("colspan", 5).text("No hay cirugías registradas")));
-			paginaActual = pagina;
-			actualizarPaginacion(false);
-			return;
+const columnas = [
+	{ data: "id_cirugia", className: "table-light" },
+	{ data: "nombre_cirugia", className: "table-light" },
+	{ data: "gravedad", className: "table-light" },
+	{
+		data: "estado",
+		className: "table-light",
+		render: function (estado) {
+			const activo = Number(estado) === 1;
+			return `<span class="badge ${activo ? "bg-success" : "bg-secondary"}">${activo ? "Activo" : "Inactivo"}</span>`;
 		}
-		if (resultado.resultados.length === 0 && pagina > 1) {
-			obtenerDatos(param, pagina - 1);
-			return;
+	}
+];
+
+if (tieneAcciones) {
+	columnas.push({
+		data: "id_cirugia",
+		className: "table-light",
+		orderable: false,
+		searchable: false,
+		render: function (id) {
+			return `
+				<button type="button" class="btn btn-sm btn-success btn-actualizar" value="${id}" data-bs-toggle="modal" data-bs-target="#ModalAgregar">Actualizar</button>
+				<button type="button" class="btn btn-sm btn-danger btn-eliminar" value="${id}">Eliminar</button>
+			`;
 		}
-
-		resultado.resultados.forEach(cirugia => {
-			const fila = $("<tr>");
-			fila.append($("<td>").addClass("table-light").text(cirugia.id_cirugia));
-			fila.append($("<td>").addClass("table-light").text(cirugia.nombre_cirugia));
-			fila.append($("<td>").addClass("table-light").text(cirugia.gravedad));
-			fila.append(
-				$("<td>").addClass("table-light").append(
-					$("<span>")
-						.addClass(cirugia.estado == 1 ? "badge bg-success" : "badge bg-secondary")
-						.text(cirugia.estado == 1 ? "Activo" : "Inactivo")
-				)
-			);
-			const actualizar = $("<button>").addClass("btn btn-sm btn-success btn-actualizar")
-				.val(cirugia.id_cirugia).attr("data-bs-toggle", "modal")
-				.attr("data-bs-target", "#ModalAgregar").text("Actualizar");
-			const eliminar = $("<button>").addClass("btn btn-sm btn-danger btn-eliminar")
-				.val(cirugia.id_cirugia).text("Eliminar");
-
-			if ($("#acciones").length) {
-			fila.append($("<td>").addClass("table-light").append(actualizar, " ", eliminar));
-			}
-			
-			tablaCirugias.append(fila);
-		});
-		paginaActual = pagina;
-		actualizarPaginacion(resultado.hayMas);
 	});
 }
 
-function actualizarPaginacion(hayMas) {
-	btnAnterior.parent().toggleClass("disabled", paginaActual === 1);
-	btnAnterior.prop("disabled", paginaActual === 1);
-	btnSiguiente.prop("disabled", !hayMas);
-	infoPagina.text(`Página ${paginaActual}`);
-}
+const tabla = tablaCirugias.DataTable({
+	
+	serverSide: true,
+	autoWidth: false,
+	scrollX: true,
+	searching: true,
+	lengthChange: true,
+	lengthMenu: [5, 10, 20],
+	pageLength: 5,
+	layout: {
+		topStart: null,    
+		topEnd: null,
+		bottomStart: "pageLength", 
+		bottomEnd: "paging"
+	},
+	columns: columnas,
+	language: {
+		
+		search: "Buscar:",
+		lengthMenu: "Mostrar _MENU_ registros",
+		info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+		infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+		loadingRecords: "Cargando...",
+		zeroRecords: "No se encontraron resultados",
+		emptyTable: "Ningún dato disponible en esta tabla",
+		paginate: {
+			first: "Primero",
+			previous: "Anterior",
+			next: "Siguiente",
+			last: "Último"
+		},
+		aria: {
+			sortAscending: ": Activar para ordenar la columna de manera ascendente",
+			sortDescending: ": Activar para ordenar la columna de manera descendente"
+		}
+	},
+	ajax: function (data, callback) {
+		const datos = new FormData();
+		datos.append("obtener", "true");
+		datos.append("draw", data.draw);
+		datos.append("start", data.start);
+		datos.append("length", data.length);
+		datos.append("search[value]", data.search.value);
 
-obtenerDatos();
+		peticionAjax(datos)
+			.then(resultado => {
+				if (!Array.isArray(resultado.data)) {
+					throw new Error("El servidor devolvió un formato de respuesta inválido.");
+				}
 
+				callback({
+					draw: resultado.draw,
+					recordsTotal: resultado.recordsTotal,
+					recordsFiltered: resultado.recordsFiltered,
+					data: resultado.data
+				});
+			})
+			.catch(error => {
+				console.error("No se pudieron cargar las cirugias:", error);
+				callback({
+					draw: data.draw,
+					recordsTotal: 0,
+					recordsFiltered: 0,
+					data: []
+				});
+			});
+	}
+});
+
+filtrar.on("input", () => {
+	tabla.search(filtrar.val()).draw();
+});
 btnAgregar.on("click", () => {
 	formularioCirugia[0].reset();
 	$("#id_cirugia").val("");
@@ -101,7 +142,7 @@ tablaCirugias.on("click", ".btn-eliminar", function () {
 	const datos = new FormData();
 	datos.append("eliminar", "true");
 	datos.append("id", $(this).val());
-	alertEliminar("post", datos, () => obtenerDatos(filtrar.val(), paginaActual));
+	alertEliminar("post", datos, () => tabla.ajax.reload(null,false));
 });
 
 formularioCirugia.on("submit", event => {
@@ -127,24 +168,7 @@ formularioCirugia.on("submit", event => {
 		}
 		id === "" ? alertAgregar("success") : alertActualizar("success");
 		bootstrap.Modal.getInstance($("#ModalAgregar")[0]).hide();
-		obtenerDatos(filtrar.val(), paginaActual);
+		tabla.ajax.reload(null,false)
 	});
 });
 
-filtrar.on("input", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-limite.on("change", () => {
-	paginaActual = 1;
-	obtenerDatos(filtrar.val(), paginaActual);
-});
-
-btnAnterior.on("click", () => {
-	if (paginaActual > 1) obtenerDatos(filtrar.val(), paginaActual - 1);
-});
-
-btnSiguiente.on("click", () => {
-	if (!btnSiguiente.prop("disabled")) obtenerDatos(filtrar.val(), paginaActual + 1);
-});
