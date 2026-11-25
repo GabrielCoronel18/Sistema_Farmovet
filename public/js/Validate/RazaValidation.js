@@ -1,9 +1,6 @@
 $(document).ready(function () {
 
-    // =============================================
-    // 1. MÉTODOS DE VALIDACIÓN PERSONALIZADOS
-    // =============================================
-
+    
     // ✅ Solo letras (con acentos, ñ) y espacios SOLO entre palabras
     $.validator.addMethod("soloLetras", function (value, element) {
         return this.optional(element) || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/.test(value.trim());
