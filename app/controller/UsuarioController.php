@@ -146,6 +146,10 @@ if (isset($_POST['actualizar'])) {
         echo json_encode(["status" => "error", "errors" => $validador->getErrors()]);
         exit;
     }
+    if ($cedula !== $cedulaOriginal && $usuarioModel->existeCedula($cedula)) {
+    echo json_encode(["status" => "error", "mensaje" => "La nueva cédula ya está registrada en otro usuario."]);
+    exit;
+}
 
     $exito = $usuarioModel->actualizarUsuario(
         $cedulaOriginal,

@@ -162,41 +162,46 @@ class UsuarioModel extends ConexionBD
     }
 
     public function actualizarUsuario(
-        string $cedulaOriginal,
-        string $cedula,
-        string $nombre,
-        string $apellido,
-        string $telefono,
-        string $correo,
-        ?string $contraseña,
-        int $rol
-    ): bool {
-        $conex = $this->getConexion();
-        $sql = "UPDATE usuario SET
-                    cedula_usuario = :cedula,
-                    nombre = :nombre,
-                    apellido = :apellido,
-                    telefono = :telefono,
-                    correo = :correo,
-                    id_rol = :rol";
-        if ($contraseña !== null && $contraseña !== '') {
-            $hash = password_hash($contraseña, PASSWORD_DEFAULT);
-            $sql .= ", contraseña = :contraseña";
-        }
-        $sql .= " WHERE cedula_usuario = :cedula_original";
-        $query = $conex->prepare($sql);
-        $query->bindValue(':cedula', $cedula);
-        $query->bindValue(':nombre', $nombre);
-        $query->bindValue(':apellido', $apellido);
-        $query->bindValue(':telefono', $telefono);
-        $query->bindValue(':correo', $correo);
-        $query->bindValue(':rol', $rol);
-        $query->bindValue(':cedula_original', $cedulaOriginal);
-        if (isset($hash)) {
-            $query->bindValue(':contraseña', $hash);
-        }
-        return $query->execute();
+    string $cedulaOriginal,
+    string $cedula,
+    string $nombre,
+    string $apellido,
+    string $telefono,
+    string $correo,
+    ?string $contraseña,
+    int $rol
+): bool {
+    $conex = $this->getConexion();
+
+    $campos = [
+        'cedula_usuario = :cedula',
+        'nombre = :nombre',
+        'apellido = :apellido',
+        'telefono = :telefono',
+        'correo = :correo',
+        'id_rol = :rol',
+    ];
+
+    $params = [
+        ':cedula' => $cedula,
+        ':nombre' => $nombre,
+        ':apellido' => $apellido,
+        ':telefono' => $telefono,
+        ':correo' => $correo,
+        ':rol' => $rol,
+        ':cedula_original' => $cedulaOriginal,
+    ];
+
+    if ($contraseña !== null && $contraseña !== '') {
+        $campos[] = 'contraseña = :contrasena';
+        $params[':contrasena'] = password_hash($contraseña, PASSWORD_DEFAULT);
     }
+
+    $sql = 'UPDATE usuario SET ' . implode(', ', $campos) . ' WHERE cedula_usuario = :cedula_original';
+    $query = $conex->prepare($sql);
+
+    return $query->execute($params);
+}
 
     public function eliminarUsuario(string $cedula): bool
     {

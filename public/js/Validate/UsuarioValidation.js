@@ -68,7 +68,6 @@ $(function () {
                 },
                 maxlength: 60 },
             "contraseña": { 
-                required: true, 
                  normalizer: function(value) {
                     return $.trim(value);
                 },

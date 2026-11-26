@@ -55,7 +55,7 @@
                         </div>
                         <div class="col-md-6">
                             <label for="contraseña" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="contraseña" name="contraseña" required>
+                            <input type="password" class="form-control" id="contraseña" name="contraseña" autocomplete="new-password required">
                             <div class="invalid-feedback">Debe tener mayúscula, minúscula, número y símbolo.</div>
                         </div>
                         <div class="col-md-6">
@@ -93,9 +93,13 @@
         document.getElementById('titulo-form').textContent = 'Editar Usuario';
         document.getElementById('subtitulo-form').textContent = 'Modifique los datos necesarios';
         document.getElementById('btn-submit').innerHTML = '<i class="bi bi-save"></i> Actualizar';
-        document.getElementById('contraseña').removeAttribute('required');
-        document.getElementById('contraseña').placeholder = 'Dejar vacío para no cambiar';
+         const inputPass = document.getElementById('contraseña');
+         inputPass.removeAttribute("required");
+        inputPass.value = '';
+        inputPass.placeholder = 'Dejar vacío para no cambiar';
     }
+        
+    
 
     const promesas = [];
     promesas.push(fetch('?url=Usuario', {
@@ -105,6 +109,7 @@
 
     if (accion === 'editar' && cedula) {
         const fd = new FormData();
+        
         fd.append('obtenerUsuario', '1');
         fd.append('cedula', cedula);
         promesas.push(fetch('?url=Usuario', { method: 'POST', body: fd }).then(r => r.json()));
@@ -172,6 +177,9 @@
                 }
                 Swal.fire('Error', data.mensaje || 'Error en la operación.', 'error');
             }
+        }).catch(error => {
+            console.error('Error en la petición:', error);
+            Swal.fire('Error', 'Ocurrió un error inesperado en el servidor.', 'error');
         });
     });
 </script>
