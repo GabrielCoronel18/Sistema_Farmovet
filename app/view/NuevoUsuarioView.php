@@ -55,7 +55,7 @@
                         </div>
                         <div class="col-md-6">
                             <label for="contraseña" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="contraseña" name="contraseña" autocomplete="new-password required">
+                            <input type="password" class="form-control" id="contraseña" name="contraseña" autocomplete="new-password" required>
                             <div class="invalid-feedback">Debe tener mayúscula, minúscula, número y símbolo.</div>
                         </div>
                         <div class="col-md-6">
