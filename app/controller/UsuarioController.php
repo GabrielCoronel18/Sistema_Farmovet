@@ -118,7 +118,7 @@ if (isset($_POST['actualizar'])) {
     $cedula = strtoupper(trim($_POST['cedula'] ?? ''));
     $nombre = trim($_POST['nombre'] ?? '');
     $apellido = trim($_POST['apellido'] ?? '');
-    $telefono = trim($_POST['telefono'] ?? '');
+    $telefono = ($_POST['telefono'] ?? '');
     $correo = trim($_POST['correo'] ?? '');
     $rol = (int)($_POST['rol'] ?? 0);
     $contraseña = $_POST['contraseña'] ?? '';

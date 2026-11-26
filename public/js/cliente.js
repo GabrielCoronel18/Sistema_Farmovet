@@ -56,24 +56,33 @@ function obtenerDatos(param = null) {
 
         // ✅ DataTable con paginación de 10 registros y en español
         dataTableInstance = new DataTable('#TablaCliente', {
-            scrollX: true,
+             scrollX: true,
             searching: true,
-            lengthChange: false,
-            pageLength: 10,
+            lengthChange: true,
+            lengthMenu: [5,10,20],
+            pageLength: 5,
+            
+            layout: {
+		    topStart: null,    
+		    topEnd: "search",
+		    bottomStart: "pageLength", 
+		    bottomEnd: "paging"
+	        },
             pagingType: "full_numbers",
-            columnDefs: tieneAcciones ? [{ "width": "20%", "targets": 6 }] : [],
             language: {
                 search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros",
                 zeroRecords: "No se encontraron resultados",
                 info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                infoEmpty: "Mostrando 0 registros",
-                infoFiltered: "(filtrado de _MAX_ registros)",
-                paginate: {
+                infoEmpty:"Mostrando 0 registros",
+                infoFiltered:"(filtrado de _MAX_ registros)",
+                paginate: { 
+                    
                     first: "Primero",
                     previous: "Anterior",
                     next: "Siguiente",
                     last: "Último"
-                }
+                 }
             }
         });
     });

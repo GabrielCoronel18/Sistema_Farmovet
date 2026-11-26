@@ -69,7 +69,7 @@ $(function () {
                 maxlength: 60 },
             "contraseña": { 
                  normalizer: function(value) {
-                    return $.trim(value);
+                return $.trim(value);
                 },
                 contrasenaUsuario: true },
             rol: { required: true }

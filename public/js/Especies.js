@@ -57,11 +57,19 @@ function obtenerDatos(param = null) {
         dataTableInstance = new DataTable('#TablaEspecies', {
             scrollX: true,
             searching: true,
-            lengthChange: false,
-            pageLength:10,
+            lengthChange: true,
+            lengthMenu: [5,10,20],
+            pageLength: 5,
+            layout: {
+		    topStart: null,    
+		    topEnd: "search",
+		    bottomStart: "pageLength", 
+		    bottomEnd: "paging"
+	        },
             pagingType: "full_numbers",
             language: {
                 search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros",
                 zeroRecords: "No se encontraron resultados",
                 info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
                 infoEmpty:"Mostrando 0 registros",
